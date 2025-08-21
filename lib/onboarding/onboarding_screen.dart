@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import '../screens/auth/login_screen.dart';
 import 'onboarding_content.dart';
-import '../main.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -36,15 +37,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   void _saveLanguageAndContinue() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('selected_language', _selectedLanguage);
-    await prefs.setBool('has_completed_onboarding', true);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    await authProvider.markOnboardingCompleted();
     
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              const MyHomePage(title: 'FarmLink'),
+              const LoginScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return FadeTransition(opacity: animation, child: child);
           },
