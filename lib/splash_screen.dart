@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'main.dart';
+import 'package:provider/provider.dart';
+import 'providers/auth_provider.dart';
+import 'onboarding/onboarding_screen.dart';
+import 'screens/auth/login_screen.dart';
+import 'screens/dashboards/dashboard_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -40,20 +44,85 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward();
 
-    // Navigate to main screen after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const MyHomePage(title: 'FarmLink'),
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
+    // Initialize auth and navigate after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () async {
+      if (mounted) {
+        await _initializeAndNavigate();
+      }
     });
+  }
+
+  Future<void> _initializeAndNavigate() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    
+    try {
+      // Initialize auth provider
+      await authProvider.initialize();
+      
+      if (mounted) {
+        // First, check if onboarding is completed
+        final hasCompletedOnboarding = await authProvider.hasCompletedOnboarding();
+        
+        if (!hasCompletedOnboarding) {
+          // Onboarding not completed, go to onboarding screen first
+          Navigator.of(context).pushReplacement(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) =>
+                  const OnboardingScreen(),
+              transitionsBuilder:
+                  (context, animation, secondaryAnimation, child) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              transitionDuration: const Duration(milliseconds: 500),
+            ),
+          );
+        } else {
+          // Onboarding completed, check login status
+          if (authProvider.isLoggedIn) {
+            // User is logged in, go to dashboard
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const DashboardRouter(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 500),
+              ),
+            );
+          } else {
+            // User is not logged in, go to login screen
+            Navigator.of(context).pushReplacement(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const LoginScreen(),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(milliseconds: 500),
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      // If there's an error, go to login screen (safer default)
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const LoginScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(milliseconds: 500),
+          ),
+        );
+      }
+    }
   }
 
   @override
