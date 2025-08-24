@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/crop_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../settings/farmer_settings_screen.dart';
+import '../../farmer/crop_listing_screen.dart';
+import '../../farmer/add_crop_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
@@ -207,17 +210,27 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           ),
           const SizedBox(height: 16),
           _buildQuickActionCard(
-            'Add New Product',
-            'List your fresh produce for sale',
+            'Add New Crop',
+            'List your fresh produce for bidding',
             Icons.add_circle,
-            () {},
+            () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AddCropScreen(),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
             'Manage Crops',
-            'Track your crop progress and health',
+            'View and manage your crop listings',
             Icons.agriculture,
-            () {},
+            () {
+              setState(() {
+                _currentIndex = 1; // Switch to crops tab
+              });
+            },
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
@@ -324,9 +337,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   }
 
   Widget _buildCropsTab() {
-    return const Center(
-      child: Text('Crops Management - Coming Soon'),
-    );
+    return const CropListingScreen();
   }
 
   Widget _buildProductsTab() {

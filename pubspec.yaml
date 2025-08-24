@@ -44,6 +44,9 @@ dependencies:
   # State management
   provider: ^6.1.2
   
+  # Image picker
+  image_picker: ^1.0.7
+  
   # Localization
   flutter_localizations:
     sdk: flutter
