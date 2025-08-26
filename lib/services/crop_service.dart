@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/crop_model.dart';
+import 'storage_service.dart';
 
 class CropService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final StorageService _storageService = StorageService();
 
   // Collection references
   CollectionReference get _cropsCollection => _firestore.collection('crops');
@@ -23,10 +25,14 @@ class CropService {
   Stream<List<CropModel>> getFarmerCrops(String farmerId) {
     return _cropsCollection
         .where('farmerId', isEqualTo: farmerId)
-        .orderBy('createdAt', descending: true)
+        // Temporarily removed orderBy to avoid composite index requirement
+        // .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) => CropModel.fromFirestore(doc)).toList();
+      List<CropModel> crops = snapshot.docs.map((doc) => CropModel.fromFirestore(doc)).toList();
+      // Sort in memory instead of in Firestore
+      crops.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return crops;
     });
   }
 
@@ -98,6 +104,19 @@ class CropService {
   // Delete a crop
   Future<void> deleteCrop(String cropId) async {
     try {
+      // First get the crop to access its image URL
+      final cropDoc = await _cropsCollection.doc(cropId).get();
+      if (cropDoc.exists) {
+        final cropData = cropDoc.data() as Map<String, dynamic>;
+        final imageUrl = cropData['imageUrl'] as String? ?? '';
+        
+        // Delete the image from storage if it exists
+        if (imageUrl.isNotEmpty && !imageUrl.contains('placeholder')) {
+          await _storageService.deleteCropImage(imageUrl);
+        }
+      }
+      
+      // Delete the crop document
       await _cropsCollection.doc(cropId).delete();
     } catch (e) {
       throw Exception('Failed to delete crop: $e');
