@@ -24,11 +24,6 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Crop Marketplace'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-      ),
       body: Consumer<CropProvider>(
         builder: (context, cropProvider, child) {
           if (cropProvider.isLoading) {
@@ -92,9 +87,16 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   Widget _buildCropCard(CropModel crop) {
     final timeLeft = crop.timeLeft;
     final highestBid = crop.highestBid;
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.userProfile?.uid ?? '';
+    final hasUserBid = crop.hasUserBid(currentUserId);
+    final userBid = crop.getUserBid(currentUserId);
+    final isUserHighestBidder = crop.isUserHighestBidder(currentUserId);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -169,11 +171,11 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.orange,
+                        color: crop.isExpired ? Colors.red : Colors.orange,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        _formatDuration(timeLeft),
+                        crop.isExpired ? 'EXPIRED' : _formatDuration(timeLeft),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -183,7 +185,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
                 // Quantity and Min Bid
                 Row(
@@ -220,23 +222,27 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                     Icons.trending_up,
                     'Current Highest',
                     '₹${highestBid.amount}',
+                    valueColor: Colors.green,
+                  ),
+                const SizedBox(height: 8),
+
+                // User's current bid (if any)
+                if (hasUserBid && userBid != null)
+                  _buildInfoRow(
+                    Icons.person,
+                    'Your Bid',
+                    '₹${userBid.amount}',
+                    valueColor: isUserHighestBidder ? Colors.green : Colors.blue,
                   ),
                 const SizedBox(height: 16),
 
-                // Bid Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _showBidDialog(crop),
-                    icon: const Icon(Icons.gavel),
-                    label: const Text('Place Bid'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
-                  ),
-                ),
+                // Bidding History Dropdown
+                if (crop.bids.isNotEmpty)
+                  _buildBiddingHistorySection(crop),
+                const SizedBox(height: 16),
+
+                // Action Buttons
+                _buildActionButtons(crop, hasUserBid, isUserHighestBidder),
               ],
             ),
           ),
@@ -245,22 +251,230 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
     return Row(
       children: [
         Icon(icon, size: 16, color: Colors.grey.shade600),
         const SizedBox(width: 4),
         Expanded(
           child: Text(
-            '$label: $value',
+            '$label: ',
             style: TextStyle(
               color: Colors.grey.shade700,
               fontSize: 14,
             ),
           ),
         ),
+        Text(
+          value,
+          style: TextStyle(
+            color: valueColor ?? Colors.grey.shade700,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
+  }
+
+  Widget _buildBiddingHistorySection(CropModel crop) {
+    return ExpansionTile(
+      title: Row(
+        children: [
+          const Icon(Icons.history, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            'Bidding History (${crop.bids.length} bids)',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+        ],
+      ),
+      children: [
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: crop.bids.length,
+          itemBuilder: (context, index) {
+            final bid = crop.bids[index];
+            final isHighest = crop.highestBid?.id == bid.id;
+            
+            return ListTile(
+              dense: true,
+              leading: CircleAvatar(
+                radius: 16,
+                backgroundColor: isHighest ? Colors.green : Colors.blue,
+                child: Text(
+                  '${index + 1}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              title: Text(
+                bid.distributorName,
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
+              subtitle: Text(
+                '₹${bid.amount} • ${_formatDateTime(bid.createdAt)}',
+                style: TextStyle(
+                  color: isHighest ? Colors.green : Colors.grey.shade600,
+                  fontWeight: isHighest ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+              trailing: isHighest 
+                ? const Icon(Icons.emoji_events, color: Colors.amber, size: 20)
+                : null,
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(CropModel crop, bool hasUserBid, bool isUserHighestBidder) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.userProfile?.uid ?? '';
+    final userBid = crop.getUserBid(currentUserId);
+
+    if (crop.isSold) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.green.shade50,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.green.shade200),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Sold to ${crop.order?.distributorName ?? 'Highest Bidder'}',
+              style: const TextStyle(
+                color: Colors.green,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (crop.isExpired) {
+      if (crop.bids.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.red.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.red.shade200),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.cancel, color: Colors.red, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'No bids placed - Auction ended',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (isUserHighestBidder) {
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _placeOrder(crop),
+            icon: const Icon(Icons.shopping_cart),
+            label: const Text('Place Order'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        );
+      } else {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.orange.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.orange.shade200),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info, color: Colors.orange, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Auction ended. ${crop.highestBid?.distributorName ?? 'Highest bidder'} won.',
+                  style: const TextStyle(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    // Active auction buttons
+    if (hasUserBid) {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => _showUpdateBidDialog(crop, userBid!),
+              icon: const Icon(Icons.edit),
+              label: const Text('Update Bid'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _showBiddingHistoryDialog(crop),
+              icon: const Icon(Icons.history),
+              label: const Text('History'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton.icon(
+          onPressed: () => _showBidDialog(crop),
+          icon: const Icon(Icons.gavel),
+          label: const Text('Place Bid'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+        ),
+      );
+    }
   }
 
   String _formatDuration(Duration duration) {
@@ -271,6 +485,10 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     } else {
       return '${duration.inMinutes}m';
     }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
   void _showBidDialog(CropModel crop) {
@@ -359,6 +577,205 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               foregroundColor: Colors.white,
             ),
             child: const Text('Place Bid'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUpdateBidDialog(CropModel crop, BidModel currentBid) {
+    final bidController = TextEditingController();
+    final highestBid = crop.highestBid;
+    final minBid = highestBid != null && highestBid.distributorId != currentBid.distributorId
+        ? highestBid.amount + 1 
+        : currentBid.amount + 1;
+
+    bidController.text = minBid.toString();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Update Bid on ${crop.cropName}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Your current bid: ₹${currentBid.amount}'),
+            if (highestBid != null && highestBid.distributorId != currentBid.distributorId)
+              Text('Current highest: ₹${highestBid.amount}'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: bidController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'New Bid Amount (₹)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final bidAmount = double.tryParse(bidController.text);
+              if (bidAmount == null || bidAmount <= currentBid.amount) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('New bid must be higher than ₹${currentBid.amount}'),
+                  ),
+                );
+                return;
+              }
+
+              final cropProvider = Provider.of<CropProvider>(context, listen: false);
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              
+              final success = await cropProvider.updateBid(
+                crop.id, 
+                authProvider.userProfile?.uid ?? '', 
+                bidAmount
+              );
+              
+              if (success) {
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Bid updated successfully!'),
+                    ),
+                  );
+                }
+              } else {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(cropProvider.error ?? 'Failed to update bid'),
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Update Bid'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBiddingHistoryDialog(CropModel crop) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Bidding History - ${crop.cropName}'),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: crop.bids.length,
+            itemBuilder: (context, index) {
+              final bid = crop.bids[index];
+              final isHighest = crop.highestBid?.id == bid.id;
+              
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: isHighest ? Colors.green : Colors.blue,
+                  child: Text(
+                    '${index + 1}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                title: Text(
+                  bid.distributorName,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text('₹${bid.amount} • ${_formatDateTime(bid.createdAt)}'),
+                trailing: isHighest 
+                  ? const Icon(Icons.emoji_events, color: Colors.amber)
+                  : null,
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _placeOrder(CropModel crop) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Place Order'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Crop: ${crop.cropName}'),
+            Text('Quantity: ${crop.quantity} kg'),
+            Text('Final Price: ₹${crop.highestBid?.amount}'),
+            Text('Pickup Location: ${crop.pickupLocation}'),
+            const SizedBox(height: 16),
+            const Text(
+              'Are you sure you want to place an order for this crop?',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final cropProvider = Provider.of<CropProvider>(context, listen: false);
+              final authProvider = Provider.of<AuthProvider>(context, listen: false);
+              
+              final success = await cropProvider.placeOrder(
+                crop.id, 
+                authProvider.userProfile?.uid ?? ''
+              );
+              
+              if (success) {
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Order placed successfully!'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              } else {
+                if (mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(cropProvider.error ?? 'Failed to place order'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Place Order'),
           ),
         ],
       ),

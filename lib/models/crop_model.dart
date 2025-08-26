@@ -13,6 +13,7 @@ class CropModel {
   final String status; // 'active', 'expired', 'sold'
   final DateTime createdAt;
   final List<BidModel> bids;
+  final OrderModel? order; // New field for order
 
   CropModel({
     required this.id,
@@ -27,6 +28,7 @@ class CropModel {
     this.status = 'active',
     required this.createdAt,
     this.bids = const [],
+    this.order,
   });
 
   factory CropModel.fromFirestore(DocumentSnapshot doc) {
@@ -47,6 +49,7 @@ class CropModel {
       bids: (data['bids'] as List<dynamic>? ?? [])
           .map((bid) => BidModel.fromMap(bid))
           .toList(),
+      order: data['order'] != null ? OrderModel.fromMap(data['order']) : null,
     );
   }
 
@@ -63,6 +66,7 @@ class CropModel {
       'status': status,
       'createdAt': Timestamp.fromDate(createdAt),
       'bids': bids.map((bid) => bid.toMap()).toList(),
+      'order': order?.toMap(),
     };
   }
 
@@ -79,6 +83,7 @@ class CropModel {
     String? status,
     DateTime? createdAt,
     List<BidModel>? bids,
+    OrderModel? order,
   }) {
     return CropModel(
       id: id ?? this.id,
@@ -93,11 +98,13 @@ class CropModel {
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       bids: bids ?? this.bids,
+      order: order ?? this.order,
     );
   }
 
   bool get isExpired => DateTime.now().isAfter(endDate);
   bool get isActive => !isExpired && status == 'active';
+  bool get isSold => order != null;
   
   Duration get timeLeft {
     if (isExpired) return Duration.zero;
@@ -108,6 +115,26 @@ class CropModel {
     if (bids.isEmpty) return null;
     bids.sort((a, b) => b.amount.compareTo(a.amount));
     return bids.first;
+  }
+
+  // Check if a user has already bid on this crop
+  bool hasUserBid(String userId) {
+    return bids.any((bid) => bid.distributorId == userId);
+  }
+
+  // Get user's current bid
+  BidModel? getUserBid(String userId) {
+    try {
+      return bids.firstWhere((bid) => bid.distributorId == userId);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Check if user is the highest bidder
+  bool isUserHighestBidder(String userId) {
+    final highest = highestBid;
+    return highest != null && highest.distributorId == userId;
   }
 }
 
@@ -144,5 +171,131 @@ class BidModel {
       'amount': amount,
       'createdAt': Timestamp.fromDate(createdAt),
     };
+  }
+
+  BidModel copyWith({
+    String? id,
+    String? distributorId,
+    String? distributorName,
+    double? amount,
+    DateTime? createdAt,
+  }) {
+    return BidModel(
+      id: id ?? this.id,
+      distributorId: distributorId ?? this.distributorId,
+      distributorName: distributorName ?? this.distributorName,
+      amount: amount ?? this.amount,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+}
+
+class OrderModel {
+  final String id;
+  final String cropId;
+  final String distributorId;
+  final String distributorName;
+  final String farmerId;
+  final String farmerName;
+  final String cropName;
+  final double quantity;
+  final double finalPrice;
+  final String pickupLocation;
+  final String status; // 'pending', 'confirmed', 'completed', 'cancelled'
+  final DateTime createdAt;
+  final DateTime? confirmedAt;
+  final DateTime? completedAt;
+
+  OrderModel({
+    required this.id,
+    required this.cropId,
+    required this.distributorId,
+    required this.distributorName,
+    required this.farmerId,
+    required this.farmerName,
+    required this.cropName,
+    required this.quantity,
+    required this.finalPrice,
+    required this.pickupLocation,
+    this.status = 'pending',
+    required this.createdAt,
+    this.confirmedAt,
+    this.completedAt,
+  });
+
+  factory OrderModel.fromMap(Map<String, dynamic> map) {
+    return OrderModel(
+      id: map['id'] ?? '',
+      cropId: map['cropId'] ?? '',
+      distributorId: map['distributorId'] ?? '',
+      distributorName: map['distributorName'] ?? '',
+      farmerId: map['farmerId'] ?? '',
+      farmerName: map['farmerName'] ?? '',
+      cropName: map['cropName'] ?? '',
+      quantity: (map['quantity'] ?? 0).toDouble(),
+      finalPrice: (map['finalPrice'] ?? 0).toDouble(),
+      pickupLocation: map['pickupLocation'] ?? '',
+      status: map['status'] ?? 'pending',
+      createdAt: (map['createdAt'] as Timestamp).toDate(),
+      confirmedAt: map['confirmedAt'] != null 
+          ? (map['confirmedAt'] as Timestamp).toDate() 
+          : null,
+      completedAt: map['completedAt'] != null 
+          ? (map['completedAt'] as Timestamp).toDate() 
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'cropId': cropId,
+      'distributorId': distributorId,
+      'distributorName': distributorName,
+      'farmerId': farmerId,
+      'farmerName': farmerName,
+      'cropName': cropName,
+      'quantity': quantity,
+      'finalPrice': finalPrice,
+      'pickupLocation': pickupLocation,
+      'status': status,
+      'createdAt': Timestamp.fromDate(createdAt),
+      'confirmedAt': confirmedAt != null ? Timestamp.fromDate(confirmedAt!) : null,
+      'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+    };
+  }
+
+  OrderModel copyWith({
+    String? id,
+    String? cropId,
+    String? distributorId,
+    String? distributorName,
+    String? farmerId,
+    String? farmerName,
+    String? cropName,
+    double? quantity,
+    double? finalPrice,
+    String? pickupLocation,
+    String? status,
+    DateTime? createdAt,
+    DateTime? confirmedAt,
+    DateTime? completedAt,
+  }) {
+    return OrderModel(
+      id: id ?? this.id,
+      cropId: cropId ?? this.cropId,
+      distributorId: distributorId ?? this.distributorId,
+      distributorName: distributorName ?? this.distributorName,
+      farmerId: farmerId ?? this.farmerId,
+      farmerName: farmerName ?? this.farmerName,
+      cropName: cropName ?? this.cropName,
+      quantity: quantity ?? this.quantity,
+      finalPrice: finalPrice ?? this.finalPrice,
+      pickupLocation: pickupLocation ?? this.pickupLocation,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      confirmedAt: confirmedAt ?? this.confirmedAt,
+      completedAt: completedAt ?? this.completedAt,
+    );
   }
 }

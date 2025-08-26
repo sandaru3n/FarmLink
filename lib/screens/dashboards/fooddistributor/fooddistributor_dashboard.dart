@@ -4,6 +4,8 @@ import '../../../providers/auth_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../settings/fooddistributor_settings_screen.dart';
+import '../../distributor/crop_marketplace_screen.dart';
+import '../../distributor/distributor_orders_screen.dart';
 
 class FoodDistributorDashboard extends StatefulWidget {
   const FoodDistributorDashboard({super.key});
@@ -74,12 +76,12 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.inventory),
-                label: 'Inventory',
+                icon: const Icon(Icons.store),
+                label: 'Marketplace',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.assignment),
-                label: 'Orders',
+                icon: const Icon(Icons.shopping_bag),
+                label: 'My Orders',
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.people),
@@ -101,9 +103,9 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       case 0:
         return _buildHomeTab(userProfile);
       case 1:
-        return _buildInventoryTab();
+        return _buildMarketplaceTab();
       case 2:
-        return _buildOrdersTab();
+        return const DistributorOrdersScreen();
       case 3:
         return _buildSuppliersTab();
       case 4:
@@ -111,6 +113,37 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       default:
         return _buildHomeTab(userProfile);
     }
+  }
+
+  Widget _buildMarketplaceTab() {
+    return Column(
+      children: [
+        // Bold "Crop Marketplace" title
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.orange.shade50,
+            border: Border(
+              bottom: BorderSide(color: Colors.orange.shade200, width: 1),
+            ),
+          ),
+          child: const Text(
+            'Crop Marketplace',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        // Crop Marketplace Screen
+        const Expanded(
+          child: CropMarketplaceScreen(),
+        ),
+      ],
+    );
   }
 
   Widget _buildHomeTab(UserModel? userProfile) {
@@ -155,7 +188,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                               ),
                             ),
                             Text(
-                              'Connecting farmers to consumers!',
+                              'Connect with farmers and source quality crops!',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Colors.orange,
                                 fontWeight: FontWeight.w500,
@@ -176,11 +209,11 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Active Suppliers', '15', Icons.people, Colors.orange),
+                child: _buildStatCard('Active Auctions', '12', Icons.gavel, Colors.orange),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildStatCard('Products in Stock', '45', Icons.inventory, Colors.blue),
+                child: _buildStatCard('My Bids', '8', Icons.trending_up, Colors.blue),
               ),
             ],
           ),
@@ -188,11 +221,11 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Pending Orders', '8', Icons.assignment, Colors.red),
+                child: _buildStatCard('Won Auctions', '3', Icons.emoji_events, Colors.green),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildStatCard('This Month Revenue', '₹1,25,000', Icons.trending_up, Colors.green),
+                child: _buildStatCard('Total Spent', '₹45,000', Icons.account_balance_wallet, Colors.purple),
               ),
             ],
           ),
@@ -207,31 +240,48 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           ),
           const SizedBox(height: 16),
           _buildQuickActionCard(
-            'Manage Inventory',
-            'Track and update your product stock',
-            Icons.inventory,
-            () {},
+            'Browse Marketplace',
+            'View available crop auctions and place bids',
+            Icons.store,
+            () {
+              setState(() {
+                _currentIndex = 1;
+              });
+            },
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
-            'Process Orders',
-            'Handle incoming customer orders',
-            Icons.assignment,
-            () {},
+            'My Orders',
+            'View your won auctions and manage orders',
+            Icons.shopping_bag,
+            () {
+              setState(() {
+                _currentIndex = 2;
+              });
+            },
+          ),
+          const SizedBox(height: 12),
+          _buildQuickActionCard(
+            'Bidding History',
+            'Track your bidding activity and performance',
+            Icons.history,
+            () {
+              // Navigate to marketplace with history focus
+              setState(() {
+                _currentIndex = 1;
+              });
+            },
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
             'Supplier Network',
             'Connect with local farmers',
             Icons.people,
-            () {},
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'Quality Control',
-            'Monitor product quality standards',
-            Icons.verified,
-            () {},
+            () {
+              setState(() {
+                _currentIndex = 3;
+              });
+            },
           ),
         ],
       ),
@@ -323,27 +373,85 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
     );
   }
 
-  Widget _buildInventoryTab() {
-    return const Center(
-      child: Text('Inventory Management - Coming Soon'),
-    );
-  }
-
-  Widget _buildOrdersTab() {
-    return const Center(
-      child: Text('Orders Management - Coming Soon'),
-    );
-  }
-
   Widget _buildSuppliersTab() {
     return const Center(
-      child: Text('Supplier Network - Coming Soon'),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.people,
+            size: 64,
+            color: Colors.grey,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Supplier Network',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Connect with local farmers and build relationships',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Coming Soon',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.orange,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildAnalyticsTab() {
     return const Center(
-      child: Text('Analytics Dashboard - Coming Soon'),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.analytics,
+            size: 64,
+            color: Colors.grey,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Analytics Dashboard',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Track your bidding performance and market trends',
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(height: 24),
+          Text(
+            'Coming Soon',
+            style: TextStyle(
+              fontSize: 18,
+              color: Colors.orange,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
