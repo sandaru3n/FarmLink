@@ -104,6 +104,46 @@ class CropProvider extends ChangeNotifier {
     }
   }
 
+  // Update existing bid
+  Future<bool> updateBid(String cropId, String distributorId, double newAmount) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _cropService.updateBid(cropId, distributorId, newAmount);
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Place order for highest bidder
+  Future<bool> placeOrder(String cropId, String distributorId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _cropService.placeOrder(cropId, distributorId);
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Update crop status
   Future<bool> updateCropStatus(String cropId, String status) async {
     try {
