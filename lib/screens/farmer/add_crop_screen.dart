@@ -5,6 +5,7 @@ import 'dart:io';
 import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/storage_service.dart';
 
 class AddCropScreen extends StatefulWidget {
   const AddCropScreen({super.key});
@@ -26,6 +27,7 @@ class _AddCropScreenState extends State<AddCropScreen> {
   TimeOfDay? _endTime;
   File? _selectedImage;
   bool _isLoading = false;
+  final StorageService _storageService = StorageService();
 
   @override
   void dispose() {
@@ -123,9 +125,50 @@ class _AddCropScreenState extends State<AddCropScreen> {
         _endTime!.minute,
       );
 
-      // For now, we'll use a placeholder image URL
-      // In a real app, you'd upload the image to Firebase Storage
-      const String imageUrl = 'https://via.placeholder.com/300x200?text=Crop+Image';
+      // Upload image to Firebase Storage
+      String imageUrl;
+      try {
+        imageUrl = await _storageService.uploadCropImage(_selectedImage!);
+      } catch (e) {
+        if (mounted) {
+          // Show error dialog with retry option
+          final shouldRetry = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Image Upload Failed'),
+              content: Text('Failed to upload image: $e\n\nWould you like to retry or continue without an image?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Continue without image'),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+          
+          if (shouldRetry == true) {
+            // Retry upload
+            try {
+              imageUrl = await _storageService.uploadCropImage(_selectedImage!);
+            } catch (retryError) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Upload failed again: $retryError')),
+                );
+              }
+              return;
+            }
+          } else {
+            // Use placeholder image
+            imageUrl = 'https://via.placeholder.com/300x200?text=Crop+Image';
+          }
+        }
+        return;
+      }
 
       final crop = CropModel(
         id: '',
