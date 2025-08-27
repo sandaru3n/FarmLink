@@ -6,6 +6,7 @@ import '../../../utils/app_localizations.dart';
 import '../../settings/fooddistributor_settings_screen.dart';
 import '../../distributor/crop_marketplace_screen.dart';
 import '../../distributor/distributor_orders_screen.dart';
+import '../../distributor/product_list_screen.dart';
 
 class FoodDistributorDashboard extends StatefulWidget {
   const FoodDistributorDashboard({super.key});
@@ -88,8 +89,8 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                 label: 'Suppliers',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.analytics),
-                label: 'Analytics',
+                icon: const Icon(Icons.inventory_2),
+                label: 'Products',
               ),
             ],
           ),
@@ -109,7 +110,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       case 3:
         return _buildSuppliersTab();
       case 4:
-        return _buildAnalyticsTab();
+        return const ProductListScreen();
       default:
         return _buildHomeTab(userProfile);
     }
@@ -262,13 +263,12 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
-            'Bidding History',
-            'Track your bidding activity and performance',
-            Icons.history,
+            'My Products',
+            'Manage your product inventory',
+            Icons.inventory_2,
             () {
-              // Navigate to marketplace with history focus
               setState(() {
-                _currentIndex = 1;
+                _currentIndex = 4;
               });
             },
           ),
@@ -414,44 +414,5 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
     );
   }
 
-  Widget _buildAnalyticsTab() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.analytics,
-            size: 64,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Analytics Dashboard',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Track your bidding performance and market trends',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 24),
-          Text(
-            'Coming Soon',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.orange,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
