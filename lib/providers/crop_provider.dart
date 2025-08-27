@@ -125,22 +125,22 @@ class CropProvider extends ChangeNotifier {
   }
 
   // Place order for highest bidder
-  Future<bool> placeOrder(String cropId, String distributorId) async {
+    Future<OrderModel?> placeOrder(String cropId, String distributorId, String distributorLocation) async {
     try {
       _isLoading = true;
       _error = null;
       notifyListeners();
 
-      await _cropService.placeOrder(cropId, distributorId);
-      
+      final order = await _cropService.placeOrder(cropId, distributorId, distributorLocation);
+
       _isLoading = false;
       notifyListeners();
-      return true;
+      return order;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
-      return false;
+      return null;
     }
   }
 
@@ -193,5 +193,15 @@ class CropProvider extends ChangeNotifier {
   // Get current user ID
   String? getCurrentUserId() {
     return _cropService.getCurrentUserId();
+  }
+
+  // Clean up orphaned orders
+  Future<void> cleanupOrphanedOrders() async {
+    try {
+      await _cropService.cleanupOrphanedOrders();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 }

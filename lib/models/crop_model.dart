@@ -195,53 +195,90 @@ class OrderModel {
   final String cropId;
   final String distributorId;
   final String distributorName;
+  final String distributorEmail;
+  final String distributorPhone;
+  final String distributorLocation;
   final String farmerId;
   final String farmerName;
+  final String farmerEmail;
+  final String farmerPhone;
   final String cropName;
+  final String cropImageUrl;
   final double quantity;
   final double finalPrice;
   final String pickupLocation;
-  final String status; // 'pending', 'confirmed', 'completed', 'cancelled'
+  final String paymentStatus; // 'pending', 'processing', 'completed', 'failed'
+  final String orderStatus; // 'pending', 'confirmed', 'completed', 'cancelled'
+  final String? stripePaymentIntentId;
+  final String? stripeClientSecret;
   final DateTime createdAt;
+  final DateTime? paymentCompletedAt;
   final DateTime? confirmedAt;
   final DateTime? completedAt;
+  final DateTime? lastPaymentActivity;
 
   OrderModel({
     required this.id,
     required this.cropId,
     required this.distributorId,
     required this.distributorName,
+    required this.distributorEmail,
+    required this.distributorPhone,
+    required this.distributorLocation,
     required this.farmerId,
     required this.farmerName,
+    required this.farmerEmail,
+    required this.farmerPhone,
     required this.cropName,
+    required this.cropImageUrl,
     required this.quantity,
     required this.finalPrice,
     required this.pickupLocation,
-    this.status = 'pending',
+    this.paymentStatus = 'pending',
+    this.orderStatus = 'pending',
+    this.stripePaymentIntentId,
+    this.stripeClientSecret,
     required this.createdAt,
+    this.paymentCompletedAt,
     this.confirmedAt,
     this.completedAt,
+    this.lastPaymentActivity,
   });
 
-  factory OrderModel.fromMap(Map<String, dynamic> map) {
+    factory OrderModel.fromMap(Map<String, dynamic> map) {
     return OrderModel(
       id: map['id'] ?? '',
       cropId: map['cropId'] ?? '',
       distributorId: map['distributorId'] ?? '',
       distributorName: map['distributorName'] ?? '',
+      distributorEmail: map['distributorEmail'] ?? '',
+      distributorPhone: map['distributorPhone'] ?? '',
+      distributorLocation: map['distributorLocation'] ?? '',
       farmerId: map['farmerId'] ?? '',
       farmerName: map['farmerName'] ?? '',
+      farmerEmail: map['farmerEmail'] ?? '',
+      farmerPhone: map['farmerPhone'] ?? '',
       cropName: map['cropName'] ?? '',
+      cropImageUrl: map['cropImageUrl'] ?? '',
       quantity: (map['quantity'] ?? 0).toDouble(),
       finalPrice: (map['finalPrice'] ?? 0).toDouble(),
       pickupLocation: map['pickupLocation'] ?? '',
-      status: map['status'] ?? 'pending',
+      paymentStatus: map['paymentStatus'] ?? 'pending',
+      orderStatus: map['orderStatus'] ?? 'pending',
+      stripePaymentIntentId: map['stripePaymentIntentId'],
+      stripeClientSecret: map['stripeClientSecret'],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
-      confirmedAt: map['confirmedAt'] != null 
-          ? (map['confirmedAt'] as Timestamp).toDate() 
+      paymentCompletedAt: map['paymentCompletedAt'] != null
+          ? (map['paymentCompletedAt'] as Timestamp).toDate()
           : null,
-      completedAt: map['completedAt'] != null 
-          ? (map['completedAt'] as Timestamp).toDate() 
+      confirmedAt: map['confirmedAt'] != null
+          ? (map['confirmedAt'] as Timestamp).toDate()
+          : null,
+      completedAt: map['completedAt'] != null
+          ? (map['completedAt'] as Timestamp).toDate()
+          : null,
+      lastPaymentActivity: map['lastPaymentActivity'] != null
+          ? (map['lastPaymentActivity'] as Timestamp).toDate()
           : null,
     );
   }
@@ -252,16 +289,27 @@ class OrderModel {
       'cropId': cropId,
       'distributorId': distributorId,
       'distributorName': distributorName,
+      'distributorEmail': distributorEmail,
+      'distributorPhone': distributorPhone,
+      'distributorLocation': distributorLocation,
       'farmerId': farmerId,
       'farmerName': farmerName,
+      'farmerEmail': farmerEmail,
+      'farmerPhone': farmerPhone,
       'cropName': cropName,
+      'cropImageUrl': cropImageUrl,
       'quantity': quantity,
       'finalPrice': finalPrice,
       'pickupLocation': pickupLocation,
-      'status': status,
+      'paymentStatus': paymentStatus,
+      'orderStatus': orderStatus,
+      'stripePaymentIntentId': stripePaymentIntentId,
+      'stripeClientSecret': stripeClientSecret,
       'createdAt': Timestamp.fromDate(createdAt),
+      'paymentCompletedAt': paymentCompletedAt != null ? Timestamp.fromDate(paymentCompletedAt!) : null,
       'confirmedAt': confirmedAt != null ? Timestamp.fromDate(confirmedAt!) : null,
       'completedAt': completedAt != null ? Timestamp.fromDate(completedAt!) : null,
+      'lastPaymentActivity': lastPaymentActivity != null ? Timestamp.fromDate(lastPaymentActivity!) : null,
     };
   }
 
@@ -270,32 +318,54 @@ class OrderModel {
     String? cropId,
     String? distributorId,
     String? distributorName,
+    String? distributorEmail,
+    String? distributorPhone,
+    String? distributorLocation,
     String? farmerId,
     String? farmerName,
+    String? farmerEmail,
+    String? farmerPhone,
     String? cropName,
+    String? cropImageUrl,
     double? quantity,
     double? finalPrice,
     String? pickupLocation,
-    String? status,
+    String? paymentStatus,
+    String? orderStatus,
+    String? stripePaymentIntentId,
+    String? stripeClientSecret,
     DateTime? createdAt,
+    DateTime? paymentCompletedAt,
     DateTime? confirmedAt,
     DateTime? completedAt,
+    DateTime? lastPaymentActivity,
   }) {
     return OrderModel(
       id: id ?? this.id,
       cropId: cropId ?? this.cropId,
       distributorId: distributorId ?? this.distributorId,
       distributorName: distributorName ?? this.distributorName,
+      distributorEmail: distributorEmail ?? this.distributorEmail,
+      distributorPhone: distributorPhone ?? this.distributorPhone,
+      distributorLocation: distributorLocation ?? this.distributorLocation,
       farmerId: farmerId ?? this.farmerId,
       farmerName: farmerName ?? this.farmerName,
+      farmerEmail: farmerEmail ?? this.farmerEmail,
+      farmerPhone: farmerPhone ?? this.farmerPhone,
       cropName: cropName ?? this.cropName,
+      cropImageUrl: cropImageUrl ?? this.cropImageUrl,
       quantity: quantity ?? this.quantity,
       finalPrice: finalPrice ?? this.finalPrice,
       pickupLocation: pickupLocation ?? this.pickupLocation,
-      status: status ?? this.status,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
+      orderStatus: orderStatus ?? this.orderStatus,
+      stripePaymentIntentId: stripePaymentIntentId ?? this.stripePaymentIntentId,
+      stripeClientSecret: stripeClientSecret ?? this.stripeClientSecret,
       createdAt: createdAt ?? this.createdAt,
+      paymentCompletedAt: paymentCompletedAt ?? this.paymentCompletedAt,
       confirmedAt: confirmedAt ?? this.confirmedAt,
       completedAt: completedAt ?? this.completedAt,
+      lastPaymentActivity: lastPaymentActivity ?? this.lastPaymentActivity,
     );
   }
 }
