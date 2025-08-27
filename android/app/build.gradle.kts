@@ -31,6 +31,13 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+    
+    // Disable Kotlin incremental compilation to avoid cache issues
+    tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+        kotlinOptions {
+            freeCompilerArgs += listOf("-Xno-incremental")
+        }
+    }
 
     sourceSets {
         getByName("main").java.srcDirs("src/main/kotlin")

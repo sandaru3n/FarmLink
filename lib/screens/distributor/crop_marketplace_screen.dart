@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../payment/payment_screen.dart';
+import '../../services/payment_service.dart'; // Added import for PaymentService
 
 class CropMarketplaceScreen extends StatefulWidget {
   const CropMarketplaceScreen({super.key});
@@ -528,50 +530,53 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final bidAmount = double.tryParse(bidController.text);
-              if (bidAmount == null || bidAmount < minBid) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Bid must be at least ₹${minBid}'),
-                  ),
-                );
-                return;
-              }
+                     ElevatedButton(
+             onPressed: () async {
+               // Store ScaffoldMessenger reference early
+               final scaffoldMessenger = ScaffoldMessenger.of(context);
+               
+               final bidAmount = double.tryParse(bidController.text);
+               if (bidAmount == null || bidAmount < minBid) {
+                 scaffoldMessenger.showSnackBar(
+                   SnackBar(
+                     content: Text('Bid must be at least ₹${minBid}'),
+                   ),
+                 );
+                 return;
+               }
 
-              final cropProvider = Provider.of<CropProvider>(context, listen: false);
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              
-              final bid = BidModel(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                distributorId: authProvider.userProfile?.uid ?? '',
-                distributorName: authProvider.userProfile?.displayName ?? 'Distributor',
-                amount: bidAmount,
-                createdAt: DateTime.now(),
-              );
+               final cropProvider = Provider.of<CropProvider>(context, listen: false);
+               final authProvider = Provider.of<AuthProvider>(context, listen: false);
+               
+               final bid = BidModel(
+                 id: DateTime.now().millisecondsSinceEpoch.toString(),
+                 distributorId: authProvider.userProfile?.uid ?? '',
+                 distributorName: authProvider.userProfile?.displayName ?? 'Distributor',
+                 amount: bidAmount,
+                 createdAt: DateTime.now(),
+               );
 
-              final success = await cropProvider.addBid(crop.id, bid);
-              
-              if (success) {
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Bid placed successfully!'),
-                    ),
-                  );
-                }
-              } else {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(cropProvider.error ?? 'Failed to place bid'),
-                    ),
-                  );
-                }
-              }
-            },
+               final success = await cropProvider.addBid(crop.id, bid);
+               
+               if (success) {
+                 if (mounted) {
+                   Navigator.of(context).pop();
+                   scaffoldMessenger.showSnackBar(
+                     const SnackBar(
+                       content: Text('Bid placed successfully!'),
+                     ),
+                   );
+                 }
+               } else {
+                 if (mounted) {
+                   scaffoldMessenger.showSnackBar(
+                     SnackBar(
+                       content: Text(cropProvider.error ?? 'Failed to place bid'),
+                     ),
+                   );
+                 }
+               }
+             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue,
               foregroundColor: Colors.white,
@@ -619,46 +624,49 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Cancel'),
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final bidAmount = double.tryParse(bidController.text);
-              if (bidAmount == null || bidAmount <= currentBid.amount) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('New bid must be higher than ₹${currentBid.amount}'),
-                  ),
-                );
-                return;
-              }
+                     ElevatedButton(
+             onPressed: () async {
+               // Store ScaffoldMessenger reference early
+               final scaffoldMessenger = ScaffoldMessenger.of(context);
+               
+               final bidAmount = double.tryParse(bidController.text);
+               if (bidAmount == null || bidAmount <= currentBid.amount) {
+                 scaffoldMessenger.showSnackBar(
+                   SnackBar(
+                     content: Text('New bid must be higher than ₹${currentBid.amount}'),
+                   ),
+                 );
+                 return;
+               }
 
-              final cropProvider = Provider.of<CropProvider>(context, listen: false);
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              
-              final success = await cropProvider.updateBid(
-                crop.id, 
-                authProvider.userProfile?.uid ?? '', 
-                bidAmount
-              );
-              
-              if (success) {
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Bid updated successfully!'),
-                    ),
-                  );
-                }
-              } else {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(cropProvider.error ?? 'Failed to update bid'),
-                    ),
-                  );
-                }
-              }
-            },
+               final cropProvider = Provider.of<CropProvider>(context, listen: false);
+               final authProvider = Provider.of<AuthProvider>(context, listen: false);
+               
+               final success = await cropProvider.updateBid(
+                 crop.id, 
+                 authProvider.userProfile?.uid ?? '', 
+                 bidAmount
+               );
+               
+               if (success) {
+                 if (mounted) {
+                   Navigator.of(context).pop();
+                   scaffoldMessenger.showSnackBar(
+                     const SnackBar(
+                       content: Text('Bid updated successfully!'),
+                     ),
+                   );
+                 }
+               } else {
+                 if (mounted) {
+                   scaffoldMessenger.showSnackBar(
+                     SnackBar(
+                       content: Text(cropProvider.error ?? 'Failed to update bid'),
+                     ),
+                   );
+                 }
+               }
+             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.orange,
               foregroundColor: Colors.white,
@@ -714,71 +722,67 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     );
   }
 
-  void _placeOrder(CropModel crop) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Place Order'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Crop: ${crop.cropName}'),
-            Text('Quantity: ${crop.quantity} kg'),
-            Text('Final Price: ₹${crop.highestBid?.amount}'),
-            Text('Pickup Location: ${crop.pickupLocation}'),
-            const SizedBox(height: 16),
-            const Text(
-              'Are you sure you want to place an order for this crop?',
-              style: TextStyle(fontWeight: FontWeight.w600),
+  void _placeOrder(CropModel crop) async {
+    // Store ScaffoldMessenger reference early
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
+    try {
+      final cropProvider = Provider.of<CropProvider>(context, listen: false);
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      // Create order with a temporary location (will be updated after payment)
+      final order = await cropProvider.placeOrder(
+        crop.id, 
+        authProvider.userProfile?.uid ?? '',
+        'To be updated after payment' // Temporary location
+      );
+      
+      if (order != null && mounted) {
+        try {
+          // Create payment intent for the order
+          final paymentService = PaymentService();
+          final orderWithPayment = await paymentService.createOrderWithPayment(order);
+          
+          // Check if still mounted before navigating
+          if (mounted) {
+            // Navigate to payment screen
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PaymentScreen(order: orderWithPayment),
+              ),
+            );
+          }
+        } catch (e) {
+          // Check if still mounted before showing snackbar
+          if (mounted) {
+            scaffoldMessenger.showSnackBar(
+              SnackBar(
+                content: Text('Failed to create payment: $e'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else if (mounted) {
+        // Check if still mounted before showing snackbar
+        if (mounted) {
+          scaffoldMessenger.showSnackBar(
+            SnackBar(
+              content: Text(cropProvider.error ?? 'Failed to place order'),
+              backgroundColor: Colors.red,
             ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        scaffoldMessenger.showSnackBar(
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: Colors.red,
           ),
-          ElevatedButton(
-            onPressed: () async {
-              final cropProvider = Provider.of<CropProvider>(context, listen: false);
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              
-              final success = await cropProvider.placeOrder(
-                crop.id, 
-                authProvider.userProfile?.uid ?? ''
-              );
-              
-              if (success) {
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Order placed successfully!'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                }
-              } else {
-                if (mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(cropProvider.error ?? 'Failed to place order'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Place Order'),
-          ),
-        ],
-      ),
-    );
+        );
+      }
+    }
   }
 }

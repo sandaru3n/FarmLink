@@ -48,6 +48,12 @@ dependencies:
   # Image picker
   image_picker: ^1.0.7
   
+  # HTTP for payment service
+  http: ^1.2.0
+  
+  # Stripe Flutter SDK - using custom implementation instead
+  # flutter_stripe: ^9.6.0
+  
   # Localization
   flutter_localizations:
     sdk: flutter

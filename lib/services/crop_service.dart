@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/crop_model.dart';
 import 'storage_service.dart';
+import 'order_service.dart';
 
 class CropService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -81,7 +82,7 @@ class CropService {
         }
         
         if (crop.isSold) {
-          throw Exception('This crop has already been sold');
+          throw Exception('This crop has already been sold to another distributor. Please check other available crops.');
         }
         
         // Check if user has already bid
@@ -122,7 +123,7 @@ class CropService {
         }
         
         if (crop.isSold) {
-          throw Exception('This crop has already been sold');
+          throw Exception('This crop has already been sold to another distributor. Please check other available crops.');
         }
         
         // Check if user has bid
@@ -153,11 +154,11 @@ class CropService {
   }
 
   // Place an order for the highest bidder
-  Future<void> placeOrder(String cropId, String distributorId) async {
+  Future<OrderModel> placeOrder(String cropId, String distributorId, String distributorLocation) async {
     try {
       DocumentReference cropRef = _cropsCollection.doc(cropId);
       
-      await _firestore.runTransaction((transaction) async {
+      return await _firestore.runTransaction((transaction) async {
         DocumentSnapshot cropDoc = await transaction.get(cropRef);
         
         if (!cropDoc.exists) {
@@ -171,11 +172,29 @@ class CropService {
         }
         
         if (crop.isSold) {
-          throw Exception('This crop has already been sold');
+          throw Exception('This crop has already been sold to another distributor. Please check other available crops.');
         }
         
         if (crop.bids.isEmpty) {
           throw Exception('No bids were placed on this crop');
+        }
+        
+        // Additional check: verify no existing order for this crop
+        final existingOrderQuery = await _firestore.collection('orders')
+            .where('cropId', isEqualTo: cropId)
+            .where('orderStatus', whereIn: ['pending', 'confirmed', 'processing'])
+            .limit(1)
+            .get();
+            
+        if (existingOrderQuery.docs.isNotEmpty) {
+          final existingOrder = existingOrderQuery.docs.first.data() as Map<String, dynamic>;
+          final existingDistributorId = existingOrder['distributorId'] as String?;
+          
+          if (existingDistributorId == distributorId) {
+            throw Exception('You have already placed an order for this crop. Please check your orders.');
+          } else {
+            throw Exception('This crop has already been ordered by another distributor.');
+          }
         }
         
         // Check if the user is the highest bidder
@@ -183,29 +202,57 @@ class CropService {
           throw Exception('Only the highest bidder can place an order');
         }
         
-        BidModel highestBid = crop.highestBid!;
+        // Get distributor details
+        final distributorDoc = await _firestore.collection('users').doc(distributorId).get();
+        if (!distributorDoc.exists) {
+          throw Exception('Distributor not found');
+        }
         
-        // Create order
-        OrderModel order = OrderModel(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          cropId: cropId,
+        final distributorData = distributorDoc.data() as Map<String, dynamic>;
+        
+        // Get farmer details
+        final farmerDoc = await _firestore.collection('users').doc(crop.farmerId).get();
+        if (!farmerDoc.exists) {
+          throw Exception('Farmer not found');
+        }
+        
+        final farmerData = farmerDoc.data() as Map<String, dynamic>;
+
+        // Create order ID
+        final orderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+        // Create order model
+        final order = OrderModel(
+          id: orderId,
+          cropId: crop.id,
           distributorId: distributorId,
-          distributorName: highestBid.distributorName,
+          distributorName: distributorData['displayName'] ?? 'Distributor',
+          distributorEmail: distributorData['email'] ?? '',
+          distributorPhone: distributorData['phone'] ?? '',
+          distributorLocation: distributorLocation,
           farmerId: crop.farmerId,
-          farmerName: 'Farmer', // You might want to get this from user service
+          farmerName: farmerData['displayName'] ?? 'Farmer',
+          farmerEmail: farmerData['email'] ?? '',
+          farmerPhone: farmerData['phone'] ?? '',
           cropName: crop.cropName,
+          cropImageUrl: crop.imageUrl,
           quantity: crop.quantity,
-          finalPrice: highestBid.amount,
+          finalPrice: crop.highestBid!.amount,
           pickupLocation: crop.pickupLocation,
-          status: 'pending',
           createdAt: DateTime.now(),
         );
-        
-        // Update crop with order and status
+
+        // Save order to Firestore within transaction
+        transaction.set(_firestore.collection('orders').doc(orderId), order.toMap());
+
+        // Update crop status to sold within the transaction
         transaction.update(cropRef, {
           'order': order.toMap(),
           'status': 'sold',
+          'lastUpdated': Timestamp.fromDate(DateTime.now()),
         });
+
+        return order;
       });
     } catch (e) {
       throw Exception('Failed to place order: $e');
@@ -250,4 +297,70 @@ class CropService {
 
   // Check if user is logged in
   bool get isLoggedIn => _auth.currentUser != null;
+
+  // Clean up orphaned orders and ensure data consistency
+  Future<void> cleanupOrphanedOrders() async {
+    try {
+      // Get all orders
+      final ordersSnapshot = await _firestore.collection('orders').get();
+      
+      for (var orderDoc in ordersSnapshot.docs) {
+        final orderData = orderDoc.data() as Map<String, dynamic>;
+        final cropId = orderData['cropId'] as String?;
+        
+        if (cropId != null) {
+          // Check if crop exists and is marked as sold
+          final cropDoc = await _cropsCollection.doc(cropId).get();
+          
+          if (!cropDoc.exists) {
+            // Crop doesn't exist, delete the order
+            await _firestore.collection('orders').doc(orderDoc.id).delete();
+            print('Deleted orphaned order: ${orderDoc.id}');
+          } else {
+            final cropData = cropDoc.data() as Map<String, dynamic>;
+            final cropStatus = cropData['status'] as String? ?? 'active';
+            final cropOrder = cropData['order'];
+            
+            // If crop is not marked as sold but has an order, update crop status
+            if (cropStatus != 'sold' && cropOrder != null) {
+              await _cropsCollection.doc(cropId).update({
+                'status': 'sold',
+                'lastUpdated': Timestamp.fromDate(DateTime.now()),
+              });
+              print('Updated crop status to sold: $cropId');
+            }
+            
+            // If crop is marked as sold but has no order, check if order exists
+            if (cropStatus == 'sold' && cropOrder == null) {
+              // Check if order exists in orders collection
+              final orderExists = await _firestore.collection('orders')
+                  .where('cropId', isEqualTo: cropId)
+                  .limit(1)
+                  .get();
+                  
+              if (orderExists.docs.isNotEmpty) {
+                // Update crop with order data
+                final orderData = orderExists.docs.first.data();
+                await _cropsCollection.doc(cropId).update({
+                  'order': orderData,
+                  'lastUpdated': Timestamp.fromDate(DateTime.now()),
+                });
+                print('Updated crop with order data: $cropId');
+              } else {
+                // No order exists, revert crop status
+                await _cropsCollection.doc(cropId).update({
+                  'status': 'active',
+                  'order': null,
+                  'lastUpdated': Timestamp.fromDate(DateTime.now()),
+                });
+                print('Reverted crop status to active: $cropId');
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      print('Error during cleanup: $e');
+    }
+  }
 }
