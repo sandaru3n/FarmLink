@@ -135,8 +135,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                 label: 'Cart',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.favorite),
-                label: 'Favorites',
+                icon: const Icon(Icons.receipt_long),
+                label: 'Orders',
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.person),
@@ -156,7 +156,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
       case 1:
         return const CartScreen();
       case 2:
-        return _buildFavoritesTab();
+        return _buildOrdersTab();
       case 3:
         return _buildProfileTab();
       default:
@@ -257,9 +257,9 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
 
 
 
-  Widget _buildFavoritesTab() {
+  Widget _buildOrdersTab() {
     return const Center(
-      child: Text('Favorites - Coming Soon'),
+      child: Text('Orders - Coming Soon'),
     );
   }
 
