@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'package:flutter_stripe/flutter_stripe.dart';
 import '../models/crop_model.dart';
+import '../models/consumer_order_model.dart';
 
 class PaymentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -13,6 +14,7 @@ class PaymentService {
   
   // Collection references
   CollectionReference get _ordersCollection => _firestore.collection('orders');
+  CollectionReference get _consumerOrdersCollection => _firestore.collection('consumer_orders');
 
   // Create a payment intent for an order
   Future<Map<String, dynamic>> createPaymentIntent(OrderModel order) async {
@@ -226,6 +228,72 @@ class PaymentService {
       });
     } catch (e) {
       throw Exception('Failed to update payment activity: $e');
+    }
+  }
+
+  // Create a payment intent for a consumer order
+  Future<Map<String, dynamic>> createPaymentIntentForConsumerOrder(ConsumerOrderModel order) async {
+    try {
+      final url = Uri.parse('https://api.stripe.com/v1/payment_intents');
+      
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $_stripeSecretKey',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: {
+          'amount': (order.totalAmount * 100).round().toString(), // Convert to cents
+          'currency': 'inr',
+          'metadata[order_id]': order.id,
+          'metadata[consumer_id]': order.consumerId,
+          'metadata[order_type]': 'consumer_order',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return {
+          'success': true,
+          'paymentIntentId': data['id'],
+          'clientSecret': data['client_secret'],
+        };
+      } else {
+        throw Exception('Failed to create payment intent: ${response.body}');
+      }
+    } catch (e) {
+      throw Exception('Payment intent creation failed: $e');
+    }
+  }
+
+  // Process simple payment for consumer order
+  Future<bool> processSimplePaymentForConsumerOrder(ConsumerOrderModel order, {String? consumerLocation}) async {
+    try {
+      // Create payment intent
+      final paymentResult = await createPaymentIntentForConsumerOrder(order);
+      
+      if (paymentResult['success']) {
+        // Simulate payment processing
+        await Future.delayed(const Duration(seconds: 2));
+        
+        // Update order status with payment confirmation
+        await _consumerOrdersCollection.doc(order.id).update({
+          'paymentStatus': 'completed',
+          'paymentCompletedAt': Timestamp.fromDate(DateTime.now()),
+          'orderStatus': 'confirmed',
+          'confirmedAt': Timestamp.fromDate(DateTime.now()),
+          'stripePaymentIntentId': paymentResult['paymentIntentId'],
+          'stripeClientSecret': paymentResult['clientSecret'],
+          'lastPaymentActivity': Timestamp.fromDate(DateTime.now()),
+          if (consumerLocation != null) 'consumerLocation': consumerLocation,
+        });
+        
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      throw Exception('Payment processing failed: $e');
     }
   }
 

@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../../models/cart_item_model.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/consumer_order_service.dart';
+import '../../models/consumer_order_model.dart';
+import 'consumer_payment_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -104,6 +107,79 @@ class _CartScreenState extends State<CartScreen> {
       
       if (authProvider.userProfile != null) {
         await cartProvider.clearCart(authProvider.userProfile!.uid);
+      }
+    }
+  }
+
+  Future<void> _proceedToCheckout() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final cartProvider = Provider.of<CartProvider>(context, listen: false);
+    
+    if (authProvider.userProfile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please log in to proceed with checkout'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (cartProvider.cartItems.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your cart is empty'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      // Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Create consumer order
+      final consumerOrderService = ConsumerOrderService();
+      final order = await consumerOrderService.createConsumerOrder(
+        consumerId: authProvider.userProfile!.uid,
+        cartItems: cartProvider.cartItems,
+        consumerLocation: 'To be updated during payment', // Will be updated in payment screen
+      );
+
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Navigate to payment screen
+      if (mounted) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => ConsumerPaymentScreen(order: order),
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create order: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -378,14 +454,7 @@ class _CartScreenState extends State<CartScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Implement checkout functionality
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Checkout functionality coming soon!'),
-                            ),
-                          );
-                        },
+                        onPressed: _proceedToCheckout,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.orange,
                           foregroundColor: Colors.white,
