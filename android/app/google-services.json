@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "643460073941",
+    "project_id": "farmlink-sliit",
+    "storage_bucket": "farmlink-sliit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:643460073941:android:b449ddcd9e9f3527bed55c",
+        "android_client_info": {
+          "package_name": "com.sliit.csseproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgJf_xKj6dRocyJnuGjsvN5tEy0uTGnX4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
