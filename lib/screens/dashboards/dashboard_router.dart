@@ -57,7 +57,7 @@ class _DashboardRouterState extends State<DashboardRouter> {
               case UserRole.foodDistributor:
                 return const FoodDistributorDashboard();
               case UserRole.transporter:
-                return const TransporterDashboard();
+                return const TransporterDashboard(initialTabIndex: 0);
               default:
                 // Fallback to a generic dashboard or error screen
                 return Scaffold(
@@ -113,7 +113,7 @@ extension DashboardExtension on UserRole {
       case UserRole.foodDistributor:
         return const FoodDistributorDashboard();
       case UserRole.transporter:
-        return const TransporterDashboard();
+        return const TransporterDashboard(initialTabIndex: 0);
     }
   }
 }
