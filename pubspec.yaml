@@ -40,9 +40,19 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_auth: ^5.3.3
   cloud_firestore: ^5.5.0
+  firebase_storage: ^12.2.3
   
   # State management
   provider: ^6.1.2
+  
+  # Image picker
+  image_picker: ^1.0.7
+  
+  # HTTP for payment service
+  http: ^1.2.0
+  
+  # Stripe Flutter SDK - using custom implementation instead
+  # flutter_stripe: ^9.6.0
   
   # Localization
   flutter_localizations:

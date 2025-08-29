@@ -1,0 +1,115 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "crops",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "farmerId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "crops",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "delivery_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "delivery_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "transporterId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+               {
+             "collectionGroup": "delivery_orders",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "status",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
+           },
+           {
+             "collectionGroup": "transport_orders",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
+           },
+           {
+             "collectionGroup": "transport_orders",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "status",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
+           }
+         ],
+         "fieldOverrides": []
+       }

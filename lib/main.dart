@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+// import 'package:flutter_stripe/flutter_stripe.dart';
 import 'providers/auth_provider.dart';
+import 'providers/crop_provider.dart';
+import 'providers/product_provider.dart';
+import 'providers/cart_provider.dart';
+import 'providers/delivery_order_provider.dart';
+import 'providers/transport_order_provider.dart';
 import 'utils/app_localizations.dart';
 import 'splash_screen.dart';
 
@@ -11,6 +17,9 @@ void main() async {
   
   // Initialize Firebase
   await Firebase.initializeApp();
+  
+  // Initialize Stripe - temporarily commented out
+  // Stripe.publishableKey = 'pk_test_51R0iJpQOtXlNP6ZKo0NwWCEkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2EkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2eU7WrWy081Skjav8SlzvE9c00G7vYBNQN';
   
   runApp(const MyApp());
 }
@@ -23,6 +32,11 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => CropProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+                      ChangeNotifierProvider(create: (_) => DeliveryOrderProvider()),
+              ChangeNotifierProvider(create: (_) => TransportOrderProvider()),
       ],
       child: MaterialApp(
         title: 'FarmLink',

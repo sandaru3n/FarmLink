@@ -53,7 +53,7 @@ class _MainDashboardState extends State<MainDashboard> {
           case UserRole.foodDistributor:
             return const FoodDistributorDashboard();
           case UserRole.transporter:
-            return const TransporterDashboard();
+            return const TransporterDashboard(initialTabIndex: 0);
           default:
             // Fallback to generic dashboard
             return Scaffold(
