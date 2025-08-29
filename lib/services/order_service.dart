@@ -2,11 +2,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/crop_model.dart';
 import 'payment_service.dart';
+import 'delivery_order_service.dart';
 
 class OrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final PaymentService _paymentService = PaymentService();
+  final DeliveryOrderService _deliveryOrderService = DeliveryOrderService();
 
   // Collection references
   CollectionReference get _ordersCollection => _firestore.collection('orders');
@@ -113,6 +115,17 @@ class OrderService {
         if (status == 'confirmed') 'confirmedAt': Timestamp.fromDate(DateTime.now()),
         if (status == 'completed') 'completedAt': Timestamp.fromDate(DateTime.now()),
       });
+      
+      // If order is completed, create delivery order
+      if (status == 'completed') {
+        print('Order status updated to completed, creating delivery order for: $orderId');
+        final order = await getOrderById(orderId);
+        if (order != null) {
+          await _deliveryOrderService.createDeliveryOrderFromCompletedOrder(order);
+        } else {
+          print('Order not found for ID: $orderId');
+        }
+      }
     } catch (e) {
       throw Exception('Failed to update order status: $e');
     }
