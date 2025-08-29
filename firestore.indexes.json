@@ -31,7 +31,85 @@
           "order": "ASCENDING"
         }
       ]
-    }
-  ],
-  "fieldOverrides": []
-}
+    },
+    {
+      "collectionGroup": "delivery_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "delivery_orders",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "transporterId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+               {
+             "collectionGroup": "delivery_orders",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "status",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
+           },
+           {
+             "collectionGroup": "transport_orders",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
+           },
+           {
+             "collectionGroup": "transport_orders",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "status",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
+           }
+         ],
+         "fieldOverrides": []
+       }

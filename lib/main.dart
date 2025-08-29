@@ -7,6 +7,8 @@ import 'providers/auth_provider.dart';
 import 'providers/crop_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/delivery_order_provider.dart';
+import 'providers/transport_order_provider.dart';
 import 'utils/app_localizations.dart';
 import 'splash_screen.dart';
 
@@ -33,6 +35,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CropProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+                      ChangeNotifierProvider(create: (_) => DeliveryOrderProvider()),
+              ChangeNotifierProvider(create: (_) => TransportOrderProvider()),
       ],
       child: MaterialApp(
         title: 'FarmLink',
