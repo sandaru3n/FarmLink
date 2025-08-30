@@ -156,14 +156,43 @@ class _CropListingScreenState extends State<CropListingScreen>
               height: 200,
               width: double.infinity,
               fit: BoxFit.cover,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Container(
+                  height: 200,
+                  color: Colors.grey.shade200,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      value: loadingProgress.expectedTotalBytes != null
+                          ? loadingProgress.cumulativeBytesLoaded / 
+                            loadingProgress.expectedTotalBytes!
+                          : null,
+                      color: Colors.green,
+                    ),
+                  ),
+                );
+              },
               errorBuilder: (context, error, stackTrace) {
                 return Container(
                   height: 200,
                   color: Colors.grey.shade300,
-                  child: const Icon(
-                    Icons.image_not_supported,
-                    size: 64,
-                    color: Colors.grey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.image_not_supported,
+                        size: 48,
+                        color: Colors.grey,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Image not available',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -282,18 +311,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                       ),
                     ),
                     const SizedBox(width: 12),
-                    if (isExpired && highestBid != null)
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _showOrderDialog(crop, highestBid!),
-                          icon: const Icon(Icons.shopping_cart),
-                          label: const Text('Place Order'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
-                      ),
+                    // Place order button removed - only distributors can place orders
                   ],
                 ),
               ],
@@ -408,50 +426,7 @@ class _CropListingScreenState extends State<CropListingScreen>
     );
   }
 
-  void _showOrderDialog(CropModel crop, BidModel highestBid) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Place Order'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Crop: ${crop.cropName}'),
-            Text('Quantity: ${crop.quantity} kg'),
-            Text('Winning Bid: ₹${highestBid.amount}'),
-            Text('Distributor: ${highestBid.distributorName}'),
-            const SizedBox(height: 16),
-            const Text(
-              'Are you sure you want to place an order with the highest bidder?',
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Here you would implement the order placement logic
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Order placed successfully!'),
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Place Order'),
-          ),
-        ],
-      ),
-    );
-  }
+
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
