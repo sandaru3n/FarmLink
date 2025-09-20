@@ -10,6 +10,7 @@ import 'providers/cart_provider.dart';
 import 'providers/delivery_order_provider.dart';
 import 'providers/transport_order_provider.dart';
 import 'utils/app_localizations.dart';
+import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
 
 void main() async {
@@ -20,6 +21,10 @@ void main() async {
   
   // Initialize Stripe - temporarily commented out
   // Stripe.publishableKey = 'pk_test_51R0iJpQOtXlNP6ZKo0NwWCEkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2EkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2eU7WrWy081Skjav8SlzvE9c00G7vYBNQN';
+  
+  // Start crop status service
+  final cropStatusService = CropStatusService();
+  cropStatusService.startStatusUpdateService();
   
   runApp(const MyApp());
 }
