@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/crop_model.dart';
+import '../../models/rating_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import '../../services/delivery_order_service.dart';
+import '../../services/transport_order_service.dart';
+import '../../services/rating_service.dart';
+import 'transporter_details_screen.dart';
+import 'rating_dialog.dart';
 
 class DistributorOrdersScreen extends StatefulWidget {
   const DistributorOrdersScreen({super.key});
@@ -13,6 +19,9 @@ class DistributorOrdersScreen extends StatefulWidget {
 
 class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
   final OrderService _orderService = OrderService();
+  final DeliveryOrderService _deliveryOrderService = DeliveryOrderService();
+  final TransportOrderService _transportOrderService = TransportOrderService();
+  final RatingService _ratingService = RatingService();
   String _selectedStatus = 'All';
 
   final List<String> _statusFilters = [
@@ -336,6 +345,25 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                     ? order.distributorLocation 
                     : 'Not specified'),
                 _buildDetailRow('Payment Status', order.paymentStatus.toUpperCase()),
+                
+                // Transporter information if available
+                FutureBuilder<Map<String, dynamic>?>(
+                  future: _getDeliveryOrderInfo(order.id),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data != null) {
+                      final deliveryInfo = snapshot.data!;
+                      if (deliveryInfo['transporterId'] != null && deliveryInfo['transporterName'] != null) {
+                        return Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            _buildTransporterInfoWithLiveUpdates(deliveryInfo),
+                          ],
+                        );
+                      }
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
                 
                 // Status-specific dates
                 if (order.confirmedAt != null)
@@ -681,6 +709,339 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
             child: const Text('Mark Complete'),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<Map<String, dynamic>?> _getDeliveryOrderInfo(String orderId) async {
+    try {
+      final deliveryOrderId = 'delivery_$orderId';
+      final deliveryOrder = await _deliveryOrderService.getDeliveryOrderById(deliveryOrderId);
+      if (deliveryOrder != null) {
+        return {
+          'transporterId': deliveryOrder.transporterId,
+          'transporterName': deliveryOrder.transporterName,
+          'deliveryOrderId': deliveryOrder.id,
+          'status': deliveryOrder.status,
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Error getting delivery order info: $e');
+      return null;
+    }
+  }
+
+  Widget _buildTransporterInfoWithLiveUpdates(Map<String, dynamic> deliveryInfo) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.local_shipping, color: Colors.blue, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Assigned Transporter',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            deliveryInfo['transporterName'] ?? 'Unknown',
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          
+          // Live delivery status tracking
+          StreamBuilder<Map<String, dynamic>?>(
+            stream: _getLiveDeliveryStatus(deliveryInfo['deliveryOrderId']),
+            builder: (context, statusSnapshot) {
+              if (statusSnapshot.hasData && statusSnapshot.data != null) {
+                final statusData = statusSnapshot.data!;
+                return _buildDeliveryStatusCard(statusData);
+              }
+              
+              // Fallback to basic status
+              return _buildBasicStatusCard(deliveryInfo);
+            },
+          ),
+          
+          const SizedBox(height: 8),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _viewTransporterDetails(deliveryInfo),
+              icon: const Icon(Icons.person, size: 16),
+              label: const Text('View Transporter Details'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Stream<Map<String, dynamic>?> _getLiveDeliveryStatus(String deliveryOrderId) {
+    return _deliveryOrderService.listenToDeliveryOrder(deliveryOrderId).map((deliveryOrder) {
+      if (deliveryOrder != null) {
+        return {
+          'deliveryOrderId': deliveryOrderId,
+          'status': deliveryOrder.status,
+          'transporterId': deliveryOrder.transporterId,
+          'transporterName': deliveryOrder.transporterName,
+          'acceptedAt': deliveryOrder.acceptedAt,
+          'inTransitAt': deliveryOrder.inTransitAt,
+          'deliveredAt': deliveryOrder.deliveredAt,
+          'estimatedDeliveryTime': deliveryOrder.estimatedDeliveryTime,
+          'actualDeliveryTime': deliveryOrder.actualDeliveryTime,
+        };
+      }
+      return null;
+    });
+  }
+
+  Widget _buildDeliveryStatusCard(Map<String, dynamic> statusData) {
+    final status = statusData['status'] ?? 'unknown';
+    final statusColor = _getStatusColor(status);
+    final statusIcon = _getStatusIcon(status);
+    final statusText = _getStatusText(status);
+    
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(statusIcon, color: statusColor, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Delivery Status: $statusText',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: statusColor,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          if (statusData['acceptedAt'] != null)
+            Text(
+              'Accepted: ${_formatDateTime(statusData['acceptedAt'])}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          if (statusData['inTransitAt'] != null)
+            Text(
+              'In Transit: ${_formatDateTime(statusData['inTransitAt'])}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          if (statusData['deliveredAt'] != null)
+            Text(
+              'Delivered: ${_formatDateTime(statusData['deliveredAt'])}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          if (statusData['estimatedDeliveryTime'] != null)
+            Text(
+              'ETA: ${statusData['estimatedDeliveryTime']}',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          
+          // Rating button for delivered orders
+          if (status == 'delivered') ...[
+            const SizedBox(height: 8),
+            _buildRatingButton(statusData),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBasicStatusCard(Map<String, dynamic> deliveryInfo) {
+    return Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info, color: Colors.grey, size: 16),
+          const SizedBox(width: 6),
+          Text(
+            'Status: ${deliveryInfo['status']?.toUpperCase() ?? 'UNKNOWN'}',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Colors.orange;
+      case 'accepted':
+        return Colors.blue;
+      case 'in_transit':
+        return Colors.purple;
+      case 'delivered':
+        return Colors.green;
+      case 'rejected':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return Icons.schedule;
+      case 'accepted':
+        return Icons.check_circle;
+      case 'in_transit':
+        return Icons.local_shipping;
+      case 'delivered':
+        return Icons.done_all;
+      case 'rejected':
+        return Icons.cancel;
+      default:
+        return Icons.help;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'PENDING';
+      case 'accepted':
+        return 'ACCEPTED';
+      case 'in_transit':
+        return 'IN TRANSIT';
+      case 'delivered':
+        return 'DELIVERED';
+      case 'rejected':
+        return 'REJECTED';
+      default:
+        return 'UNKNOWN';
+    }
+  }
+
+  Widget _buildRatingButton(Map<String, dynamic> statusData) {
+    return FutureBuilder<bool>(
+      future: _ratingService.hasBeenRated(statusData['deliveryOrderId']),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          );
+        }
+
+        final hasBeenRated = snapshot.data ?? false;
+        
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _showRatingDialog(statusData, hasBeenRated),
+            icon: Icon(hasBeenRated ? Icons.edit : Icons.star, size: 16),
+            label: Text(hasBeenRated ? 'Update Rating' : 'Rate Transporter'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hasBeenRated ? Colors.orange : Colors.amber,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showRatingDialog(Map<String, dynamic> statusData, bool hasBeenRated) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final distributorId = authProvider.userProfile?.uid ?? '';
+    final distributorName = authProvider.userProfile?.displayName ?? 'Distributor';
+
+    // Get existing rating if available
+    RatingModel? existingRating;
+    if (hasBeenRated) {
+      existingRating = await _ratingService.getRatingByDeliveryOrder(statusData['deliveryOrderId']);
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => RatingDialog(
+        deliveryOrderId: statusData['deliveryOrderId'],
+        transporterId: statusData['transporterId'],
+        transporterName: statusData['transporterName'],
+        distributorId: distributorId,
+        distributorName: distributorName,
+        existingRating: existingRating,
+      ),
+    );
+
+    if (result == true) {
+      // Refresh the UI to show updated rating status
+      setState(() {});
+    }
+  }
+
+  void _viewTransporterDetails(Map<String, dynamic> deliveryInfo) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => TransporterDetailsScreen(
+          transporterId: deliveryInfo['transporterId'],
+          transporterName: deliveryInfo['transporterName'],
+          deliveryOrderId: deliveryInfo['deliveryOrderId'],
+        ),
       ),
     );
   }
