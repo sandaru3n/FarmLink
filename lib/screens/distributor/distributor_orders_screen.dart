@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/crop_model.dart';
+import '../../models/rating_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
 import '../../services/delivery_order_service.dart';
 import '../../services/transport_order_service.dart';
+import '../../services/rating_service.dart';
 import 'transporter_details_screen.dart';
+import 'rating_dialog.dart';
 
 class DistributorOrdersScreen extends StatefulWidget {
   const DistributorOrdersScreen({super.key});
@@ -18,6 +21,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
   final OrderService _orderService = OrderService();
   final DeliveryOrderService _deliveryOrderService = DeliveryOrderService();
   final TransportOrderService _transportOrderService = TransportOrderService();
+  final RatingService _ratingService = RatingService();
   String _selectedStatus = 'All';
 
   final List<String> _statusFilters = [
@@ -802,6 +806,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
     return _deliveryOrderService.listenToDeliveryOrder(deliveryOrderId).map((deliveryOrder) {
       if (deliveryOrder != null) {
         return {
+          'deliveryOrderId': deliveryOrderId,
           'status': deliveryOrder.status,
           'transporterId': deliveryOrder.transporterId,
           'transporterName': deliveryOrder.transporterName,
@@ -879,6 +884,12 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                 color: Colors.grey[600],
               ),
             ),
+          
+          // Rating button for delivered orders
+          if (status == 'delivered') ...[
+            const SizedBox(height: 8),
+            _buildRatingButton(statusData),
+          ],
         ],
       ),
     );
@@ -957,6 +968,69 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
         return 'REJECTED';
       default:
         return 'UNKNOWN';
+    }
+  }
+
+  Widget _buildRatingButton(Map<String, dynamic> statusData) {
+    return FutureBuilder<bool>(
+      future: _ratingService.hasBeenRated(statusData['deliveryOrderId']),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          );
+        }
+
+        final hasBeenRated = snapshot.data ?? false;
+        
+        return SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () => _showRatingDialog(statusData, hasBeenRated),
+            icon: Icon(hasBeenRated ? Icons.edit : Icons.star, size: 16),
+            label: Text(hasBeenRated ? 'Update Rating' : 'Rate Transporter'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: hasBeenRated ? Colors.orange : Colors.amber,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showRatingDialog(Map<String, dynamic> statusData, bool hasBeenRated) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final distributorId = authProvider.userProfile?.uid ?? '';
+    final distributorName = authProvider.userProfile?.displayName ?? 'Distributor';
+
+    // Get existing rating if available
+    RatingModel? existingRating;
+    if (hasBeenRated) {
+      existingRating = await _ratingService.getRatingByDeliveryOrder(statusData['deliveryOrderId']);
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => RatingDialog(
+        deliveryOrderId: statusData['deliveryOrderId'],
+        transporterId: statusData['transporterId'],
+        transporterName: statusData['transporterName'],
+        distributorId: distributorId,
+        distributorName: distributorName,
+        existingRating: existingRating,
+      ),
+    );
+
+    if (result == true) {
+      // Refresh the UI to show updated rating status
+      setState(() {});
     }
   }
 

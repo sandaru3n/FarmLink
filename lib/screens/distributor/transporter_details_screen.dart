@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/user_service.dart';
 import '../../services/delivery_order_service.dart';
+import '../../services/rating_service.dart';
+import '../../models/rating_model.dart';
 
 class TransporterDetailsScreen extends StatefulWidget {
   final String transporterId;
@@ -23,6 +25,7 @@ class TransporterDetailsScreen extends StatefulWidget {
 class _TransporterDetailsScreenState extends State<TransporterDetailsScreen> {
   final UserService _userService = UserService();
   final DeliveryOrderService _deliveryOrderService = DeliveryOrderService();
+  final RatingService _ratingService = RatingService();
   Map<String, dynamic>? _transporterDetails;
   bool _isLoading = true;
   String? _error;
@@ -139,6 +142,8 @@ class _TransporterDetailsScreenState extends State<TransporterDetailsScreen> {
           _buildDeliveryInfo(),
           const SizedBox(height: 24),
           _buildLiveDeliveryStatus(),
+          const SizedBox(height: 24),
+          _buildRatingSection(),
         ],
       ),
     );
@@ -623,6 +628,277 @@ class _TransporterDetailsScreenState extends State<TransporterDetailsScreen> {
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  Widget _buildRatingSection() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Transporter Ratings',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Overall rating stats
+            StreamBuilder<Map<String, dynamic>>(
+              stream: _ratingService.getTransporterRatingStats(widget.transporterId).asStream(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  final stats = snapshot.data!;
+                  return _buildOverallRating(stats);
+                }
+                return const Center(child: CircularProgressIndicator());
+              },
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Recent ratings
+            _buildRecentRatings(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOverallRating(Map<String, dynamic> stats) {
+    final averageRating = stats['averageRating'] ?? 0.0;
+    final totalRatings = stats['totalRatings'] ?? 0;
+    final ratingDistribution = stats['ratingDistribution'] ?? {};
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.amber.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.amber.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(Icons.star, color: Colors.amber, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                averageRating.toStringAsFixed(1),
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '/ 5.0',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${totalRatings} rating${totalRatings != 1 ? 's' : ''}',
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+            ),
+          ),
+          if (totalRatings > 0) ...[
+            const SizedBox(height: 12),
+            _buildRatingDistribution(ratingDistribution),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRatingDistribution(Map<String, dynamic> distribution) {
+    return Column(
+      children: List.generate(5, (index) {
+        final starCount = 5 - index;
+        final count = distribution[starCount.toString()] ?? 0;
+        final total = distribution.values.fold(0, (sum, val) => sum + (val as int));
+        final percentage = total > 0 ? (count / total) * 100 : 0.0;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 60,
+                child: Text(
+                  '$starCount star${starCount != 1 ? 's' : ''}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: LinearProgressIndicator(
+                  value: percentage / 100,
+                  backgroundColor: Colors.grey[300],
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                count.toString(),
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildRecentRatings() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recent Ratings',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        StreamBuilder<List<RatingModel>>(
+          stream: _ratingService.getRecentTransporterRatings(widget.transporterId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'No ratings yet',
+                  style: TextStyle(color: Colors.grey),
+                ),
+              );
+            }
+
+            final ratings = snapshot.data!;
+            return Column(
+              children: ratings.take(3).map((rating) => _buildRatingItem(rating)).toList(),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRatingItem(RatingModel rating) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              _buildStarDisplay(rating.rating),
+              const SizedBox(width: 8),
+              Text(
+                rating.ratingText,
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                _formatDate(rating.createdAt),
+                style: TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: 10,
+                ),
+              ),
+            ],
+          ),
+          if (rating.comment != null && rating.comment!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              rating.comment!,
+              style: const TextStyle(fontSize: 12),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (rating.categories != null && rating.categories!.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Wrap(
+              spacing: 4,
+              children: rating.categories!.take(3).map((category) => 
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    category,
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Colors.blue,
+                    ),
+                  ),
+                ),
+              ).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStarDisplay(double rating) {
+    return Row(
+      children: List.generate(5, (index) {
+        final starIndex = index + 1;
+        if (starIndex <= rating.floor()) {
+          return const Icon(Icons.star, color: Colors.amber, size: 14);
+        } else if (starIndex - 0.5 <= rating) {
+          return const Icon(Icons.star_half, color: Colors.amber, size: 14);
+        } else {
+          return const Icon(Icons.star_border, color: Colors.amber, size: 14);
+        }
+      }),
+    );
+  }
+
+  String _formatDate(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inDays > 7) {
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else {
+      return 'Just now';
+    }
   }
 
   void _showSnackBar(String message) {
