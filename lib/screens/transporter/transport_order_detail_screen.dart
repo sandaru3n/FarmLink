@@ -32,7 +32,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _buildTransportDetailsSection(),
             const SizedBox(height: 24),
-            _buildActionButtons(),
+            _buildActionButtons(context),
           ],
         ),
       ),
@@ -317,7 +317,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(BuildContext context) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -338,7 +338,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _markInTransit(),
+                  onPressed: () => _markInTransit(context),
                   icon: const Icon(Icons.directions_car),
                   label: const Text('Start Delivery'),
                   style: ElevatedButton.styleFrom(
@@ -355,7 +355,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => _showCancelDialog(),
+                  onPressed: () => _showCancelDialog(context),
                   icon: const Icon(Icons.cancel),
                   label: const Text('Cancel Transport'),
                   style: OutlinedButton.styleFrom(
@@ -372,7 +372,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => _markDelivered(),
+                  onPressed: () => _markDelivered(context),
                   icon: const Icon(Icons.check_circle),
                   label: const Text('Mark as Delivered'),
                   style: ElevatedButton.styleFrom(
@@ -480,15 +480,107 @@ class TransportOrderDetailScreen extends StatelessWidget {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
-  void _markInTransit() {
-    // This will be implemented when we have the context
+  void _markInTransit(BuildContext context) async {
+    final provider = Provider.of<TransportOrderProvider>(context, listen: false);
+    final success = await provider.markTransportInTransit(transportOrder.id);
+    if (!context.mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Transport marked as in transit'),
+          backgroundColor: Colors.blue,
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update status: ${provider.error ?? 'Unknown error'}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _markDelivered() {
-    // This will be implemented when we have the context
+  void _markDelivered(BuildContext context) async {
+    final provider = Provider.of<TransportOrderProvider>(context, listen: false);
+    final success = await provider.markTransportDelivered(transportOrder.id);
+    if (!context.mounted) return;
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Transport marked as delivered'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update status: ${provider.error ?? 'Unknown error'}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
-  void _showCancelDialog() {
-    // This will be implemented when we have the context
+  void _showCancelDialog(BuildContext context) {
+    final reasonController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Transport'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Are you sure you want to cancel this transport?'),
+            const SizedBox(height: 12),
+            TextField(
+              controller: reasonController,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: 'Reason (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('No'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              final provider = Provider.of<TransportOrderProvider>(context, listen: false);
+              final success = await provider.cancelTransportOrder(
+                transportOrder.id,
+                reasonController.text.trim().isEmpty ? 'No reason provided' : reasonController.text.trim(),
+              );
+              if (!context.mounted) return;
+              if (success) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Transport cancelled'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+                Navigator.of(context).pop();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to cancel: ${provider.error ?? 'Unknown error'}'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
+            child: const Text('Cancel Transport'),
+          ),
+        ],
+      ),
+    );
   }
 } 
