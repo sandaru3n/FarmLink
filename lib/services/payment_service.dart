@@ -96,6 +96,9 @@ class PaymentService {
           'paymentStatus': paymentStatus,
           'paymentCompletedAt': paymentCompletedAt != null ? Timestamp.fromDate(paymentCompletedAt) : null,
           'lastPaymentActivity': Timestamp.fromDate(DateTime.now()),
+          // If payment is completed, also update order status to trigger delivery order creation
+          if (paymentStatus == 'completed') 'orderStatus': 'completed',
+          if (paymentStatus == 'completed') 'completedAt': Timestamp.fromDate(DateTime.now()),
         });
 
         return status == 'succeeded';
@@ -185,10 +188,10 @@ class PaymentService {
       final isCompleted = await updatePaymentStatus(orderId, paymentIntentId);
       
       if (isCompleted) {
-        // Update order status to confirmed
+        // Update order status to completed (this will trigger delivery order creation)
         await _ordersCollection.doc(orderId).update({
-          'orderStatus': 'confirmed',
-          'confirmedAt': Timestamp.fromDate(DateTime.now()),
+          'orderStatus': 'completed',
+          'completedAt': Timestamp.fromDate(DateTime.now()),
         });
       }
       
@@ -385,8 +388,8 @@ class PaymentService {
       await _ordersCollection.doc(orderId).update({
         'paymentStatus': 'completed',
         'paymentCompletedAt': Timestamp.fromDate(DateTime.now()),
-        'orderStatus': 'confirmed',
-        'confirmedAt': Timestamp.fromDate(DateTime.now()),
+        'orderStatus': 'completed',
+        'completedAt': Timestamp.fromDate(DateTime.now()),
         'lastPaymentActivity': Timestamp.fromDate(DateTime.now()),
       });
       
@@ -414,8 +417,8 @@ class PaymentService {
         final updateData = {
           'order.paymentStatus': 'completed',
           'order.paymentCompletedAt': Timestamp.fromDate(DateTime.now()),
-          'order.orderStatus': 'confirmed',
-          'order.confirmedAt': Timestamp.fromDate(DateTime.now()),
+          'order.orderStatus': 'completed',
+          'order.completedAt': Timestamp.fromDate(DateTime.now()),
           'order.lastPaymentActivity': Timestamp.fromDate(DateTime.now()),
         };
         

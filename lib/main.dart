@@ -7,7 +7,10 @@ import 'providers/auth_provider.dart';
 import 'providers/crop_provider.dart';
 import 'providers/product_provider.dart';
 import 'providers/cart_provider.dart';
+import 'providers/delivery_order_provider.dart';
+import 'providers/transport_order_provider.dart';
 import 'utils/app_localizations.dart';
+import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
 
 void main() async {
@@ -18,6 +21,10 @@ void main() async {
   
   // Initialize Stripe - temporarily commented out
   // Stripe.publishableKey = 'pk_test_51R0iJpQOtXlNP6ZKo0NwWCEkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2EkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2eU7WrWy081Skjav8SlzvE9c00G7vYBNQN';
+  
+  // Start crop status service
+  final cropStatusService = CropStatusService();
+  cropStatusService.startStatusUpdateService();
   
   runApp(const MyApp());
 }
@@ -33,6 +40,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CropProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+                      ChangeNotifierProvider(create: (_) => DeliveryOrderProvider()),
+              ChangeNotifierProvider(create: (_) => TransportOrderProvider()),
       ],
       child: MaterialApp(
         title: 'FarmLink',

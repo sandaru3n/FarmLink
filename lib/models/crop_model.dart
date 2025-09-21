@@ -10,7 +10,7 @@ class CropModel {
   final DateTime startDate;
   final DateTime endDate;
   final String pickupLocation;
-  final String status; // 'active', 'expired', 'sold'
+  final String status; // 'pending', 'active', 'expired', 'sold'
   final DateTime createdAt;
   final List<BidModel> bids;
   final OrderModel? order; // New field for order
@@ -25,7 +25,7 @@ class CropModel {
     required this.startDate,
     required this.endDate,
     required this.pickupLocation,
-    this.status = 'active',
+    this.status = 'pending', // Default to pending
     required this.createdAt,
     this.bids = const [],
     this.order,
@@ -44,7 +44,7 @@ class CropModel {
       startDate: (data['startDate'] as Timestamp).toDate(),
       endDate: (data['endDate'] as Timestamp).toDate(),
       pickupLocation: data['pickupLocation'] ?? '',
-      status: data['status'] ?? 'active',
+      status: data['status'] ?? 'pending',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       bids: (data['bids'] as List<dynamic>? ?? [])
           .map((bid) => BidModel.fromMap(bid))
@@ -104,11 +104,19 @@ class CropModel {
 
   bool get isExpired => DateTime.now().isAfter(endDate);
   bool get isActive => !isExpired && status == 'active';
+  bool get isPending => status == 'pending';
   bool get isSold => order != null;
+  bool get canStartBidding => DateTime.now().isAfter(startDate) && status == 'pending';
+  bool get shouldBeActive => DateTime.now().isAfter(startDate) && !isExpired && status != 'sold';
   
   Duration get timeLeft {
     if (isExpired) return Duration.zero;
     return endDate.difference(DateTime.now());
+  }
+
+  Duration get timeUntilStart {
+    if (DateTime.now().isAfter(startDate)) return Duration.zero;
+    return startDate.difference(DateTime.now());
   }
 
   BidModel? get highestBid {

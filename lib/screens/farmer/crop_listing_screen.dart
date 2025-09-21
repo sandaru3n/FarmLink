@@ -4,6 +4,7 @@ import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
 import 'add_crop_screen.dart';
+import 'edit_crop_screen.dart';
 
 class CropListingScreen extends StatefulWidget {
   const CropListingScreen({super.key});
@@ -19,7 +20,7 @@ class _CropListingScreenState extends State<CropListingScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 4, vsync: this); // Changed to 4 tabs
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final cropProvider = Provider.of<CropProvider>(context, listen: false);
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -46,6 +47,7 @@ class _CropListingScreenState extends State<CropListingScreen>
           controller: _tabController,
           indicatorColor: Colors.white,
           tabs: const [
+            Tab(text: 'Pending'),
             Tab(text: 'Active'),
             Tab(text: 'Expired'),
             Tab(text: 'All'),
@@ -82,6 +84,7 @@ class _CropListingScreenState extends State<CropListingScreen>
           return TabBarView(
             controller: _tabController,
             children: [
+              _buildCropList(cropProvider.pendingFarmerCrops, 'No pending crops'),
               _buildCropList(cropProvider.activeFarmerCrops, 'No active crops'),
               _buildCropList(cropProvider.expiredFarmerCrops, 'No expired crops'),
               _buildCropList(cropProvider.farmerCrops, 'No crops found'),
@@ -140,7 +143,10 @@ class _CropListingScreenState extends State<CropListingScreen>
 
   Widget _buildCropCard(CropModel crop) {
     final timeLeft = crop.timeLeft;
+    final timeUntilStart = crop.timeUntilStart;
     final isExpired = crop.isExpired;
+    final isPending = crop.isPending;
+    final isActive = crop.isActive;
     final highestBid = crop.highestBid;
 
     return Card(
@@ -219,11 +225,11 @@ class _CropListingScreenState extends State<CropListingScreen>
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isExpired ? Colors.red : Colors.green,
+                        color: _getStatusColor(crop.status),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        isExpired ? 'Expired' : 'Active',
+                        _getStatusText(crop.status),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -264,62 +270,90 @@ class _CropListingScreenState extends State<CropListingScreen>
                 ),
                 const SizedBox(height: 8),
 
-                // Time Left
-                if (!isExpired) ...[
+                // Time information based on status
+                if (isPending) ...[
+                  _buildInfoRow(
+                    Icons.schedule,
+                    'Bidding Starts',
+                    _formatDateTime(crop.startDate),
+                  ),
+                  const SizedBox(height: 8),
+                  _buildInfoRow(
+                    Icons.access_time,
+                    'Time Until Start',
+                    _formatDuration(timeUntilStart),
+                  ),
+                ] else if (isActive && !isExpired) ...[
                   _buildInfoRow(
                     Icons.access_time,
                     'Time Left',
                     _formatDuration(timeLeft),
                   ),
-                  const SizedBox(height: 8),
                 ],
+                const SizedBox(height: 8),
 
-                // Bidding Info
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildInfoRow(
-                        Icons.gavel,
-                        'Total Bids',
-                        '${crop.bids.length}',
-                      ),
-                    ),
-                    if (highestBid != null)
+                // Bidding Info (only for active/expired crops)
+                if (!isPending) ...[
+                  Row(
+                    children: [
                       Expanded(
                         child: _buildInfoRow(
-                          Icons.trending_up,
-                          'Highest Bid',
-                          '₹${highestBid.amount}',
+                          Icons.gavel,
+                          'Total Bids',
+                          '${crop.bids.length}',
                         ),
                       ),
-                  ],
-                ),
-                const SizedBox(height: 16),
+                      if (highestBid != null)
+                        Expanded(
+                          child: _buildInfoRow(
+                            Icons.trending_up,
+                            'Highest Bid',
+                            '₹${highestBid.amount}',
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                ],
 
                 // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () => _showBiddingHistory(crop),
-                        icon: const Icon(Icons.history),
-                        label: const Text('Bid History'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.green,
-                          side: const BorderSide(color: Colors.green),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    // Place order button removed - only distributors can place orders
-                  ],
-                ),
+                _buildActionButtons(crop),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'active':
+        return Colors.green;
+      case 'expired':
+        return Colors.red;
+      case 'sold':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'pending':
+        return 'Pending';
+      case 'active':
+        return 'Active';
+      case 'expired':
+        return 'Expired';
+      case 'sold':
+        return 'Sold';
+      default:
+        return 'Unknown';
+    }
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
@@ -340,6 +374,80 @@ class _CropListingScreenState extends State<CropListingScreen>
     );
   }
 
+  Widget _buildActionButtons(CropModel crop) {
+    if (crop.isPending) {
+      // Pending crops can be edited and deleted
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _editCrop(crop),
+              icon: const Icon(Icons.edit),
+              label: const Text('Edit'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.blue,
+                side: const BorderSide(color: Colors.blue),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _deleteCrop(crop),
+              icon: const Icon(Icons.delete),
+              label: const Text('Delete'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.red,
+                side: const BorderSide(color: Colors.red),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else if (crop.isActive || crop.isExpired) {
+      // Active/expired crops can only view bidding history
+      return Row(
+        children: [
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: () => _showBiddingHistory(crop),
+              icon: const Icon(Icons.history),
+              label: const Text('Bid History'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.green,
+                side: const BorderSide(color: Colors.green),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Sold crops - no actions needed
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.purple.shade50,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.purple.shade200),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.purple, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'Sold to ${crop.order?.distributorName ?? 'Highest Bidder'}',
+              style: const TextStyle(
+                color: Colors.purple,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
   String _formatDuration(Duration duration) {
     if (duration.inDays > 0) {
       return '${duration.inDays}d ${duration.inHours % 24}h';
@@ -348,6 +456,59 @@ class _CropListingScreenState extends State<CropListingScreen>
     } else {
       return '${duration.inMinutes}m';
     }
+  }
+
+  String _formatDateTime(DateTime dateTime) {
+    return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _editCrop(CropModel crop) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditCropScreen(crop: crop),
+      ),
+    );
+  }
+
+  void _deleteCrop(CropModel crop) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Crop'),
+        content: Text('Are you sure you want to delete "${crop.cropName}"? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              final cropProvider = Provider.of<CropProvider>(context, listen: false);
+              final success = await cropProvider.deleteCrop(crop.id);
+              
+              if (success && mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Crop deleted successfully'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(cropProvider.error ?? 'Failed to delete crop'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showBiddingHistory(CropModel crop) {
@@ -425,8 +586,6 @@ class _CropListingScreenState extends State<CropListingScreen>
       ),
     );
   }
-
-
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
