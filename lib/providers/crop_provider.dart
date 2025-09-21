@@ -7,12 +7,14 @@ class CropProvider extends ChangeNotifier {
   
   List<CropModel> _farmerCrops = [];
   List<CropModel> _allActiveCrops = [];
+  List<CropModel> _pendingCrops = [];
   bool _isLoading = false;
   String? _error;
 
   // Getters
   List<CropModel> get farmerCrops => _farmerCrops;
   List<CropModel> get allActiveCrops => _allActiveCrops;
+  List<CropModel> get pendingCrops => _pendingCrops;
   bool get isLoading => _isLoading;
   String? get error => _error;
 
@@ -24,6 +26,10 @@ class CropProvider extends ChangeNotifier {
   List<CropModel> get expiredFarmerCrops => 
       _farmerCrops.where((crop) => crop.isExpired).toList();
 
+  // Get pending crops for current farmer
+  List<CropModel> get pendingFarmerCrops => 
+      _farmerCrops.where((crop) => crop.isPending).toList();
+
   // Load farmer's crops
   void loadFarmerCrops(String farmerId) {
     _isLoading = true;
@@ -33,6 +39,26 @@ class CropProvider extends ChangeNotifier {
     _cropService.getFarmerCrops(farmerId).listen(
       (crops) {
         _farmerCrops = crops;
+        _isLoading = false;
+        notifyListeners();
+      },
+      onError: (error) {
+        _error = error.toString();
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
+  // Load pending crops for a farmer
+  void loadPendingCrops(String farmerId) {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    _cropService.getPendingCrops(farmerId).listen(
+      (crops) {
+        _pendingCrops = crops;
         _isLoading = false;
         notifyListeners();
       },
@@ -64,6 +90,26 @@ class CropProvider extends ChangeNotifier {
     );
   }
 
+  // Load crops for distributors (active + expired crops they've won)
+  void loadDistributorCrops(String distributorId) {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    _cropService.getDistributorCrops(distributorId).listen(
+      (crops) {
+        _allActiveCrops = crops;
+        _isLoading = false;
+        notifyListeners();
+      },
+      onError: (error) {
+        _error = error.toString();
+        _isLoading = false;
+        notifyListeners();
+      },
+    );
+  }
+
   // Add new crop
   Future<bool> addCrop(CropModel crop) async {
     try {
@@ -72,6 +118,26 @@ class CropProvider extends ChangeNotifier {
       notifyListeners();
 
       await _cropService.addCrop(crop);
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Update crop details (for pending crops)
+  Future<bool> updateCrop(String cropId, CropModel updatedCrop) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _cropService.updateCrop(cropId, updatedCrop);
       
       _isLoading = false;
       notifyListeners();
@@ -164,6 +230,26 @@ class CropProvider extends ChangeNotifier {
     }
   }
 
+  // Update crop status based on time
+  Future<bool> updateCropStatusBasedOnTime(String cropId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _cropService.updateCropStatusBasedOnTime(cropId);
+      
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Delete crop
   Future<bool> deleteCrop(String cropId) async {
     try {
@@ -181,6 +267,16 @@ class CropProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    }
+  }
+
+  // Batch update crop statuses
+  Future<void> batchUpdateCropStatuses() async {
+    try {
+      await _cropService.batchUpdateCropStatuses();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
     }
   }
 

@@ -18,9 +18,19 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final cropProvider = Provider.of<CropProvider>(context, listen: false);
-      cropProvider.loadAllActiveCrops();
+      _loadCrops();
     });
+  }
+
+  void _loadCrops() {
+    final cropProvider = Provider.of<CropProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final distributorId = authProvider.userProfile?.uid;
+    if (distributorId != null) {
+      cropProvider.loadDistributorCrops(distributorId);
+    } else {
+      cropProvider.loadAllActiveCrops();
+    }
   }
 
   @override
@@ -41,7 +51,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   ElevatedButton(
                     onPressed: () {
                       cropProvider.clearError();
-                      cropProvider.loadAllActiveCrops();
+                      _loadCrops();
                     },
                     child: const Text('Retry'),
                   ),
@@ -62,9 +72,17 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   ),
                   SizedBox(height: 16),
                   Text(
-                    'No crops available for bidding',
+                    'No crops available',
                     style: TextStyle(
                       fontSize: 18,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'No active auctions or won crops to display',
+                    style: TextStyle(
+                      fontSize: 14,
                       color: Colors.grey,
                     ),
                   ),
@@ -73,13 +91,18 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: cropProvider.allActiveCrops.length,
-            itemBuilder: (context, index) {
-              final crop = cropProvider.allActiveCrops[index];
-              return _buildCropCard(crop);
+          return RefreshIndicator(
+            onRefresh: () async {
+              _loadCrops();
             },
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: cropProvider.allActiveCrops.length,
+              itemBuilder: (context, index) {
+                final crop = cropProvider.allActiveCrops[index];
+                return _buildCropCard(crop);
+              },
+            ),
           );
         },
       ),
@@ -173,11 +196,11 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: crop.isExpired ? Colors.red : Colors.orange,
+                        color: _getStatusColor(crop.status),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
-                        crop.isExpired ? 'EXPIRED' : _formatDuration(timeLeft),
+                        _getStatusText(crop.status, timeLeft),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
@@ -341,28 +364,58 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     final userBid = crop.getUserBid(currentUserId);
 
     if (crop.isSold) {
-      return Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.green.shade50,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.green.shade200),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Sold to ${crop.order?.distributorName ?? 'Highest Bidder'}',
-              style: const TextStyle(
-                color: Colors.green,
-                fontWeight: FontWeight.bold,
+      // Check if current user is the one who won this crop
+      final isWinningDistributor = crop.order?.distributorId == currentUserId;
+      
+      if (isWinningDistributor) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.purple.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.purple.shade200),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.emoji_events, color: Colors.purple, size: 20),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'You won this auction! Final price: ₹${crop.order?.finalPrice ?? crop.highestBid?.amount ?? 0}',
+                  style: const TextStyle(
+                    color: Colors.purple,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
-          ],
-        ),
-      );
+            ],
+          ),
+        );
+      } else {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info, color: Colors.grey, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Sold to ${crop.order?.distributorName ?? 'Highest Bidder'}',
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
     }
 
     if (crop.isExpired) {
@@ -491,6 +544,36 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} ${dateTime.hour}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange;
+      case 'active':
+        return Colors.green;
+      case 'expired':
+        return Colors.red;
+      case 'sold':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  String _getStatusText(String status, Duration timeLeft) {
+    switch (status) {
+      case 'pending':
+        return 'PENDING';
+      case 'active':
+        return _formatDuration(timeLeft);
+      case 'expired':
+        return 'EXPIRED';
+      case 'sold':
+        return 'SOLD';
+      default:
+        return 'UNKNOWN';
+    }
   }
 
   void _showBidDialog(CropModel crop) {
@@ -742,6 +825,12 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
           // Create payment intent for the order
           final paymentService = PaymentService();
           final orderWithPayment = await paymentService.createOrderWithPayment(order);
+          
+          // Refresh the crop list to show the updated status
+          final distributorId = authProvider.userProfile?.uid;
+          if (distributorId != null) {
+            cropProvider.loadDistributorCrops(distributorId);
+          }
           
           // Check if still mounted before navigating
           if (mounted) {
