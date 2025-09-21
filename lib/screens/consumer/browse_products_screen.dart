@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
+import '../../providers/favorites_provider.dart';
+import '../../providers/auth_provider.dart';
 import 'product_detail_screen.dart';
+import 'saved_products_screen.dart';
 
 class BrowseProductsScreen extends StatefulWidget {
   const BrowseProductsScreen({super.key});
@@ -48,6 +51,50 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
         actions: [
+          Consumer<FavoritesProvider>(
+            builder: (context, favoritesProvider, child) {
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.favorite),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const SavedProductsScreen(),
+                        ),
+                      );
+                    },
+                    tooltip: 'Saved Products',
+                  ),
+                  if (favoritesProvider.favoriteProducts.isNotEmpty)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Text(
+                          '${favoritesProvider.favoriteProducts.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () {
@@ -283,42 +330,101 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                              // Product Image
                        Expanded(
                          flex: 3,
-                        child: Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12),
-                            ),
-                            color: Colors.grey.shade100,
-                          ),
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12),
-                            ),
-                            child: product.imageUrl.isNotEmpty
-                                ? Image.network(
-                                    product.imageUrl,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Container(
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                                color: Colors.grey.shade100,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: const BorderRadius.vertical(
+                                  top: Radius.circular(12),
+                                ),
+                                child: product.imageUrl.isNotEmpty
+                                    ? Image.network(
+                                        product.imageUrl,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return Container(
+                                            color: Colors.grey.shade200,
+                                            child: const Icon(
+                                              Icons.image_not_supported,
+                                              color: Colors.grey,
+                                              size: 48,
+                                            ),
+                                          );
+                                        },
+                                      )
+                                    : Container(
                                         color: Colors.grey.shade200,
                                         child: const Icon(
                                           Icons.image_not_supported,
                                           color: Colors.grey,
                                           size: 48,
                                         ),
-                                      );
+                                      ),
+                              ),
+                            ),
+                            // Heart icon overlay
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Consumer<FavoritesProvider>(
+                                builder: (context, favoritesProvider, child) {
+                                  final isFavorite = favoritesProvider.isFavorite(product.id);
+                                  return GestureDetector(
+                                    onTap: () async {
+                                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                      if (authProvider.userProfile != null) {
+                                        final success = await favoritesProvider.toggleFavorite(
+                                          authProvider.userProfile!.uid,
+                                          product,
+                                        );
+                                        
+                                        if (mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                success 
+                                                  ? (isFavorite ? 'Removed from favorites' : 'Added to favorites')
+                                                  : 'Failed to update favorites',
+                                              ),
+                                              backgroundColor: success 
+                                                ? (isFavorite ? Colors.red : Colors.green)
+                                                : Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
                                     },
-                                  )
-                                : Container(
-                                    color: Colors.grey.shade200,
-                                    child: const Icon(
-                                      Icons.image_not_supported,
-                                      color: Colors.grey,
-                                      size: 48,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withOpacity(0.1),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: Icon(
+                                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                                        color: isFavorite ? Colors.red : Colors.grey[600],
+                                        size: 20,
+                                      ),
                                     ),
-                                  ),
-                          ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       
