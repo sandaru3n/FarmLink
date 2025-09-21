@@ -102,6 +102,19 @@ class TransportOrderService {
         'status': 'in_transit',
         'inTransitAt': Timestamp.fromDate(DateTime.now()),
       });
+
+      // Sync status to corresponding delivery order
+      final transportDoc = await _transportOrdersCollection.doc(transportOrderId).get();
+      if (transportDoc.exists) {
+        final data = transportDoc.data() as Map<String, dynamic>;
+        final String? deliveryOrderId = data['deliveryOrderId'];
+        if (deliveryOrderId != null && deliveryOrderId.isNotEmpty) {
+          await _deliveryOrdersCollection.doc(deliveryOrderId).update({
+            'status': 'in_transit',
+            'inTransitAt': Timestamp.fromDate(DateTime.now()),
+          });
+        }
+      }
     } catch (e) {
       throw Exception('Failed to mark transport as in transit: $e');
     }
@@ -110,11 +123,26 @@ class TransportOrderService {
   // Mark transport order as delivered
   Future<void> markTransportDelivered(String transportOrderId) async {
     try {
+      final DateTime now = DateTime.now();
       await _transportOrdersCollection.doc(transportOrderId).update({
         'status': 'delivered',
-        'deliveredAt': Timestamp.fromDate(DateTime.now()),
-        'actualDeliveryTime': DateTime.now().toString(),
+        'deliveredAt': Timestamp.fromDate(now),
+        'actualDeliveryTime': now.toString(),
       });
+
+      // Sync status to corresponding delivery order
+      final transportDoc = await _transportOrdersCollection.doc(transportOrderId).get();
+      if (transportDoc.exists) {
+        final data = transportDoc.data() as Map<String, dynamic>;
+        final String? deliveryOrderId = data['deliveryOrderId'];
+        if (deliveryOrderId != null && deliveryOrderId.isNotEmpty) {
+          await _deliveryOrdersCollection.doc(deliveryOrderId).update({
+            'status': 'delivered',
+            'deliveredAt': Timestamp.fromDate(now),
+            'actualDeliveryTime': now.toString(),
+          });
+        }
+      }
     } catch (e) {
       throw Exception('Failed to mark transport as delivered: $e');
     }

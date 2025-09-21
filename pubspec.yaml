@@ -58,6 +58,9 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
+  
+  # URL launcher for contact functionality
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
