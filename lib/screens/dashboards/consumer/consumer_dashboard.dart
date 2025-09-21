@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/cart_provider.dart';
+import '../../../providers/consumer_order_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../settings/consumer_settings_screen.dart';
 import '../../consumer/browse_products_screen.dart';
 import '../../consumer/cart_screen.dart';
+import '../../consumer/consumer_orders_screen.dart';
 
 class ConsumerDashboard extends StatefulWidget {
   const ConsumerDashboard({super.key});
@@ -24,9 +26,11 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final orderProvider = Provider.of<ConsumerOrderProvider>(context, listen: false);
       
       if (authProvider.userProfile != null) {
         cartProvider.loadUserCart(authProvider.userProfile!.uid);
+        orderProvider.loadConsumerOrders(authProvider.userProfile!.uid);
       }
     });
   }
@@ -156,7 +160,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
       case 1:
         return const CartScreen();
       case 2:
-        return _buildOrdersTab();
+        return const ConsumerOrdersScreen();
       case 3:
         return _buildProfileTab();
       default:
@@ -257,11 +261,6 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
 
 
 
-  Widget _buildOrdersTab() {
-    return const Center(
-      child: Text('Orders - Coming Soon'),
-    );
-  }
 
   Widget _buildProfileTab() {
     return SingleChildScrollView(
@@ -323,28 +322,37 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
           const SizedBox(height: 24),
 
           // Quick Stats
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('Active Orders', '3', Icons.shopping_bag, Colors.blue),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard('Favorites', '12', Icons.favorite, Colors.red),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('Total Spent', '₹8,500', Icons.payments, Colors.green),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard('Reviews Given', '7', Icons.star, Colors.orange),
-              ),
-            ],
+          Consumer<ConsumerOrderProvider>(
+            builder: (context, orderProvider, child) {
+              final stats = orderProvider.getOrderStatistics();
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard('Active Orders', '${stats['pending']}', Icons.shopping_bag, Colors.blue),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard('Completed', '${stats['completed']}', Icons.check_circle, Colors.green),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildStatCard('Total Orders', '${stats['total']}', Icons.receipt_long, Colors.orange),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildStatCard('Reviewed', '${stats['reviewed']}', Icons.star, Colors.purple),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 24),
 
@@ -421,7 +429,11 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
             'Order History',
             'View your past orders',
             Icons.history,
-            () {},
+            () {
+              setState(() {
+                _currentIndex = 2; // Navigate to orders tab
+              });
+            },
           ),
           const SizedBox(height: 12),
           _buildProfileActionCard(
