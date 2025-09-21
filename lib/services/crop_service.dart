@@ -50,6 +50,40 @@ class CropService {
     });
   }
 
+  // Get crops for distributors (active + expired crops they've won)
+  Stream<List<CropModel>> getDistributorCrops(String distributorId) {
+    return _cropsCollection
+        .where('status', whereIn: ['active', 'expired'])
+        .snapshots()
+        .map((snapshot) {
+      List<CropModel> crops = snapshot.docs.map((doc) => CropModel.fromFirestore(doc)).toList();
+      
+      // Filter expired crops to only show those where this distributor is the highest bidder
+      crops = crops.where((crop) {
+        if (crop.status == 'active') return true;
+        if (crop.status == 'expired' && crop.isUserHighestBidder(distributorId)) return true;
+        return false;
+      }).toList();
+      
+      // Sort in memory instead of in Firestore to avoid composite index requirement
+      crops.sort((a, b) => a.endDate.compareTo(b.endDate));
+      return crops;
+    });
+  }
+
+  // Get pending crops for a farmer
+  Stream<List<CropModel>> getPendingCrops(String farmerId) {
+    return _cropsCollection
+        .where('farmerId', isEqualTo: farmerId)
+        .where('status', isEqualTo: 'pending')
+        .snapshots()
+        .map((snapshot) {
+      List<CropModel> crops = snapshot.docs.map((doc) => CropModel.fromFirestore(doc)).toList();
+      crops.sort((a, b) => a.startDate.compareTo(b.startDate));
+      return crops;
+    });
+  }
+
   // Get a specific crop by ID
   Future<CropModel?> getCropById(String cropId) async {
     try {
@@ -60,6 +94,57 @@ class CropService {
       return null;
     } catch (e) {
       throw Exception('Failed to get crop: $e');
+    }
+  }
+
+  // Update crop status based on time
+  Future<void> updateCropStatusBasedOnTime(String cropId) async {
+    try {
+      DocumentSnapshot cropDoc = await _cropsCollection.doc(cropId).get();
+      if (!cropDoc.exists) {
+        throw Exception('Crop not found');
+      }
+
+      CropModel crop = CropModel.fromFirestore(cropDoc);
+      
+      // Check if crop should be active
+      if (crop.shouldBeActive && crop.status == 'pending') {
+        await _cropsCollection.doc(cropId).update({
+          'status': 'active',
+          'lastUpdated': Timestamp.fromDate(DateTime.now()),
+        });
+      }
+      
+      // Check if crop should be expired
+      if (crop.isExpired && crop.status == 'active') {
+        await _cropsCollection.doc(cropId).update({
+          'status': 'expired',
+          'lastUpdated': Timestamp.fromDate(DateTime.now()),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to update crop status: $e');
+    }
+  }
+
+  // Update crop details (for pending crops)
+  Future<void> updateCrop(String cropId, CropModel updatedCrop) async {
+    try {
+      DocumentSnapshot cropDoc = await _cropsCollection.doc(cropId).get();
+      if (!cropDoc.exists) {
+        throw Exception('Crop not found');
+      }
+
+      CropModel existingCrop = CropModel.fromFirestore(cropDoc);
+      
+      // Only allow updates if crop is pending
+      if (existingCrop.status != 'pending') {
+        throw Exception('Only pending crops can be updated');
+      }
+
+      await _cropsCollection.doc(cropId).update(updatedCrop.toFirestore());
+    } catch (e) {
+      throw Exception('Failed to update crop: $e');
     }
   }
 
@@ -76,6 +161,11 @@ class CropService {
         }
         
         CropModel crop = CropModel.fromFirestore(cropDoc);
+        
+        // Check if crop is active
+        if (crop.status != 'active') {
+          throw Exception('Bidding is not active for this crop');
+        }
         
         if (crop.isExpired) {
           throw Exception('Bidding has ended for this crop');
@@ -117,6 +207,11 @@ class CropService {
         }
         
         CropModel crop = CropModel.fromFirestore(cropDoc);
+        
+        // Check if crop is active
+        if (crop.status != 'active') {
+          throw Exception('Bidding is not active for this crop');
+        }
         
         if (crop.isExpired) {
           throw Exception('Bidding has ended for this crop');
@@ -271,11 +366,17 @@ class CropService {
   // Delete a crop
   Future<void> deleteCrop(String cropId) async {
     try {
-      // First get the crop to access its image URL
+      // First get the crop to access its image URL and check status
       final cropDoc = await _cropsCollection.doc(cropId).get();
       if (cropDoc.exists) {
         final cropData = cropDoc.data() as Map<String, dynamic>;
         final imageUrl = cropData['imageUrl'] as String? ?? '';
+        final status = cropData['status'] as String? ?? 'pending';
+        
+        // Only allow deletion of pending crops
+        if (status != 'pending') {
+          throw Exception('Only pending crops can be deleted');
+        }
         
         // Delete the image from storage if it exists
         if (imageUrl.isNotEmpty && !imageUrl.contains('placeholder')) {
@@ -318,7 +419,7 @@ class CropService {
             print('Deleted orphaned order: ${orderDoc.id}');
           } else {
             final cropData = cropDoc.data() as Map<String, dynamic>;
-            final cropStatus = cropData['status'] as String? ?? 'active';
+            final cropStatus = cropData['status'] as String? ?? 'pending';
             final cropOrder = cropData['order'];
             
             // If crop is not marked as sold but has an order, update crop status
@@ -361,6 +462,53 @@ class CropService {
       }
     } catch (e) {
       print('Error during cleanup: $e');
+    }
+  }
+
+  // Batch update crop statuses based on time
+  Future<void> batchUpdateCropStatuses() async {
+    try {
+      // Get all pending crops that should be active
+      final pendingCropsQuery = await _cropsCollection
+          .where('status', isEqualTo: 'pending')
+          .get();
+      
+      final batch = _firestore.batch();
+      int updatedCount = 0;
+      
+      for (var doc in pendingCropsQuery.docs) {
+        final crop = CropModel.fromFirestore(doc);
+        if (crop.shouldBeActive) {
+          batch.update(doc.reference, {
+            'status': 'active',
+            'lastUpdated': Timestamp.fromDate(DateTime.now()),
+          });
+          updatedCount++;
+        }
+      }
+      
+      // Get all active crops that should be expired
+      final activeCropsQuery = await _cropsCollection
+          .where('status', isEqualTo: 'active')
+          .get();
+      
+      for (var doc in activeCropsQuery.docs) {
+        final crop = CropModel.fromFirestore(doc);
+        if (crop.isExpired) {
+          batch.update(doc.reference, {
+            'status': 'expired',
+            'lastUpdated': Timestamp.fromDate(DateTime.now()),
+          });
+          updatedCount++;
+        }
+      }
+      
+      if (updatedCount > 0) {
+        await batch.commit();
+        print('Updated $updatedCount crop statuses');
+      }
+    } catch (e) {
+      print('Error during batch status update: $e');
     }
   }
 }
