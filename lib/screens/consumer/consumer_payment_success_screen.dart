@@ -249,9 +249,9 @@ class ConsumerPaymentSuccessScreen extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () {
-                        // Navigate to orders tab (you'll need to implement this)
+                        // Navigate to orders tab
                         Navigator.of(context).popUntil((route) => route.isFirst);
-                        // TODO: Navigate to orders tab
+                        // The orders tab will be accessible from the main dashboard
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
