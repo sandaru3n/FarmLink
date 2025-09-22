@@ -3,11 +3,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/consumer_order_model.dart';
 import '../models/cart_item_model.dart';
 import 'payment_service.dart';
+import 'product_service.dart';
 
 class ConsumerOrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final PaymentService _paymentService = PaymentService();
+  final ProductService _productService = ProductService();
 
   // Collection references
   CollectionReference get _consumerOrdersCollection => _firestore.collection('consumer_orders');
@@ -178,6 +180,17 @@ class ConsumerOrderService {
       if (success) {
         // Update order status
         await updatePaymentStatus(order.id, 'completed');
+
+        // Decrement stock for each purchased product
+        for (final item in order.items) {
+          try {
+            await _productService.adjustStock(item.productId, -item.quantity);
+          } catch (e) {
+            // Continue updating other items even if one fails
+            // Optionally, you can log this error to Firestore or analytics
+            // print('Failed to decrement stock for ${item.productId}: $e');
+          }
+        }
         return true;
       } else {
         return false;

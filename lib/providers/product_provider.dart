@@ -128,6 +128,86 @@ class ProductProvider extends ChangeNotifier {
     }
   }
 
+  // Adjust stock quantity
+  Future<bool> adjustStock(String productId, double deltaKg) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _productService.adjustStock(productId, deltaKg);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Set product availability
+  Future<bool> setAvailability(String productId, bool isAvailable) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _productService.setAvailability(productId, isAvailable);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Set reorder level
+  Future<bool> setReorderLevel(String productId, double reorderLevel) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _productService.setReorderLevel(productId, reorderLevel);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Set baseline to current quantity
+  Future<bool> setBaselineToCurrent(String productId) async {
+    try {
+      _isLoading = true;
+      _error = null;
+      notifyListeners();
+
+      await _productService.setBaselineToCurrent(productId);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isLoading = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Clear error
   void clearError() {
     _error = null;

@@ -9,14 +9,23 @@ import '../../distributor/distributor_orders_screen.dart';
 import '../../distributor/product_list_screen.dart';
 
 class FoodDistributorDashboard extends StatefulWidget {
-  const FoodDistributorDashboard({super.key});
+  final int? initialTabIndex;
+  const FoodDistributorDashboard({super.key, this.initialTabIndex});
 
   @override
   State<FoodDistributorDashboard> createState() => _FoodDistributorDashboardState();
 }
 
 class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
+  static int _lastIndex = 0;
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    // Preserve last selected tab across rebuilds or use explicitly provided initial index
+    _currentIndex = widget.initialTabIndex ?? _lastIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +75,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
             onTap: (index) {
               setState(() {
                 _currentIndex = index;
+                _lastIndex = index;
               });
             },
             type: BottomNavigationBarType.fixed,
