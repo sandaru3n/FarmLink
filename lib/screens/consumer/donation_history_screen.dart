@@ -429,6 +429,7 @@ class _DonationHistoryScreenState extends State<DonationHistoryScreen>
               consumerName: '',
               charityId: '',
               charityName: '',
+              donationType: 'food',
               items: [],
               totalValue: 0,
               status: status,

@@ -6,7 +6,11 @@ class DonationModel {
   final String consumerName;
   final String charityId;
   final String charityName;
+  final String donationType; // 'food', 'monetary', 'mixed'
   final List<DonationItem> items;
+  final double monetaryAmount; // for monetary donations
+  final String? paymentMethod; // 'card', 'paypal', 'bank_transfer', 'cash'
+  final String? paymentStatus; // 'pending', 'completed', 'failed'
   final double totalValue;
   final String status; // 'pending', 'confirmed', 'picked_up', 'completed', 'cancelled'
   final String? notes;
@@ -24,7 +28,11 @@ class DonationModel {
     required this.consumerName,
     required this.charityId,
     required this.charityName,
+    required this.donationType,
     required this.items,
+    this.monetaryAmount = 0.0,
+    this.paymentMethod,
+    this.paymentStatus,
     required this.totalValue,
     this.status = 'pending',
     this.notes,
@@ -44,9 +52,13 @@ class DonationModel {
       consumerName: map['consumerName'] ?? '',
       charityId: map['charityId'] ?? '',
       charityName: map['charityName'] ?? '',
+      donationType: map['donationType'] ?? 'food',
       items: (map['items'] as List<dynamic>? ?? [])
           .map((item) => DonationItem.fromMap(item))
           .toList(),
+      monetaryAmount: (map['monetaryAmount'] ?? 0.0).toDouble(),
+      paymentMethod: map['paymentMethod'],
+      paymentStatus: map['paymentStatus'],
       totalValue: (map['totalValue'] ?? 0).toDouble(),
       status: map['status'] ?? 'pending',
       notes: map['notes'],
@@ -73,7 +85,11 @@ class DonationModel {
       'consumerName': consumerName,
       'charityId': charityId,
       'charityName': charityName,
+      'donationType': donationType,
       'items': items.map((item) => item.toMap()).toList(),
+      'monetaryAmount': monetaryAmount,
+      'paymentMethod': paymentMethod,
+      'paymentStatus': paymentStatus,
       'totalValue': totalValue,
       'status': status,
       'notes': notes,
@@ -93,7 +109,11 @@ class DonationModel {
     String? consumerName,
     String? charityId,
     String? charityName,
+    String? donationType,
     List<DonationItem>? items,
+    double? monetaryAmount,
+    String? paymentMethod,
+    String? paymentStatus,
     double? totalValue,
     String? status,
     String? notes,
@@ -111,7 +131,11 @@ class DonationModel {
       consumerName: consumerName ?? this.consumerName,
       charityId: charityId ?? this.charityId,
       charityName: charityName ?? this.charityName,
+      donationType: donationType ?? this.donationType,
       items: items ?? this.items,
+      monetaryAmount: monetaryAmount ?? this.monetaryAmount,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentStatus: paymentStatus ?? this.paymentStatus,
       totalValue: totalValue ?? this.totalValue,
       status: status ?? this.status,
       notes: notes ?? this.notes,

@@ -15,7 +15,11 @@ class DonationService {
     required String consumerName,
     required String charityId,
     required String charityName,
+    required String donationType,
     required List<DonationItem> items,
+    double monetaryAmount = 0.0,
+    String? paymentMethod,
+    String? paymentStatus,
     String? notes,
     String? pickupAddress,
     String? contactPhone,
@@ -24,7 +28,8 @@ class DonationService {
       final donationId = DateTime.now().millisecondsSinceEpoch.toString();
       
       // Calculate total value
-      final totalValue = items.fold(0.0, (sum, item) => sum + item.totalValue);
+      final foodValue = items.fold(0.0, (sum, item) => sum + item.totalValue);
+      final totalValue = foodValue + monetaryAmount;
 
       final donation = DonationModel(
         id: donationId,
@@ -32,7 +37,11 @@ class DonationService {
         consumerName: consumerName,
         charityId: charityId,
         charityName: charityName,
+        donationType: donationType,
         items: items,
+        monetaryAmount: monetaryAmount,
+        paymentMethod: paymentMethod,
+        paymentStatus: paymentStatus,
         totalValue: totalValue,
         notes: notes,
         pickupAddress: pickupAddress,
