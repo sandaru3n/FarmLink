@@ -44,10 +44,10 @@ class ProductService {
   // Update a product
   Future<void> updateProduct(ProductModel product) async {
     try {
-      await _firestore
-          .collection('products')
-          .doc(product.id)
-          .update(product.toFirestore());
+      await _firestore.collection('products').doc(product.id).update({
+        ...product.toFirestore(),
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
       throw Exception('Failed to update product: $e');
     }
@@ -100,5 +100,71 @@ class ProductService {
     } catch (e) {
       throw Exception('Failed to get product: $e');
     }
+  }
+
+  // Adjust stock quantity atomically
+  Future<void> adjustStock(String productId, double deltaKg) async {
+    await _firestore.runTransaction((transaction) async {
+      final docRef = _firestore.collection('products').doc(productId);
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        throw Exception('Product not found');
+      }
+      final data = snapshot.data() as Map<String, dynamic>;
+      final currentQty = (data['quantity'] ?? 0).toDouble();
+      final hasInitialQuantity = data.containsKey('initialQuantity') &&
+          (data['initialQuantity'] != null) &&
+          ((data['initialQuantity'] as num).toDouble() > 0);
+      double newQty = currentQty + deltaKg;
+      if (newQty < 0) newQty = 0;
+
+      final bool newAvailability = (data['isAvailable'] ?? true) && newQty > 0;
+
+      final Map<String, dynamic> update = {
+        'quantity': newQty,
+        'isAvailable': newAvailability,
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      };
+
+      // Persist initialQuantity once for legacy products
+      if (!hasInitialQuantity && currentQty > 0) {
+        update['initialQuantity'] = currentQty;
+      }
+
+      transaction.update(docRef, update);
+    });
+  }
+
+  // Set product availability explicitly
+  Future<void> setAvailability(String productId, bool isAvailable) async {
+    await _firestore.collection('products').doc(productId).update({
+      'isAvailable': isAvailable,
+      'lastUpdatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Set reorder level
+  Future<void> setReorderLevel(String productId, double reorderLevel) async {
+    await _firestore.collection('products').doc(productId).update({
+      'reorderLevel': reorderLevel,
+      'lastUpdatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  // Set baseline (initialQuantity) to current quantity
+  Future<void> setBaselineToCurrent(String productId) async {
+    await _firestore.runTransaction((transaction) async {
+      final docRef = _firestore.collection('products').doc(productId);
+      final snapshot = await transaction.get(docRef);
+      if (!snapshot.exists) {
+        throw Exception('Product not found');
+      }
+      final data = snapshot.data() as Map<String, dynamic>;
+      final currentQty = (data['quantity'] ?? 0).toDouble();
+      transaction.update(docRef, {
+        'initialQuantity': currentQty,
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      });
+    });
   }
 } 
