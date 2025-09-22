@@ -18,6 +18,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _productNameController = TextEditingController();
   final _quantityController = TextEditingController();
   final _priceController = TextEditingController();
+  final _reorderLevelController = TextEditingController(text: '0');
   
   File? _selectedImage;
   final ImagePicker _picker = ImagePicker();
@@ -28,6 +29,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
     _productNameController.dispose();
     _quantityController.dispose();
     _priceController.dispose();
+    _reorderLevelController.dispose();
     super.dispose();
   }
 
@@ -113,6 +115,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
         quantity: double.parse(_quantityController.text),
         pricePerKg: double.parse(_priceController.text),
         createdAt: DateTime.now(),
+        reorderLevel: double.tryParse(_reorderLevelController.text) ?? 0.0,
+        lastUpdatedAt: DateTime.now(),
+        initialQuantity: double.parse(_quantityController.text),
       );
 
       final success = await productProvider.addProduct(product);
@@ -122,7 +127,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Product added successfully!')),
           );
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true);
         }
       } else {
         if (mounted) {
@@ -344,6 +349,46 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 24),
+
+              // Reorder Level
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Reorder level (kg)',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: _reorderLevelController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          hintText: '0.0',
+                          border: OutlineInputBorder(),
+                          suffixText: 'kg',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Required';
+                          }
+                          final qty = double.tryParse(value);
+                          if (qty == null || qty < 0) {
+                            return 'Invalid level';
+                          }
+                          return null;
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 24),
 
