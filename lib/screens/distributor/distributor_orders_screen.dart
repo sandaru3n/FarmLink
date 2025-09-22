@@ -37,50 +37,72 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUserId = authProvider.userProfile?.uid ?? '';
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Orders'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        actions: [
-          PopupMenuButton<String>(
-            onSelected: (String status) {
-              setState(() {
-                _selectedStatus = status;
-              });
-            },
-            itemBuilder: (BuildContext context) {
-              return _statusFilters.map((String status) {
-                return PopupMenuItem<String>(
-                  value: status,
-                  child: Row(
-                    children: [
-                      Icon(
-                        _selectedStatus == status ? Icons.check : Icons.radio_button_unchecked,
-                        color: _selectedStatus == status ? Colors.blue : Colors.grey,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(status),
-                    ],
-                  ),
-                );
-              }).toList();
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(_selectedStatus),
-                  const Icon(Icons.arrow_drop_down),
-                ],
-              ),
+    return Column(
+      children: [
+        // Filter bar
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            border: Border(
+              bottom: BorderSide(color: Colors.grey.shade300),
             ),
           ),
-        ],
-      ),
-      body: StreamBuilder<List<OrderModel>>(
+          child: Row(
+            children: [
+              const Text(
+                'Filter by status:',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 16,
+                ),
+              ),
+              const SizedBox(width: 16),
+              PopupMenuButton<String>(
+                onSelected: (String status) {
+                  setState(() {
+                    _selectedStatus = status;
+                  });
+                },
+                itemBuilder: (BuildContext context) {
+                  return _statusFilters.map((String status) {
+                    return PopupMenuItem<String>(
+                      value: status,
+                      child: Row(
+                        children: [
+                          Icon(
+                            _selectedStatus == status ? Icons.check : Icons.radio_button_unchecked,
+                            color: _selectedStatus == status ? Colors.orange : Colors.grey,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(status),
+                        ],
+                      ),
+                    );
+                  }).toList();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.orange),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_selectedStatus),
+                      const Icon(Icons.arrow_drop_down),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Orders list
+        Expanded(
+          child: StreamBuilder<List<OrderModel>>(
         stream: _selectedStatus == 'All'
             ? _orderService.getDistributorOrders(currentUserId)
             : _orderService.getOrdersByOrderStatus(currentUserId, _selectedStatus.toLowerCase()),
@@ -160,7 +182,9 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
             },
           );
         },
-      ),
+          ),
+        ),
+      ],
     );
   }
 
