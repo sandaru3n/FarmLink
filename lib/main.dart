@@ -14,12 +14,16 @@ import 'providers/favorites_provider.dart';
 import 'utils/app_localizations.dart';
 import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
+import 'utils/sample_charities.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
   await Firebase.initializeApp();
+  
+  // Add sample charities for testing
+  await SampleCharities.addSampleCharities();
   
   // Initialize Stripe - temporarily commented out
   // Stripe.publishableKey = 'pk_test_51R0iJpQOtXlNP6ZKo0NwWCEkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2EkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2eU7WrWy081Skjav8SlzvE9c00G7vYBNQN';
