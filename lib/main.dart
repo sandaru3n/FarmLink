@@ -9,8 +9,12 @@ import 'providers/product_provider.dart';
 import 'providers/cart_provider.dart';
 import 'providers/delivery_order_provider.dart';
 import 'providers/transport_order_provider.dart';
+import 'providers/consumer_order_provider.dart';
+import 'providers/favorites_provider.dart';
 import 'utils/app_localizations.dart';
+import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
+import 'utils/sample_charities.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +22,15 @@ void main() async {
   // Initialize Firebase
   await Firebase.initializeApp();
   
+  // Add sample charities for testing
+  await SampleCharities.addSampleCharities();
+  
   // Initialize Stripe - temporarily commented out
   // Stripe.publishableKey = 'pk_test_51R0iJpQOtXlNP6ZKo0NwWCEkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2EkwW2SAq51llmdIRsAX095DZPWnaWcuTZUK0EFcMGo2eU7WrWy081Skjav8SlzvE9c00G7vYBNQN';
+  
+  // Start crop status service
+  final cropStatusService = CropStatusService();
+  cropStatusService.startStatusUpdateService();
   
   runApp(const MyApp());
 }
@@ -35,8 +46,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CropProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
-                      ChangeNotifierProvider(create: (_) => DeliveryOrderProvider()),
-              ChangeNotifierProvider(create: (_) => TransportOrderProvider()),
+        ChangeNotifierProvider(create: (_) => DeliveryOrderProvider()),
+        ChangeNotifierProvider(create: (_) => TransportOrderProvider()),
+        ChangeNotifierProvider(create: (_) => ConsumerOrderProvider()),
+        ChangeNotifierProvider(create: (_) => FavoritesProvider()),
       ],
       child: MaterialApp(
         title: 'FarmLink',

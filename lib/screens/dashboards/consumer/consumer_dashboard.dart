@@ -2,11 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/cart_provider.dart';
+import '../../../providers/consumer_order_provider.dart';
+import '../../../providers/favorites_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../settings/consumer_settings_screen.dart';
 import '../../consumer/browse_products_screen.dart';
 import '../../consumer/cart_screen.dart';
+import '../../consumer/consumer_orders_screen.dart';
+import '../../consumer/saved_products_screen.dart';
+import '../../consumer/donation_screen.dart';
+import '../../consumer/donation_history_screen.dart';
 
 class ConsumerDashboard extends StatefulWidget {
   const ConsumerDashboard({super.key});
@@ -24,17 +30,19 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final cartProvider = Provider.of<CartProvider>(context, listen: false);
+      final orderProvider = Provider.of<ConsumerOrderProvider>(context, listen: false);
+      final favoritesProvider = Provider.of<FavoritesProvider>(context, listen: false);
       
       if (authProvider.userProfile != null) {
         cartProvider.loadUserCart(authProvider.userProfile!.uid);
+        orderProvider.loadConsumerOrders(authProvider.userProfile!.uid);
+        favoritesProvider.loadUserFavorites(authProvider.userProfile!.uid);
       }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         if (authProvider.isLoading) {
@@ -56,64 +64,6 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text('Consumer Dashboard'),
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
-            actions: [
-              Consumer<CartProvider>(
-                builder: (context, cartProvider, child) {
-                  return Stack(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.shopping_cart),
-                        onPressed: () {
-                          setState(() {
-                            _currentIndex = 1; // Navigate to cart tab
-                          });
-                        },
-                      ),
-                      if (cartProvider.itemCount > 0)
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              '${cartProvider.itemCount}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const ConsumerSettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
           body: _buildDashboardContent(userProfile),
           bottomNavigationBar: BottomNavigationBar(
             currentIndex: _currentIndex,
@@ -131,7 +81,41 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                 label: 'Home',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.shopping_cart),
+                icon: Consumer<CartProvider>(
+                  builder: (context, cartProvider, child) {
+                    return Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        const Icon(Icons.shopping_cart),
+                        if (cartProvider.itemCount > 0)
+                          Positioned(
+                            right: -6,
+                            top: -6,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              constraints: const BoxConstraints(
+                                minWidth: 16,
+                                minHeight: 16,
+                              ),
+                              child: Text(
+                                '${cartProvider.itemCount}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
                 label: 'Cart',
               ),
               BottomNavigationBarItem(
@@ -156,7 +140,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
       case 1:
         return const CartScreen();
       case 2:
-        return _buildOrdersTab();
+        return const ConsumerOrdersScreen();
       case 3:
         return _buildProfileTab();
       default:
@@ -253,198 +237,240 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
     );
   }
 
-
-
-
-
-  Widget _buildOrdersTab() {
-    return const Center(
-      child: Text('Orders - Coming Soon'),
-    );
-  }
-
   Widget _buildProfileTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Welcome Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.blue.withOpacity(0.1),
-                        child: const Icon(
-                          Icons.shopping_cart,
-                          size: 30,
-                          color: Colors.blue,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        // Profile Header
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(20, 50, 20, 20),
+          decoration: BoxDecoration(
+            color: Colors.blue,
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: const Text(
+            'Profile',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        // Profile Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Welcome Card
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              'Welcome, Consumer!',
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Consumer',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                            Text(
-                              'Fresh produce at your fingertips!',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            CircleAvatar(
+                              radius: 30,
+                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              child: const Icon(
+                                Icons.shopping_cart,
+                                size: 30,
                                 color: Colors.blue,
-                                fontWeight: FontWeight.w500,
                               ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Welcome, Consumer!',
+                                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Text(
+                                    'Consumer',
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  Text(
+                                    'Fresh produce at your fingertips!',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.settings),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (context) => const ConsumerSettingsScreen(),
+                                  ),
+                                );
+                              },
+                              tooltip: 'Settings',
                             ),
                           ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+                const SizedBox(height: 24),
+
+                // Quick Stats
+                Consumer<ConsumerOrderProvider>(
+                  builder: (context, orderProvider, child) {
+                    final stats = orderProvider.getOrderStatistics();
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard('Active Orders', '${stats['pending']}', Icons.shopping_bag, Colors.blue),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildStatCard('Completed', '${stats['completed']}', Icons.check_circle, Colors.green),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildStatCard('Total Orders', '${stats['total']}', Icons.receipt_long, Colors.orange),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildStatCard('Reviewed', '${stats['reviewed']}', Icons.star, Colors.purple),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+
+                // Quick Actions
+                Text(
+                  'Quick Actions',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _buildQuickActionCard(
+                  'Browse Products',
+                  'Find fresh produce from local farmers',
+                  Icons.search,
+                  () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const BrowseProductsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildQuickActionCard(
+                  'View Cart',
+                  'Check your shopping cart',
+                  Icons.shopping_cart,
+                  () {
+                    setState(() {
+                      _currentIndex = 1;
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildQuickActionCard(
+                  'My Favorites',
+                  'View your saved products',
+                  Icons.favorite,
+                  () {},
+                ),
+                const SizedBox(height: 12),
+                _buildQuickActionCard(
+                  'Write Reviews',
+                  'Rate and review your purchases',
+                  Icons.rate_review,
+                  () {},
+                ),
+                const SizedBox(height: 24),
+
+                // Profile Actions
+                Text(
+                  'Account Management',
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                
+                _buildProfileActionCard(
+                  'All Items',
+                  'View all available products',
+                  Icons.inventory_2,
+                  () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const BrowseProductsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildProfileActionCard(
+                  'Order History',
+                  'View your past orders',
+                  Icons.history,
+                  () {
+                    setState(() {
+                      _currentIndex = 2; // Navigate to orders tab
+                    });
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildProfileActionCard(
+                  'Account Settings',
+                  'Manage your account details',
+                  Icons.settings,
+                  () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ConsumerSettingsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                _buildProfileActionCard(
+                  'Help & Support',
+                  'Get help and contact support',
+                  Icons.help_outline,
+                  () {},
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 24),
-
-          // Quick Stats
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('Active Orders', '3', Icons.shopping_bag, Colors.blue),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard('Favorites', '12', Icons.favorite, Colors.red),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard('Total Spent', '₹8,500', Icons.payments, Colors.green),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard('Reviews Given', '7', Icons.star, Colors.orange),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Quick Actions
-          Text(
-            'Quick Actions',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          _buildQuickActionCard(
-            'Browse Products',
-            'Find fresh produce from local farmers',
-            Icons.search,
-            () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const BrowseProductsScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'View Cart',
-            'Check your shopping cart',
-            Icons.shopping_cart,
-            () {
-              setState(() {
-                _currentIndex = 1;
-              });
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'My Favorites',
-            'View your saved products',
-            Icons.favorite,
-            () {},
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'Write Reviews',
-            'Rate and review your purchases',
-            Icons.rate_review,
-            () {},
-          ),
-          const SizedBox(height: 24),
-
-          // Profile Actions
-          Text(
-            'Account Management',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 16),
-          
-          _buildProfileActionCard(
-            'All Items',
-            'View all available products',
-            Icons.inventory_2,
-            () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const BrowseProductsScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildProfileActionCard(
-            'Order History',
-            'View your past orders',
-            Icons.history,
-            () {},
-          ),
-          const SizedBox(height: 12),
-          _buildProfileActionCard(
-            'Account Settings',
-            'Manage your account details',
-            Icons.settings,
-            () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ConsumerSettingsScreen(),
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildProfileActionCard(
-            'Help & Support',
-            'Get help and contact support',
-            Icons.help_outline,
-            () {},
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
