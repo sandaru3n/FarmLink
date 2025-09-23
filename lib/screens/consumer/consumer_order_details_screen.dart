@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/consumer_order_model.dart';
+import '../../models/consumer_rating_model.dart';
+import '../../services/consumer_rating_service.dart';
+import 'consumer_rating_dialog.dart';
 
 class ConsumerOrderDetailsScreen extends StatelessWidget {
   final ConsumerOrderModel order;
@@ -434,21 +437,21 @@ class ConsumerOrderDetailsScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      // TODO: Implement review functionality
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Review functionality coming soon!'),
+                  child: FutureBuilder<bool>(
+                    future: ConsumerRatingService().hasBeenRated(order.id),
+                    builder: (context, snapshot) {
+                      final hasBeenRated = snapshot.data ?? false;
+                      
+                      return ElevatedButton.icon(
+                        onPressed: () => _showRatingDialog(context, hasBeenRated),
+                        icon: Icon(hasBeenRated ? Icons.edit : Icons.star),
+                        label: Text(hasBeenRated ? 'Update Review' : 'Write Review'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: hasBeenRated ? Colors.green : Colors.orange,
+                          foregroundColor: Colors.white,
                         ),
                       );
                     },
-                    icon: const Icon(Icons.star),
-                    label: const Text('Review'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                    ),
                   ),
                 ),
               ],
@@ -554,5 +557,26 @@ class ConsumerOrderDetailsScreen extends StatelessWidget {
 
   String _formatDateTime(DateTime dateTime) {
     return '${dateTime.day}/${dateTime.month}/${dateTime.year} at ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _showRatingDialog(BuildContext context, bool hasBeenRated) async {
+    ConsumerRatingModel? existingRating;
+    
+    if (hasBeenRated) {
+      existingRating = await ConsumerRatingService().getRatingByConsumerOrder(order.id);
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => ConsumerRatingDialog(
+        order: order,
+        existingRating: existingRating,
+      ),
+    );
+
+    if (result == true) {
+      // Refresh the UI to show updated rating status
+      // You might want to use a StatefulWidget or call setState if needed
+    }
   }
 }

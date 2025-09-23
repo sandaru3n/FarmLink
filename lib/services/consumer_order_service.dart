@@ -111,6 +111,19 @@ class ConsumerOrderService {
     });
   }
 
+  // Get all consumer orders for a distributor
+  Stream<List<ConsumerOrderModel>> getConsumerOrdersByDistributor(String distributorId) {
+    return _consumerOrdersCollection
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs
+          .map((doc) => ConsumerOrderModel.fromMap(doc.data() as Map<String, dynamic>))
+          .where((order) => order.items.any((item) => item.distributorId == distributorId))
+          .toList();
+    });
+  }
+
   // Get a specific order by ID
   Future<ConsumerOrderModel?> getOrderById(String orderId) async {
     try {
