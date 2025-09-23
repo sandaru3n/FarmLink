@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/consumer_order_model.dart';
+import '../../models/consumer_rating_model.dart';
 import '../../services/consumer_order_service.dart';
+import '../../services/consumer_rating_service.dart';
 import 'consumer_order_details_screen.dart';
 
 class ConsumerOrdersScreen extends StatefulWidget {
@@ -70,6 +72,10 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
   }
 
   Widget _buildOrdersList(String consumerId, String status) {
+    if (status == 'reviewed') {
+      return _buildReviewedOrdersList(consumerId);
+    }
+    
     return StreamBuilder<List<ConsumerOrderModel>>(
       stream: _orderService.getConsumerOrders(consumerId),
       builder: (context, snapshot) {
@@ -122,11 +128,6 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
             break;
           case 'completed':
             filteredOrders = orders.where((order) => 
-              order.orderStatus == 'delivered'
-            ).toList();
-            break;
-          case 'reviewed':
-            filteredOrders = orders.where((order) => 
               order.orderStatus == 'delivered' && 
               order.paymentStatus == 'completed'
             ).toList();
@@ -143,6 +144,63 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
           itemBuilder: (context, index) {
             final order = filteredOrders[index];
             return _buildOrderCard(order);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildReviewedOrdersList(String consumerId) {
+    return StreamBuilder<List<ConsumerRatingModel>>(
+      stream: ConsumerRatingService().getConsumerRatings(consumerId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: Colors.grey[400],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Error loading reviews',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  snapshot.error.toString(),
+                  style: TextStyle(
+                    color: Colors.grey[500],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+
+        final ratings = snapshot.data ?? [];
+
+        if (ratings.isEmpty) {
+          return _buildEmptyState('reviewed');
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: ratings.length,
+          itemBuilder: (context, index) {
+            final rating = ratings[index];
+            return _buildReviewedOrderCard(rating);
           },
         );
       },
@@ -422,5 +480,217 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Widget _buildReviewedOrderCard(ConsumerRatingModel rating) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () async {
+          // Get the original order details
+          final order = await _orderService.getOrderById(rating.consumerOrderId);
+          if (order != null && context.mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ConsumerOrderDetailsScreen(order: order),
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Order #${rating.consumerOrderId.substring(rating.consumerOrderId.length - 6)}',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.withOpacity(0.3)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.star,
+                          color: Colors.green,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Reviewed',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              
+              // Distributor info
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: Colors.blue,
+                    child: Text(
+                      rating.distributorName.isNotEmpty
+                          ? rating.distributorName[0].toUpperCase()
+                          : 'D',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          rating.distributorName,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'Distributor',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 12),
+              
+              // Rating display
+              Row(
+                children: [
+                  ...List.generate(5, (index) {
+                    return Icon(
+                      index < rating.rating.floor()
+                          ? Icons.star
+                          : index < rating.rating
+                              ? Icons.star_half
+                              : Icons.star_border,
+                      color: Colors.amber,
+                      size: 20,
+                    );
+                  }),
+                  const SizedBox(width: 8),
+                  Text(
+                    rating.rating.toStringAsFixed(1),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '(${rating.ratingText})',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+              
+              if (rating.comment != null && rating.comment!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    rating.comment!,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+              
+              if (rating.categories != null && rating.categories!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: rating.categories!.map((category) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        category,
+                        style: TextStyle(
+                          color: Colors.blue[700],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+              
+              const SizedBox(height: 12),
+              
+              // Review date
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Reviewed: ${_formatDate(rating.createdAt)}',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                  if (rating.updatedAt != null)
+                    Text(
+                      'Updated: ${_formatDate(rating.updatedAt!)}',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

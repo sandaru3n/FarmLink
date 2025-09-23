@@ -11,6 +11,8 @@ import '../../consumer/browse_products_screen.dart';
 import '../../consumer/cart_screen.dart';
 import '../../consumer/consumer_orders_screen.dart';
 import '../../consumer/saved_products_screen.dart';
+import '../../consumer/donation_screen.dart';
+import '../../consumer/donation_history_screen.dart';
 
 class ConsumerDashboard extends StatefulWidget {
   const ConsumerDashboard({super.key});
