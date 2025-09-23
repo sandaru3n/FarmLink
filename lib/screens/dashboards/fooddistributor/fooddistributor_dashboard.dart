@@ -5,7 +5,7 @@ import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../settings/fooddistributor_settings_screen.dart';
 import '../../distributor/crop_marketplace_screen.dart';
-import '../../distributor/distributor_orders_screen.dart';
+import '../../distributor/distributor_orders_tabbed_screen.dart';
 import '../../distributor/product_list_screen.dart';
 import '../../../services/crop_service.dart';
 import '../../../services/order_service.dart';
@@ -120,7 +120,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       case 1:
         return _buildMarketplaceTab();
       case 2:
-        return const DistributorOrdersScreen();
+        return const DistributorOrdersTabbedScreen();
       case 3:
         return _buildSuppliersTab();
       case 4:
