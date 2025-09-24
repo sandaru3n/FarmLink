@@ -286,7 +286,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
   Widget _buildTransportCard(TransportOrderModel transportOrder) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
+      elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
@@ -302,79 +302,18 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with image and status
+              // Header with status
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Crop image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Image.network(
-                      transportOrder.cropImageUrl,
-                      width: 70,
-                      height: 70,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 70,
-                          height: 70,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(Icons.image, color: Colors.grey[600]),
-                        );
-                      },
+                  Text(
+                    'Transport Order #${transportOrder.id.substring(0, 8)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  // Order details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          transportOrder.cropName,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${transportOrder.quantity} kg',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              '₹${transportOrder.price.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                color: Colors.green,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            if (transportOrder.deliveryFee != null) ...[
-                              const SizedBox(width: 8),
-                              Text(
-                                '+ ₹${transportOrder.deliveryFee!.toStringAsFixed(2)} fee',
-                                style: TextStyle(
-                                  color: Colors.blue[600],
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Status indicator
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -392,112 +331,221 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              
+              // Crop information with image
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Crop image
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      transportOrder.cropImageUrl,
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(Icons.image, color: Colors.grey[600], size: 32),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  // Crop details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          transportOrder.cropName,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.scale, size: 16, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${transportOrder.quantity} kg',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.attach_money, size: 16, color: Colors.green[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              '₹${transportOrder.price.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                color: Colors.green[600],
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            if (transportOrder.deliveryFee != null) ...[
+                              const SizedBox(width: 8),
+                              Text(
+                                '+ ₹${transportOrder.deliveryFee!.toStringAsFixed(2)} delivery fee',
+                                style: TextStyle(
+                                  color: Colors.blue[600],
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 20),
               
-              // Route information
+              // Route information with enhanced layout
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
+                  gradient: LinearGradient(
+                    colors: [Colors.grey[50]!, Colors.grey[100]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    // Pickup location
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    // Pickup section
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.location_on, color: Colors.white, size: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(Icons.location_on, color: Colors.white, size: 12),
-                              ),
-                              const SizedBox(width: 8),
                               Text(
-                                'Pickup',
+                                'Pickup Location',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                transportOrder.pickupLocation,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Farmer: ${transportOrder.farmerName}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            transportOrder.pickupLocation,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            transportOrder.farmerName,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     
-                    // Arrow
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Icon(Icons.arrow_forward, color: Colors.grey[400]),
+                    const SizedBox(height: 16),
+                    
+                    // Arrow divider
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey[300])),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Icon(Icons.arrow_downward, color: Colors.grey[400], size: 20),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey[300])),
+                      ],
                     ),
                     
-                    // Delivery location
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    const SizedBox(height: 16),
+                    
+                    // Delivery section
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.location_on, color: Colors.white, size: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(Icons.location_on, color: Colors.white, size: 12),
-                              ),
-                              const SizedBox(width: 8),
                               Text(
-                                'Delivery',
+                                'Delivery Location',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                transportOrder.distributorLocation,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Distributor: ${transportOrder.distributorName}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            transportOrder.distributorLocation,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            transportOrder.distributorName,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -509,24 +557,25 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
+                      child: OutlinedButton.icon(
                         onPressed: () => _showCancelDialog(transportOrder),
+                        icon: const Icon(Icons.cancel, size: 18),
+                        label: const Text('Cancel'),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: Colors.red),
+                          foregroundColor: Colors.red,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                        ),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(color: Colors.red),
                         ),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: ElevatedButton(
+                      child: ElevatedButton.icon(
                         onPressed: () => _markInTransit(transportOrder),
+                        icon: const Icon(Icons.local_shipping, size: 18),
+                        label: const Text('Start Delivery'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
@@ -534,7 +583,6 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                             borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        child: const Text('Start Delivery'),
                       ),
                     ),
                   ],
@@ -543,8 +591,10 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: () => _markDelivered(transportOrder),
+                    icon: const Icon(Icons.check_circle, size: 18),
+                    label: const Text('Mark as Delivered'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -552,7 +602,6 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Mark as Delivered'),
                   ),
                 ),
               ],
