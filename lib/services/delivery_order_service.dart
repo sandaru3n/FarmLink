@@ -137,7 +137,7 @@ class DeliveryOrderService {
   }
 
   // Accept delivery order - create delivery_order collection entry and transport_order
-  Future<void> acceptDeliveryOrder(String orderId, String transporterId, String transporterName) async {
+  Future<void> acceptDeliveryOrder(String orderId, String transporterId, String transporterName, {String? scheduledDay}) async {
     try {
       print('Accepting delivery order for order: $orderId by transporter: $transporterName');
       
@@ -211,6 +211,10 @@ class DeliveryOrderService {
         'acceptedAt': Timestamp.fromDate(DateTime.now()),
         'deliveryFee': (orderData['finalPrice'] ?? 0) * 0.1, // 10% delivery fee
         'estimatedDeliveryTime': '2-3 hours',
+        'scheduledDay': scheduledDay,
+        'scheduledDate': null, // Will be set when specific date is chosen
+        'scheduledTime': null, // Will be set when specific time is chosen
+        'deliveryLocation': orderData['distributorLocation'] ?? '',
       };
       
       // Save to transport_orders collection
@@ -434,6 +438,45 @@ class DeliveryOrderService {
       await createDeliveryOrderFromCompletedOrder(order);
     } catch (e) {
       throw Exception('Test delivery order creation failed: $e');
+    }
+  }
+
+  // Update delivery order status without creating transport order
+  Future<void> updateDeliveryOrderStatus(String deliveryOrderId, String status) async {
+    try {
+      await _deliveryOrdersCollection.doc(deliveryOrderId).update({
+        'status': status,
+        if (status == 'accepted') 'acceptedAt': Timestamp.fromDate(DateTime.now()),
+        if (status == 'in_transit') 'inTransitAt': Timestamp.fromDate(DateTime.now()),
+        if (status == 'delivered') 'deliveredAt': Timestamp.fromDate(DateTime.now()),
+      });
+      print('Successfully updated delivery order status: $deliveryOrderId to $status');
+    } catch (e) {
+      print('Error updating delivery order status: $e');
+      throw Exception('Failed to update delivery order status: $e');
+    }
+  }
+
+  // Update transport order scheduling details
+  Future<void> updateTransportOrderScheduling(String transportOrderId, {
+    String? scheduledDay,
+    DateTime? scheduledDate,
+    String? scheduledTime,
+    String? deliveryLocation,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{};
+      
+      if (scheduledDay != null) updateData['scheduledDay'] = scheduledDay;
+      if (scheduledDate != null) updateData['scheduledDate'] = Timestamp.fromDate(scheduledDate);
+      if (scheduledTime != null) updateData['scheduledTime'] = scheduledTime;
+      if (deliveryLocation != null) updateData['deliveryLocation'] = deliveryLocation;
+      
+      await _firestore.collection('transport_orders').doc(transportOrderId).update(updateData);
+      print('Successfully updated transport order scheduling: $transportOrderId');
+    } catch (e) {
+      print('Error updating transport order scheduling: $e');
+      throw Exception('Failed to update transport order scheduling: $e');
     }
   }
 
