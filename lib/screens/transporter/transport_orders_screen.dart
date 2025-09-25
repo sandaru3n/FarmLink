@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/transport_order_model.dart';
 import 'transport_order_detail_screen.dart';
+import 'distributor_feedback_dialog.dart';
 
 class TransportOrdersScreen extends StatefulWidget {
   const TransportOrdersScreen({super.key});
@@ -755,6 +756,24 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                     ),
                   ),
                 ),
+                const SizedBox(height: 8),
+                // Provide feedback about distributor
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showDistributorFeedback(transportOrder),
+                    icon: const Icon(Icons.rate_review, size: 16),
+                    label: const Text('Provide Feedback about Distributor'),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.purple),
+                      foregroundColor: Colors.purple,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
               ],
             ],
           ),
@@ -838,6 +857,29 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  Future<void> _showDistributorFeedback(TransportOrderModel transportOrder) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => DistributorFeedbackDialog(
+        deliveryOrderId: transportOrder.deliveryOrderId,
+        transporterId: transportOrder.transporterId,
+        transporterName: transportOrder.transporterName,
+        // We don't store distributorId in transport order; pass name for now
+        distributorId: transportOrder.distributorName,
+        distributorName: transportOrder.distributorName,
+      ),
+    );
+
+    if ((result ?? false) && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Thanks for your feedback!'),
+          backgroundColor: Colors.purple,
+        ),
+      );
+    }
   }
 
   Future<void> _markInTransit(TransportOrderModel transportOrder) async {
