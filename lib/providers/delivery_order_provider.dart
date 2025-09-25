@@ -113,7 +113,7 @@ class DeliveryOrderProvider with ChangeNotifier {
   }
 
   // Accept delivery order
-  Future<bool> acceptDeliveryOrder(String orderId, String transporterName) async {
+  Future<bool> acceptDeliveryOrder(String orderId, String transporterName, {String? scheduledDay}) async {
     if (currentUserId == null) {
       _setError('User not authenticated');
       return false;
@@ -123,7 +123,28 @@ class DeliveryOrderProvider with ChangeNotifier {
     _clearError();
 
     try {
-      await _deliveryOrderService.acceptDeliveryOrder(orderId, currentUserId!, transporterName);
+      await _deliveryOrderService.acceptDeliveryOrder(orderId, currentUserId!, transporterName, scheduledDay: scheduledDay);
+      
+      // Refresh the lists
+      await loadPendingDeliveryOrders();
+      await loadTransporterDeliveryOrders();
+      
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // Update delivery order status without creating transport order
+  Future<bool> updateDeliveryOrderStatus(String deliveryOrderId, String status) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _deliveryOrderService.updateDeliveryOrderStatus(deliveryOrderId, status);
       
       // Refresh the lists
       await loadPendingDeliveryOrders();
