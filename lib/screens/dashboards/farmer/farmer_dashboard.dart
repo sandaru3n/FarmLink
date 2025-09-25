@@ -4,9 +4,12 @@ import '../../../providers/auth_provider.dart';
 import '../../../providers/crop_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
+import '../../../services/farmer_dashboard_service.dart';
 import '../../settings/farmer_settings_screen.dart';
 import '../../farmer/crop_listing_screen.dart';
 import '../../farmer/add_crop_screen.dart';
+import '../../farmer/farmer_orders_screen.dart';
+import '../../farmer/farmer_analytics_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
@@ -17,6 +20,44 @@ class FarmerDashboard extends StatefulWidget {
 
 class _FarmerDashboardState extends State<FarmerDashboard> {
   int _currentIndex = 0;
+  final FarmerDashboardService _dashboardService = FarmerDashboardService();
+  FarmerDashboardStats? _dashboardStats;
+  bool _isLoadingStats = true;
+  bool _hasLoadedStats = false;
+  DateTime? _lastStatsUpdate;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDashboardStats();
+  }
+
+  Future<void> _loadDashboardStats({bool showLoading = false}) async {
+    // Only show loading state on first load or when manually refreshing
+    if (showLoading || !_hasLoadedStats) {
+      setState(() {
+        _isLoadingStats = true;
+      });
+    }
+
+    try {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (authProvider.userProfile?.uid != null) {
+        final stats = await _dashboardService.getFarmerDashboardStats(authProvider.userProfile!.uid);
+        setState(() {
+          _dashboardStats = stats;
+          _isLoadingStats = false;
+          _hasLoadedStats = true;
+          _lastStatsUpdate = DateTime.now();
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoadingStats = false;
+      });
+      // Handle error silently for now, show default values
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,12 +122,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                 label: 'Crops',
               ),
               BottomNavigationBarItem(
-                icon: const Icon(Icons.inventory),
-                label: 'Products',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.shopping_bag),
-                label: 'Orders',
+                icon: const Icon(Icons.local_shipping),
+                label: 'Delivery',
               ),
               BottomNavigationBarItem(
                 icon: const Icon(Icons.analytics),
@@ -100,19 +137,30 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   }
 
   Widget _buildDashboardContent(UserModel? userProfile) {
+    // Check if stats need refreshing when returning to home tab
+    if (_currentIndex == 0 && _hasLoadedStats) {
+      _checkAndRefreshStats();
+    }
+
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab(userProfile);
       case 1:
         return _buildCropsTab();
-      case 2:
-        return _buildProductsTab();
+        case 2:
+          return _buildDeliveryTab();
       case 3:
-        return _buildOrdersTab();
-      case 4:
         return _buildAnalyticsTab();
       default:
         return _buildHomeTab(userProfile);
+    }
+  }
+
+  void _checkAndRefreshStats() {
+    // Only refresh if it's been more than 30 seconds since last update
+    if (_lastStatsUpdate == null || 
+        DateTime.now().difference(_lastStatsUpdate!).inSeconds > 30) {
+      _loadDashboardStats(showLoading: false);
     }
   }
 
@@ -175,15 +223,50 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           ),
           const SizedBox(height: 24),
 
+          // Quick Stats Header
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Farm Statistics',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              IconButton(
+                onPressed: () => _loadDashboardStats(showLoading: true),
+                icon: _isLoadingStats 
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.refresh),
+                tooltip: 'Refresh Statistics',
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
           // Quick Stats
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Active Crops', '12', Icons.agriculture, Colors.green),
+                child: _buildStatCard(
+                  'Active Crops', 
+                  '${_dashboardStats?.activeCrops ?? 0}', 
+                  Icons.agriculture, 
+                  Colors.green
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildStatCard('Products Listed', '8', Icons.inventory, Colors.blue),
+                child: _buildStatCard(
+                  'Sold Crops', 
+                  '${_dashboardStats?.soldCrops ?? 0}', 
+                  Icons.check_circle, 
+                  Colors.blue
+                ),
               ),
             ],
           ),
@@ -191,11 +274,21 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Pending Orders', '5', Icons.shopping_bag, Colors.orange),
+                child: _buildStatCard(
+                  'Pending Crops', 
+                  '${_dashboardStats?.pendingOrders ?? 0}', 
+                  Icons.agriculture, 
+                  Colors.orange
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildStatCard('This Month Sales', '₹25,000', Icons.trending_up, Colors.purple),
+                child: _buildStatCard(
+                  'This Month Sales', 
+                  '₹${_dashboardStats?.thisMonthSales.toStringAsFixed(0) ?? '0'}', 
+                  Icons.trending_up, 
+                  Colors.purple
+                ),
               ),
             ],
           ),
@@ -213,12 +306,16 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             'Add New Crop',
             'List your fresh produce for bidding',
             Icons.add_circle,
-            () {
-              Navigator.of(context).push(
+            () async {
+              final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const AddCropScreen(),
                 ),
               );
+              // Refresh stats if a crop was added
+              if (result == true) {
+                _loadDashboardStats(showLoading: false);
+              }
             },
           ),
           const SizedBox(height: 12),
@@ -234,17 +331,25 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
-            'View Orders',
-            'Check and process incoming orders',
-            Icons.shopping_bag,
-            () {},
+            'Track Deliveries',
+            'Monitor delivery status of your crops',
+            Icons.local_shipping,
+            () {
+              setState(() {
+                _currentIndex = 2; // Switch to delivery tab
+              });
+            },
           ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
-            'Weather Forecast',
-            'Check weather for your crops',
-            Icons.wb_sunny,
-            () {},
+            'View Analytics',
+            'Track earnings and performance',
+            Icons.analytics,
+            () {
+              setState(() {
+                _currentIndex = 3; // Switch to analytics tab
+              });
+            },
           ),
         ],
       ),
@@ -340,21 +445,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     return const CropListingScreen();
   }
 
-  Widget _buildProductsTab() {
-    return const Center(
-      child: Text('Products Management - Coming Soon'),
-    );
-  }
 
-  Widget _buildOrdersTab() {
-    return const Center(
-      child: Text('Orders Management - Coming Soon'),
-    );
+  Widget _buildDeliveryTab() {
+    return const FarmerOrdersScreen();
   }
 
   Widget _buildAnalyticsTab() {
-    return const Center(
-      child: Text('Analytics Dashboard - Coming Soon'),
-    );
+    return const FarmerAnalyticsScreen();
   }
 }

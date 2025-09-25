@@ -14,6 +14,67 @@ class OrderService {
   CollectionReference get _ordersCollection => _firestore.collection('orders');
   CollectionReference get _cropsCollection => _firestore.collection('crops');
 
+  // Create order from farmer confirmation (when farmer confirms winning distributor)
+  Future<OrderModel> createOrderFromCrop({required CropModel crop, required String distributorId, required String distributorLocation}) async {
+    try {
+      return await _firestore.runTransaction((transaction) async {
+        // Get distributor details
+        final distributorDoc = await transaction.get(_firestore.collection('users').doc(distributorId));
+        if (!distributorDoc.exists) {
+          throw Exception('Distributor not found');
+        }
+        
+        final distributorData = distributorDoc.data() as Map<String, dynamic>;
+        
+        // Get farmer details
+        final farmerDoc = await transaction.get(_firestore.collection('users').doc(crop.farmerId));
+        if (!farmerDoc.exists) {
+          throw Exception('Farmer not found');
+        }
+        
+        final farmerData = farmerDoc.data() as Map<String, dynamic>;
+
+        // Create order ID
+        final orderId = DateTime.now().millisecondsSinceEpoch.toString();
+
+        // Create order model
+        final order = OrderModel(
+          id: orderId,
+          cropId: crop.id,
+          distributorId: distributorId,
+          distributorName: distributorData['displayName'] ?? 'Distributor',
+          distributorEmail: distributorData['email'] ?? '',
+          distributorPhone: distributorData['phone'] ?? '',
+          distributorLocation: distributorLocation,
+          farmerId: crop.farmerId,
+          farmerName: farmerData['displayName'] ?? 'Farmer',
+          farmerEmail: farmerData['email'] ?? '',
+          farmerPhone: farmerData['phone'] ?? '',
+          cropName: crop.cropName,
+          cropImageUrl: crop.imageUrl,
+          quantity: crop.quantity,
+          finalPrice: crop.highestBid!.amount,
+          pickupLocation: crop.pickupLocation,
+          createdAt: DateTime.now(),
+        );
+
+        // Save order to Firestore within transaction
+        transaction.set(_ordersCollection.doc(orderId), order.toMap());
+
+        // Update crop status to sold within the transaction
+        transaction.update(_cropsCollection.doc(crop.id), {
+          'order': order.toMap(),
+          'status': 'sold',
+          'lastUpdated': Timestamp.fromDate(DateTime.now()),
+        });
+
+        return order;
+      });
+    } catch (e) {
+      throw Exception('Failed to create order from crop: $e');
+    }
+  }
+
   // Create a new order with payment integration
   Future<OrderModel> createOrder(CropModel crop, String distributorId, String distributorLocation) async {
     try {
