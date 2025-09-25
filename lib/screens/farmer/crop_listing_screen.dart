@@ -50,7 +50,7 @@ class _CropListingScreenState extends State<CropListingScreen>
           tabs: const [
             Tab(text: 'Pending'),
             Tab(text: 'Active'),
-            Tab(text: 'Expired'),
+            Tab(text: 'Expired & Sold'),
             Tab(text: 'All'),
           ],
         ),
