@@ -3,13 +3,16 @@ import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/crop_provider.dart';
 import '../../../models/user_model.dart';
+import '../../../models/weather_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../../services/farmer_dashboard_service.dart';
+import '../../../services/weather_service.dart';
 import '../../settings/farmer_settings_screen.dart';
 import '../../farmer/crop_listing_screen.dart';
 import '../../farmer/add_crop_screen.dart';
 import '../../farmer/farmer_orders_screen.dart';
 import '../../farmer/farmer_analytics_screen.dart';
+import '../../farmer/crop_advisory_screen.dart';
 
 class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
@@ -147,7 +150,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         return _buildHomeTab(userProfile);
       case 1:
         return _buildCropsTab();
-        case 2:
+      case 2:
           return _buildDeliveryTab();
       case 3:
         return _buildAnalyticsTab();
@@ -352,14 +355,18 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             },
           ),
           const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'AI Crop Advisory',
-            'Get AI-powered farming advice and insights',
-            Icons.psychology,
-            () {
-              _showAICropAdvisory(context);
-            },
+    _buildQuickActionCard(
+      'AI Crop Advisory',
+      'Get AI-powered farming advice and insights',
+      Icons.psychology,
+      () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => const CropAdvisoryScreen(),
           ),
+        );
+      },
+    ),
           const SizedBox(height: 12),
           _buildQuickActionCard(
             'Weather Forecast',
@@ -472,536 +479,13 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     return const FarmerAnalyticsScreen();
   }
 
-  void _showAICropAdvisory(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.psychology,
-                      color: Colors.purple,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'AI Crop Advisory',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Get personalized farming advice',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Coming Soon Message
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.purple.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.purple.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.construction,
-                            size: 48,
-                            color: Colors.purple[600],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'AI Crop Advisory Coming Soon!',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.purple[800],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'We\'re working on bringing you AI-powered farming insights and personalized crop advice.',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[700],
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // Feature Preview
-                    const Text(
-                      'Planned Features:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    _buildFeatureItem(
-                      Icons.eco,
-                      'Crop Health Analysis',
-                      'AI-powered disease and pest detection',
-                    ),
-                    _buildFeatureItem(
-                      Icons.water_drop,
-                      'Irrigation Recommendations',
-                      'Smart watering schedules based on weather',
-                    ),
-                    _buildFeatureItem(
-                      Icons.calendar_today,
-                      'Planting Calendar',
-                      'Optimal planting times for your region',
-                    ),
-                    _buildFeatureItem(
-                      Icons.trending_up,
-                      'Yield Optimization',
-                      'Tips to maximize your crop yields',
-                    ),
-                    _buildFeatureItem(
-                      Icons.cloud,
-                      'Weather Insights',
-                      'Weather-based farming recommendations',
-                    ),
-                    _buildFeatureItem(
-                      Icons.analytics,
-                      'Market Analysis',
-                      'Price predictions and market trends',
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Get Notified Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('You\'ll be notified when AI Crop Advisory is available!'),
-                              backgroundColor: Colors.green,
-                            ),
-                          );
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(Icons.notifications),
-                        label: const Text('Notify Me When Available'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.purple,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: Colors.purple.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              icon,
-              color: Colors.purple,
-              size: 20,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  description,
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showWeatherForecast(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.85,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          children: [
-            // Handle bar
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.wb_sunny,
-                      color: Colors.blue,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Weather Forecast',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Current and upcoming weather conditions',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            // Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Location Card
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.blue[400]!, Colors.blue[600]!],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.location_on,
-                                color: Colors.white,
-                                size: 20,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Current Location',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Farm Location, Agricultural District',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    
-                    // Current Weather
-                    const Text(
-                      'Current Weather',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.orange.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: Colors.orange.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(
-                            Icons.wb_sunny,
-                            color: Colors.orange,
-                            size: 48,
-                          ),
-                          const SizedBox(width: 20),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text(
-                                  'Sunny',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange,
-                                  ),
-                                ),
-                                Text(
-                                  '28°C',
-                                  style: TextStyle(
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.orange[800],
-                                  ),
-                                ),
-                                Text(
-                                  'Feels like 31°C',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              _buildWeatherDetail('Humidity', '65%'),
-                              const SizedBox(height: 8),
-                              _buildWeatherDetail('Wind', '12 km/h'),
-                              const SizedBox(height: 8),
-                              _buildWeatherDetail('Pressure', '1013 hPa'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    
-                    // 7-Day Forecast
-                    const Text(
-                      '7-Day Forecast',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // Sample forecast data
-                    _buildForecastDay('Today', Icons.wb_sunny, 'Sunny', '28°C', '24°C'),
-                    _buildForecastDay('Tomorrow', Icons.wb_cloudy, 'Partly Cloudy', '26°C', '22°C'),
-                    _buildForecastDay('Wed', Icons.grain, 'Light Rain', '24°C', '20°C'),
-                    _buildForecastDay('Thu', Icons.wb_cloudy, 'Cloudy', '25°C', '21°C'),
-                    _buildForecastDay('Fri', Icons.wb_sunny, 'Sunny', '27°C', '23°C'),
-                    _buildForecastDay('Sat', Icons.wb_cloudy, 'Partly Cloudy', '26°C', '22°C'),
-                    _buildForecastDay('Sun', Icons.grain, 'Light Rain', '24°C', '20°C'),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Farming Recommendations
-                    const Text(
-                      'Farming Recommendations',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    _buildRecommendationCard(
-                      Icons.water_drop,
-                      'Irrigation',
-                      'Moderate watering recommended. Current humidity levels are optimal.',
-                      Colors.blue,
-                    ),
-                    _buildRecommendationCard(
-                      Icons.agriculture,
-                      'Planting',
-                      'Good conditions for planting. Soil temperature is favorable.',
-                      Colors.green,
-                    ),
-                    _buildRecommendationCard(
-                      Icons.pest_control,
-                      'Pest Control',
-                      'Monitor for pests. Current weather may increase pest activity.',
-                      Colors.orange,
-                    ),
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Refresh Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Weather data refreshed!'),
-                              backgroundColor: Colors.blue,
-                            ),
-                          );
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Refresh Weather Data'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+      builder: (context) => WeatherForecastModal(),
     );
   }
 
@@ -1121,5 +605,580 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         ],
       ),
     );
+  }
+}
+
+class WeatherForecastModal extends StatefulWidget {
+  @override
+  _WeatherForecastModalState createState() => _WeatherForecastModalState();
+}
+
+class _WeatherForecastModalState extends State<WeatherForecastModal> {
+  final WeatherService _weatherService = WeatherService();
+  WeatherModel? _weatherData;
+  bool _isLoading = true;
+  String _errorMessage = '';
+  String _selectedCity = WeatherService.getDefaultCity();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWeatherData();
+  }
+
+  Future<void> _loadWeatherData() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+    });
+
+    try {
+      final weather = await _weatherService.getCurrentWeather(_selectedCity);
+      setState(() {
+        _weatherData = weather;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _showCitySelector() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.6,
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Select City',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Expanded(
+              child: ListView.builder(
+                itemCount: WeatherService.getPopularFarmingCities().length,
+                itemBuilder: (context, index) {
+                  final city = WeatherService.getPopularFarmingCities()[index];
+                  final isSelected = city == _selectedCity;
+                  
+                  return ListTile(
+                    title: Text(city),
+                    trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
+                    onTap: () {
+                      setState(() {
+                        _selectedCity = city;
+                      });
+                      Navigator.pop(context);
+                      _loadWeatherData();
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.wb_sunny,
+                    color: Colors.blue,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Weather Forecast',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Real-time weather data',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          // Content
+          Expanded(
+            child: _isLoading
+                ? const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(),
+                        SizedBox(height: 16),
+                        Text('Loading weather data...'),
+                      ],
+                    ),
+                  )
+                : _errorMessage.isNotEmpty
+                    ? _buildErrorWidget()
+                    : _buildWeatherContent(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget() {
+    final isApiKeyError = _errorMessage.contains('API key not configured');
+    
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isApiKeyError ? Icons.key_off : Icons.error_outline,
+              size: 64,
+              color: isApiKeyError ? Colors.orange[300] : Colors.red[300],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isApiKeyError ? 'API Key Required' : 'Failed to load weather data',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isApiKeyError ? Colors.orange[700] : Colors.red[700],
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isApiKeyError 
+                ? 'To use weather features, you need to set up your OpenWeatherMap API key.\n\n1. Get a free API key from openweathermap.org\n2. Open lib/services/weather_service.dart\n3. Replace YOUR_API_KEY_HERE with your actual key'
+                : _errorMessage,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 24),
+            if (isApiKeyError) ...[
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                ),
+                child: Column(
+                  children: [
+                    const Icon(Icons.info, color: Colors.blue, size: 24),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Free API Key Available',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.blue,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'OpenWeatherMap offers 1,000 free API calls per day',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            ElevatedButton.icon(
+              onPressed: _loadWeatherData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isApiKeyError ? Colors.orange : Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeatherContent() {
+    if (_weatherData == null) return const SizedBox();
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // City Selection
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.blue[400]!, Colors.blue[600]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Current Location',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      onPressed: _showCitySelector,
+                      icon: const Icon(
+                        Icons.edit_location,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  '${_weatherData!.city}, ${_weatherData!.country}',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          
+          // Current Weather
+          const Text(
+            'Current Weather',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.orange.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.orange.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                // Weather Icon
+                if (_weatherData!.icon.isNotEmpty)
+                  Image.network(
+                    _weatherData!.getWeatherIcon(),
+                    width: 48,
+                    height: 48,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.wb_sunny,
+                      color: Colors.orange,
+                      size: 48,
+                    ),
+                  )
+                else
+                  const Icon(
+                    Icons.wb_sunny,
+                    color: Colors.orange,
+                    size: 48,
+                  ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _weatherData!.description.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      Text(
+                        _weatherData!.getTemperatureCelsius(),
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange[800],
+                        ),
+                      ),
+                      Text(
+                        _weatherData!.getFeelsLikeCelsius(),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _buildWeatherDetail('Humidity', _weatherData!.getHumidityPercentage()),
+                    const SizedBox(height: 8),
+                    _buildWeatherDetail('Wind', _weatherData!.getWindSpeedKmh()),
+                    const SizedBox(height: 8),
+                    _buildWeatherDetail('Pressure', _weatherData!.getPressureHpa()),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+          
+          // Farming Recommendations
+          const Text(
+            'Farming Recommendations',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          
+          _buildRecommendationCard(
+            Icons.water_drop,
+            'Irrigation',
+            _getIrrigationRecommendation(),
+            Colors.blue,
+          ),
+          _buildRecommendationCard(
+            Icons.agriculture,
+            'Planting',
+            _getPlantingRecommendation(),
+            Colors.green,
+          ),
+          _buildRecommendationCard(
+            Icons.pest_control,
+            'Pest Control',
+            _getPestControlRecommendation(),
+            Colors.orange,
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Refresh Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _loadWeatherData,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Refresh Weather Data'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWeatherDetail(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[600],
+            fontSize: 12,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecommendationCard(IconData icon, String title, String description, Color color) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: 24,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getIrrigationRecommendation() {
+    if (_weatherData == null) return 'Unable to provide recommendation';
+    
+    final humidity = _weatherData!.humidity;
+    final temperature = _weatherData!.temperature;
+    
+    if (humidity < 40) {
+      return 'High irrigation needed. Low humidity levels detected.';
+    } else if (humidity < 60) {
+      return 'Moderate irrigation recommended. Monitor soil moisture.';
+    } else {
+      return 'Low irrigation needed. High humidity levels detected.';
+    }
+  }
+
+  String _getPlantingRecommendation() {
+    if (_weatherData == null) return 'Unable to provide recommendation';
+    
+    final temperature = _weatherData!.temperature;
+    
+    if (temperature < 15) {
+      return 'Cold conditions. Consider delaying planting or use cold-resistant varieties.';
+    } else if (temperature > 35) {
+      return 'Hot conditions. Plant in early morning or evening. Provide shade.';
+    } else {
+      return 'Good conditions for planting. Temperature is favorable for most crops.';
+    }
+  }
+
+  String _getPestControlRecommendation() {
+    if (_weatherData == null) return 'Unable to provide recommendation';
+    
+    final humidity = _weatherData!.humidity;
+    final temperature = _weatherData!.temperature;
+    
+    if (humidity > 70 && temperature > 25) {
+      return 'High pest risk. Humid and warm conditions favor pest growth. Monitor closely.';
+    } else if (humidity > 60) {
+      return 'Moderate pest risk. Monitor for fungal diseases and pests.';
+    } else {
+      return 'Low pest risk. Current conditions are less favorable for pest development.';
+    }
   }
 }
