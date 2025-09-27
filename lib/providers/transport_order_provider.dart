@@ -160,6 +160,28 @@ class TransportOrderProvider with ChangeNotifier {
     }
   }
 
+  // Update transport order scheduling
+  Future<bool> updateTransportOrderScheduling(String transportOrderId, {
+    String? scheduledDay,
+    DateTime? scheduledDate,
+    String? scheduledTime,
+    String? deliveryLocation,
+  }) async {
+    try {
+      await _transportOrderService.updateTransportOrderScheduling(
+        transportOrderId,
+        scheduledDay: scheduledDay,
+        scheduledDate: scheduledDate,
+        scheduledTime: scheduledTime,
+        deliveryLocation: deliveryLocation,
+      );
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    }
+  }
+
   // Load transport statistics
   Future<void> loadTransportStatistics() async {
     if (currentUserId == null) return;
