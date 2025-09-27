@@ -124,6 +124,17 @@ class DeliveryOrderService {
     });
   }
 
+  // Get delivery orders for a specific farmer
+  Stream<List<DeliveryOrderModel>> getFarmerDeliveryOrders(String farmerId) {
+    return _deliveryOrdersCollection
+        .where('farmerId', isEqualTo: farmerId)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) => DeliveryOrderModel.fromMap(doc.data() as Map<String, dynamic>)).toList();
+    });
+  }
+
   // Get delivery orders by status for a transporter
   Stream<List<DeliveryOrderModel>> getTransporterDeliveryOrdersByStatus(String transporterId, String status) {
     return _deliveryOrdersCollection
