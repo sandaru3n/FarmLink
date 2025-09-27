@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/order_service.dart';
 import 'add_crop_screen.dart';
 import 'edit_crop_screen.dart';
 
@@ -49,7 +50,7 @@ class _CropListingScreenState extends State<CropListingScreen>
           tabs: const [
             Tab(text: 'Pending'),
             Tab(text: 'Active'),
-            Tab(text: 'Expired'),
+            Tab(text: 'Expired & Sold'),
             Tab(text: 'All'),
           ],
         ),
@@ -404,8 +405,8 @@ class _CropListingScreenState extends State<CropListingScreen>
           ),
         ],
       );
-    } else if (crop.isActive || crop.isExpired) {
-      // Active/expired crops can only view bidding history
+    } else if (crop.isActive) {
+      // Active crops can only view bidding history
       return Row(
         children: [
           Expanded(
@@ -421,6 +422,91 @@ class _CropListingScreenState extends State<CropListingScreen>
           ),
         ],
       );
+    } else if (crop.isExpired) {
+      // Expired crops can view bidding history and confirm winning distributor
+      if (crop.bids.isEmpty) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: Colors.grey, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'No bids received',
+                style: TextStyle(
+                  color: Colors.grey.shade700,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        return Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showBiddingHistory(crop),
+                    icon: const Icon(Icons.history),
+                    label: const Text('Bid History'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.green,
+                      side: const BorderSide(color: Colors.green),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _confirmWinningDistributor(crop),
+                    icon: const Icon(Icons.check_circle),
+                    label: const Text('Confirm Winner'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            if (crop.highestBid != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.shade200),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.emoji_events, color: Colors.green, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Winner: ${crop.highestBid!.distributorName} - ₹${crop.highestBid!.amount.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Colors.green,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        );
+      }
     } else {
       // Sold crops - no actions needed
       return Container(
@@ -516,9 +602,9 @@ class _CropListingScreenState extends State<CropListingScreen>
       context: context,
       isScrollControlled: true,
       builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.6,
+        initialChildSize: 0.7,
         minChildSize: 0.4,
-        maxChildSize: 0.9,
+        maxChildSize: 0.95,
         builder: (context, scrollController) => Container(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -526,14 +612,15 @@ class _CropListingScreenState extends State<CropListingScreen>
             children: [
               Row(
                 children: [
-                  Text(
-                    'Bidding History - ${crop.cropName}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      'Bidding History - ${crop.cropName}',
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.close),
@@ -541,38 +628,158 @@ class _CropListingScreenState extends State<CropListingScreen>
                 ],
               ),
               const Divider(),
+              
+              // Bidding Summary
+              if (crop.bids.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.analytics, color: Colors.green, size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Bidding Summary',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade800,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text('Total Bids: ${crop.bids.length}'),
+                          ),
+                          if (crop.highestBid != null) ...[
+                            Expanded(
+                              child: Text(
+                                'Highest: ₹${crop.highestBid!.amount.toStringAsFixed(0)}',
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (crop.highestBid != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          'Winner: ${crop.highestBid!.distributorName}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green.shade700,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              
+              // Bids List
               Expanded(
                 child: crop.bids.isEmpty
                     ? const Center(
-                        child: Text('No bids yet'),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.gavel,
+                              size: 64,
+                              color: Colors.grey,
+                            ),
+                            SizedBox(height: 16),
+                            Text(
+                              'No bids received',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                     : ListView.builder(
                         controller: scrollController,
                         itemCount: crop.bids.length,
                         itemBuilder: (context, index) {
                           final bid = crop.bids[index];
+                          final isHighest = crop.highestBid?.id == bid.id;
+                          final isExpired = crop.isExpired;
+                          
                           return Card(
                             margin: const EdgeInsets.only(bottom: 8),
+                            color: isHighest && isExpired ? Colors.green.shade50 : null,
                             child: ListTile(
                               leading: CircleAvatar(
-                                backgroundColor: Colors.green.shade100,
+                                backgroundColor: isHighest && isExpired 
+                                    ? Colors.green 
+                                    : Colors.green.shade100,
                                 child: Text(
                                   '₹${bid.amount.toStringAsFixed(0)}',
-                                  style: const TextStyle(
-                                    color: Colors.green,
+                                  style: TextStyle(
+                                    color: isHighest && isExpired 
+                                        ? Colors.white 
+                                        : Colors.green,
                                     fontWeight: FontWeight.bold,
+                                    fontSize: isHighest && isExpired ? 12 : 14,
                                   ),
                                 ),
                               ),
-                              title: Text(bid.distributorName),
-                              subtitle: Text(
-                                'Bid on ${_formatDate(bid.createdAt)}',
+                              title: Row(
+                                children: [
+                                  Expanded(child: Text(bid.distributorName)),
+                                  if (isHighest && isExpired) ...[
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Text(
+                                        'WINNER',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('Bid on ${_formatDate(bid.createdAt)}'),
+                                  if (isHighest && isExpired)
+                                    Text(
+                                      'Ready for confirmation',
+                                      style: TextStyle(
+                                        color: Colors.green.shade700,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                ],
                               ),
                               trailing: Text(
                                 '₹${bid.amount.toStringAsFixed(2)}',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
+                                  color: isHighest && isExpired 
+                                      ? Colors.green.shade700 
+                                      : null,
                                 ),
                               ),
                             ),
@@ -580,6 +787,27 @@ class _CropListingScreenState extends State<CropListingScreen>
                         },
                       ),
               ),
+              
+              // Action button for expired crops with bids
+              if (crop.isExpired && crop.bids.isNotEmpty && crop.highestBid != null) ...[
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _confirmWinningDistributor(crop);
+                    },
+                    icon: const Icon(Icons.check_circle),
+                    label: const Text('Confirm Winner'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -589,5 +817,139 @@ class _CropListingScreenState extends State<CropListingScreen>
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  void _confirmWinningDistributor(CropModel crop) {
+    final highestBid = crop.highestBid;
+    if (highestBid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No bids to confirm'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Winning Distributor'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Are you sure you want to confirm ${highestBid.distributorName} as the winner?'),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Winner Details:',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green.shade800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Distributor: ${highestBid.distributorName}'),
+                  Text('Winning Bid: ₹${highestBid.amount.toStringAsFixed(0)}'),
+                  Text('Crop: ${crop.cropName}'),
+                  Text('Quantity: ${crop.quantity} kg'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'This action will finalize the sale and create an order for the winning distributor.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _processWinnerConfirmation(crop, highestBid);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Confirm Winner'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _processWinnerConfirmation(CropModel crop, BidModel winningBid) async {
+    final cropProvider = Provider.of<CropProvider>(context, listen: false);
+    
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Create order for the winning distributor
+      final orderService = OrderService();
+      final order = await orderService.createOrderFromCrop(
+        crop: crop,
+        distributorId: winningBid.distributorId,
+        distributorLocation: '', // Will be filled by distributor
+      );
+
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Successfully confirmed ${winningBid.distributorName} as winner! Order created.'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        // Refresh the crop list
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        if (authProvider.userProfile?.uid != null) {
+          cropProvider.loadFarmerCrops(authProvider.userProfile!.uid);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context).pop(); // Close loading dialog
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to confirm winner: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
   }
 }

@@ -15,8 +15,9 @@ class TransportOrderService {
   Future<void> createTransportOrderFromAcceptedDelivery(
     DeliveryOrderModel deliveryOrder,
     String transporterId,
-    String transporterName,
-  ) async {
+    String transporterName, {
+    String? scheduledDay,
+  }) async {
     try {
       print('Creating transport order for delivery: ${deliveryOrder.id}');
       
@@ -53,6 +54,7 @@ class TransportOrderService {
         acceptedAt: DateTime.now(),
         deliveryFee: deliveryOrder.price * 0.1, // 10% delivery fee
         estimatedDeliveryTime: '2-3 hours',
+        scheduledDay: scheduledDay,
       );
 
       // Save to Firestore
@@ -78,6 +80,21 @@ class TransportOrderService {
         print('Transport order data: $data');
         return TransportOrderModel.fromMap(data);
       }).toList();
+      
+      // Sort by scheduled day order (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
+      final dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      transportOrders.sort((a, b) {
+        if (a.scheduledDay != null && b.scheduledDay != null) {
+          final aIndex = dayOrder.indexOf(a.scheduledDay!);
+          final bIndex = dayOrder.indexOf(b.scheduledDay!);
+          if (aIndex != -1 && bIndex != -1) {
+            return aIndex.compareTo(bIndex);
+          }
+        }
+        // Fallback to creation time if no scheduled day
+        return b.createdAt.compareTo(a.createdAt);
+      });
+      
       print('Parsed ${transportOrders.length} transport orders');
       return transportOrders;
     });
@@ -260,6 +277,29 @@ class TransportOrderService {
       });
     } catch (e) {
       throw Exception('Failed to update estimated delivery time: $e');
+    }
+  }
+
+  // Update transport order scheduling details
+  Future<void> updateTransportOrderScheduling(String transportOrderId, {
+    String? scheduledDay,
+    DateTime? scheduledDate,
+    String? scheduledTime,
+    String? deliveryLocation,
+  }) async {
+    try {
+      final updateData = <String, dynamic>{};
+      
+      if (scheduledDay != null) updateData['scheduledDay'] = scheduledDay;
+      if (scheduledDate != null) updateData['scheduledDate'] = Timestamp.fromDate(scheduledDate);
+      if (scheduledTime != null) updateData['scheduledTime'] = scheduledTime;
+      if (deliveryLocation != null) updateData['deliveryLocation'] = deliveryLocation;
+      
+      await _transportOrdersCollection.doc(transportOrderId).update(updateData);
+      print('Successfully updated transport order scheduling: $transportOrderId');
+    } catch (e) {
+      print('Error updating transport order scheduling: $e');
+      throw Exception('Failed to update transport order scheduling: $e');
     }
   }
 } 

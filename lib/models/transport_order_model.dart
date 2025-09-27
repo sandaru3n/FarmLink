@@ -25,6 +25,10 @@ class TransportOrderModel {
   final double? deliveryFee;
   final String? estimatedDeliveryTime;
   final String? actualDeliveryTime;
+  final String? scheduledDay; // Day when delivery is scheduled (Mon, Tue, etc.)
+  final DateTime? scheduledDate; // Specific date when delivery is scheduled
+  final String? scheduledTime; // Specific time when delivery is scheduled (e.g., "09:00", "14:30")
+  final String? deliveryLocation; // Specific delivery location/address
 
   TransportOrderModel({
     required this.id,
@@ -51,6 +55,10 @@ class TransportOrderModel {
     this.deliveryFee,
     this.estimatedDeliveryTime,
     this.actualDeliveryTime,
+    this.scheduledDay,
+    this.scheduledDate,
+    this.scheduledTime,
+    this.deliveryLocation,
   });
 
   factory TransportOrderModel.fromMap(Map<String, dynamic> map) {
@@ -85,6 +93,12 @@ class TransportOrderModel {
       deliveryFee: map['deliveryFee']?.toDouble(),
       estimatedDeliveryTime: map['estimatedDeliveryTime'],
       actualDeliveryTime: map['actualDeliveryTime'],
+      scheduledDay: map['scheduledDay'],
+      scheduledDate: map['scheduledDate'] != null
+          ? (map['scheduledDate'] as Timestamp).toDate()
+          : null,
+      scheduledTime: map['scheduledTime'],
+      deliveryLocation: map['deliveryLocation'],
     );
   }
 
@@ -114,6 +128,10 @@ class TransportOrderModel {
       'deliveryFee': deliveryFee,
       'estimatedDeliveryTime': estimatedDeliveryTime,
       'actualDeliveryTime': actualDeliveryTime,
+      'scheduledDay': scheduledDay,
+      'scheduledDate': scheduledDate != null ? Timestamp.fromDate(scheduledDate!) : null,
+      'scheduledTime': scheduledTime,
+      'deliveryLocation': deliveryLocation,
     };
   }
 
@@ -142,6 +160,10 @@ class TransportOrderModel {
     double? deliveryFee,
     String? estimatedDeliveryTime,
     String? actualDeliveryTime,
+    String? scheduledDay,
+    DateTime? scheduledDate,
+    String? scheduledTime,
+    String? deliveryLocation,
   }) {
     return TransportOrderModel(
       id: id ?? this.id,
@@ -168,6 +190,10 @@ class TransportOrderModel {
       deliveryFee: deliveryFee ?? this.deliveryFee,
       estimatedDeliveryTime: estimatedDeliveryTime ?? this.estimatedDeliveryTime,
       actualDeliveryTime: actualDeliveryTime ?? this.actualDeliveryTime,
+      scheduledDay: scheduledDay ?? this.scheduledDay,
+      scheduledDate: scheduledDate ?? this.scheduledDate,
+      scheduledTime: scheduledTime ?? this.scheduledTime,
+      deliveryLocation: deliveryLocation ?? this.deliveryLocation,
     );
   }
 

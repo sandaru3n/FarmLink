@@ -190,7 +190,7 @@ class _AddCropScreenState extends State<AddCropScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Crop added successfully!')),
           );
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true); // Return true to indicate success
         }
       } else {
         if (mounted) {
