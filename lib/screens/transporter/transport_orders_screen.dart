@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/transport_order_model.dart';
 import 'transport_order_detail_screen.dart';
+import 'distributor_feedback_dialog.dart';
 
 class TransportOrdersScreen extends StatefulWidget {
   const TransportOrdersScreen({super.key});
@@ -286,7 +287,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
   Widget _buildTransportCard(TransportOrderModel transportOrder) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 3,
+      elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: () {
@@ -297,37 +298,69 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
           );
         },
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with image and status
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with status
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Transport Order #${transportOrder.id.substring(0, 8)}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: _getStatusColor(transportOrder.status),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    _getStatusText(transportOrder.status),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+              
+              // Crop information with image
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Crop image
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(10),
                     child: Image.network(
                       transportOrder.cropImageUrl,
-                      width: 70,
-                      height: 70,
+                      width: 60,
+                      height: 60,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Container(
-                          width: 70,
-                          height: 70,
+                          width: 60,
+                          height: 60,
                           decoration: BoxDecoration(
                             color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(10),
                           ),
-                          child: Icon(Icons.image, color: Colors.grey[600]),
+                          child: Icon(Icons.image, color: Colors.grey[600], size: 24),
                         );
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  // Order details
+                  const SizedBox(width: 12),
+                  // Crop details
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -335,37 +368,47 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                         Text(
                           transportOrder.cropName,
                           style: const TextStyle(
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
+                            color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${transportOrder.quantity} kg',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Icon(Icons.scale, size: 14, color: Colors.grey[600]),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${transportOrder.quantity} kg',
+                              style: TextStyle(
+                                color: Colors.grey[700],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
+                            Icon(Icons.attach_money, size: 14, color: Colors.green[600]),
+                            const SizedBox(width: 4),
                             Text(
                               '₹${transportOrder.price.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                color: Colors.green,
+                              style: TextStyle(
+                                color: Colors.green[600],
                                 fontWeight: FontWeight.bold,
-                                fontSize: 16,
+                                fontSize: 14,
                               ),
                             ),
                             if (transportOrder.deliveryFee != null) ...[
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Text(
-                                '+ ₹${transportOrder.deliveryFee!.toStringAsFixed(2)} fee',
+                                '+ ₹${transportOrder.deliveryFee!.toStringAsFixed(2)} delivery fee',
                                 style: TextStyle(
                                   color: Colors.blue[600],
                                   fontWeight: FontWeight.w500,
-                                  fontSize: 12,
+                                  fontSize: 10,
                                 ),
                               ),
                             ],
@@ -374,185 +417,361 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                       ],
                     ),
                   ),
-                  // Status indicator
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(transportOrder.status),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _getStatusText(transportOrder.status),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               
-              // Route information
+              // Route information with enhanced layout
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(12),
+                  gradient: LinearGradient(
+                    colors: [Colors.grey[50]!, Colors.grey[100]!],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: Colors.grey[200]!),
                 ),
-                child: Row(
+                child: Column(
                   children: [
-                    // Pickup location
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    // Pickup section
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(Icons.location_on, color: Colors.white, size: 14),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.green,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(Icons.location_on, color: Colors.white, size: 12),
-                              ),
-                              const SizedBox(width: 8),
                               Text(
-                                'Pickup',
+                                'Pickup Location',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
+                              const SizedBox(height: 3),
+                              Text(
+                                transportOrder.pickupLocation,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Farmer: ${transportOrder.farmerName}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 10,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            transportOrder.pickupLocation,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            transportOrder.farmerName,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     
-                    // Arrow
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Icon(Icons.arrow_forward, color: Colors.grey[400]),
+                    const SizedBox(height: 12),
+                    
+                    // Arrow divider
+                    Row(
+                      children: [
+                        Expanded(child: Divider(color: Colors.grey[300])),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Icon(Icons.arrow_downward, color: Colors.grey[400], size: 16),
+                        ),
+                        Expanded(child: Divider(color: Colors.grey[300])),
+                      ],
                     ),
                     
-                    // Delivery location
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                    const SizedBox(height: 12),
+                    
+                    // Delivery section
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Icon(Icons.location_on, color: Colors.white, size: 14),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(Icons.location_on, color: Colors.white, size: 12),
-                              ),
-                              const SizedBox(width: 8),
                               Text(
-                                'Delivery',
+                                'Delivery Location',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   color: Colors.grey[600],
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
+                              const SizedBox(height: 3),
+                              Text(
+                                transportOrder.distributorLocation,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Distributor: ${transportOrder.distributorName}',
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 10,
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            transportOrder.distributorLocation,
-                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            transportOrder.distributorName,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
               
+              // Scheduling information (if available)
+              if (transportOrder.scheduledDay != null || 
+                  transportOrder.scheduledDate != null || 
+                  transportOrder.scheduledTime != null) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.purple.withOpacity(0.1), Colors.purple.withOpacity(0.05)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.purple.withOpacity(0.3), width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.purple.withOpacity(0.1),
+                        blurRadius: 3,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Header with icon and title
+                      Row(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.purple,
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Icon(Icons.schedule, color: Colors.white, size: 14),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Scheduled Delivery',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple[700],
+                            ),
+                          ),
+                          Spacer(),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'PLANNED',
+                              style: TextStyle(
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.purple[700],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      
+                      // Scheduling details in a grid layout
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 6,
+                        children: [
+                          if (transportOrder.scheduledDay != null) ...[
+                            _buildScheduleDetail(
+                              Icons.calendar_today,
+                              'Day',
+                              transportOrder.scheduledDay!,
+                              Colors.blue,
+                            ),
+                          ],
+                          if (transportOrder.scheduledDate != null) ...[
+                            _buildScheduleDetail(
+                              Icons.event,
+                              'Date',
+                              _formatDate(transportOrder.scheduledDate!),
+                              Colors.green,
+                            ),
+                          ],
+                          if (transportOrder.scheduledTime != null) ...[
+                            _buildScheduleDetail(
+                              Icons.access_time,
+                              'Time',
+                              transportOrder.scheduledTime!,
+                              Colors.orange,
+                            ),
+                          ],
+                        ],
+                      ),
+                      
+                      // Specific delivery location if different
+                      if (transportOrder.deliveryLocation != null && 
+                          transportOrder.deliveryLocation!.isNotEmpty &&
+                          transportOrder.deliveryLocation != transportOrder.distributorLocation) ...[
+                        const SizedBox(height: 12),
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(Icons.location_on, size: 16, color: Colors.amber[700]),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Specific Delivery Location:',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.amber[800],
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      transportOrder.deliveryLocation!,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.amber[700],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+              
               // Action buttons based on status
               if (transportOrder.canBeInTransit) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: OutlinedButton(
+                      child: OutlinedButton.icon(
                         onPressed: () => _showCancelDialog(transportOrder),
+                        icon: const Icon(Icons.cancel, size: 16),
+                        label: const Text('Cancel'),
                         style: OutlinedButton.styleFrom(
                           side: BorderSide(color: Colors.red),
+                          foregroundColor: Colors.red,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
-                        ),
-                        child: const Text(
-                          'Cancel',
-                          style: TextStyle(color: Colors.red),
+                          padding: EdgeInsets.symmetric(vertical: 8),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
-                      child: ElevatedButton(
+                      child: ElevatedButton.icon(
                         onPressed: () => _markInTransit(transportOrder),
+                        icon: const Icon(Icons.local_shipping, size: 16),
+                        label: const Text('Start Delivery'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
+                          padding: EdgeInsets.symmetric(vertical: 8),
                         ),
-                        child: const Text('Start Delivery'),
                       ),
                     ),
                   ],
                 ),
               ] else if (transportOrder.canBeDelivered) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: () => _markDelivered(transportOrder),
+                    icon: const Icon(Icons.check_circle, size: 16),
+                    label: const Text('Mark as Delivered'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(6),
                       ),
+                      padding: EdgeInsets.symmetric(vertical: 8),
                     ),
-                    child: const Text('Mark as Delivered'),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Provide feedback about distributor
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showDistributorFeedback(transportOrder),
+                    icon: const Icon(Icons.rate_review, size: 16),
+                    label: const Text('Provide Feedback about Distributor'),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: Colors.purple),
+                      foregroundColor: Colors.purple,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                    ),
                   ),
                 ),
               ],
@@ -590,6 +809,76 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
         return 'Cancelled';
       default:
         return status;
+    }
+  }
+
+  Widget _buildScheduleDetail(IconData icon, String label, String value, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          SizedBox(width: 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 8,
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 10,
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    return '${date.day} ${months[date.month - 1]} ${date.year}';
+  }
+
+  Future<void> _showDistributorFeedback(TransportOrderModel transportOrder) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => DistributorFeedbackDialog(
+        deliveryOrderId: transportOrder.deliveryOrderId,
+        transporterId: transportOrder.transporterId,
+        transporterName: transportOrder.transporterName,
+        // We don't store distributorId in transport order; pass name for now
+        distributorId: transportOrder.distributorName,
+        distributorName: transportOrder.distributorName,
+      ),
+    );
+
+    if ((result ?? false) && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Thanks for your feedback!'),
+          backgroundColor: Colors.purple,
+        ),
+      );
     }
   }
 

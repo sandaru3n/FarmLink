@@ -61,6 +61,9 @@ dependencies:
   
   # URL launcher for contact functionality
   url_launcher: ^6.2.5
+  
+  # Charts for analytics
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:
