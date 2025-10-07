@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import 'onboarding_content.dart';
@@ -182,9 +183,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         'Welcome to FarmLink',
                         style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
                           color: _pageColors[0],
+                          letterSpacing: 0.5,
+                          fontFamily: 'Roboto',
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -194,8 +197,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         'Please select your preferred language',
                         style: const TextStyle(
-                          fontSize: 17,
+                          fontSize: 18,
                           color: Colors.black87,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.3,
+                          fontFamily: 'Roboto',
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -346,9 +352,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
                           color: _pageColors[pageIndex],
+                          letterSpacing: 0.5,
+                          fontFamily: 'Roboto',
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -358,9 +366,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         description,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 17,
                           color: Colors.black87,
-                          height: 1.4,
+                          height: 1.5,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.2,
+                          fontFamily: 'Roboto',
                         ),
                         textAlign: TextAlign.left,
                       ),
@@ -382,28 +393,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Widget _buildBottomNavigation() {
     return Container(
-      padding: const EdgeInsets.all(24.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      padding: const EdgeInsets.fromLTRB(24.0, 0, 24.0, 24.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Page indicators
-          Row(
-            children: List.generate(5, (index) {
-              return Container(
-                margin: const EdgeInsets.only(right: 8),
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: _currentPage == index
-                      ? Colors.white
-                      : Colors.white.withOpacity(0.3),
-                ),
-              );
-            }),
+          // Smooth page indicator - centered at same level as white card
+          AnimatedSmoothIndicator(
+            activeIndex: _currentPage,
+            count: 5,
+            effect: ExpandingDotsEffect(
+              dotColor: Colors.white.withOpacity(1),
+              activeDotColor: Colors.white,
+              dotHeight: 12,
+              dotWidth: 12,
+              spacing: 8,
+              expansionFactor: 3,
+            ),
           ),
 
-          // Animated circular next button
+          const SizedBox(height: 20),
+
+          // Next button centered
           _buildAnimatedNextButton(),
         ],
       ),

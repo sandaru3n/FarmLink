@@ -67,6 +67,9 @@ dependencies:
   
   # Liquid swipe for colorful onboarding
   liquid_swipe: ^3.0.0
+  
+  # Smooth page indicator for better navigation
+  smooth_page_indicator: ^1.1.0
 
 dev_dependencies:
   flutter_test:
