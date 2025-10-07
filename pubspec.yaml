@@ -100,11 +100,14 @@ flutter:
   assets:
     - assets/images/
     - assets/images/onboarding_images/
+    - assets/images/splash_images/
     - assets/images/onboarding_images/fllogo.png
     - assets/images/onboarding_images/smartfarming.png
     - assets/images/onboarding_images/farmmarketplace.png
     - assets/images/onboarding_images/farmanalytics.png
     - assets/images/onboarding_images/farmercommunity.png
+    - assets/images/splash_images/fllogowhite.png
+    - assets/images/splash_images/FarmLinkwhite.png
     - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
