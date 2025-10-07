@@ -96,24 +96,28 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         description: getLocalizedText('feature1_desc', _selectedLanguage),
         icon: Icons.agriculture,
         pageIndex: 1,
+        imagePath: 'assets/images/onboarding_images/smartfarming.png',
       ),
       _buildFeaturePage(
         title: getLocalizedText('feature2_title', _selectedLanguage),
         description: getLocalizedText('feature2_desc', _selectedLanguage),
         icon: Icons.shopping_cart,
         pageIndex: 2,
+        imagePath: 'assets/images/onboarding_images/farmmarketplace.png',
       ),
       _buildFeaturePage(
         title: getLocalizedText('feature3_title', _selectedLanguage),
         description: getLocalizedText('feature3_desc', _selectedLanguage),
         icon: Icons.analytics,
         pageIndex: 3,
+        imagePath: 'assets/images/onboarding_images/farmanalytics.png',
       ),
       _buildFeaturePage(
         title: getLocalizedText('feature4_title', _selectedLanguage),
         description: getLocalizedText('feature4_desc', _selectedLanguage),
         icon: Icons.support_agent,
         pageIndex: 4,
+        imagePath: 'assets/images/onboarding_images/farmercommunity.png',
       ),
     ];
   }
@@ -166,18 +170,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       const SizedBox(height: 20),
 
                       // Logo
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: _pageColors[0].withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.agriculture,
-                          size: 50,
-                          color: _pageColors[0],
-                        ),
+                      Image.asset(
+                        'assets/images/onboarding_images/fllogo.png',
+                        width: 180,
+                        height: 120,
+                        fit: BoxFit.contain,
                       ),
                       const SizedBox(height: 20),
 
@@ -197,12 +194,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         'Please select your preferred language',
                         style: const TextStyle(
-                          fontSize: 15,
+                          fontSize: 17,
                           color: Colors.black87,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 70),
+                      const SizedBox(height: 30),
 
                       // Language options
                       ...languages.map(
@@ -274,6 +271,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required String description,
     required IconData icon,
     required int pageIndex,
+    String? imagePath,
   }) {
     return Container(
       color: _pageColors[pageIndex],
@@ -321,27 +319,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     children: [
                       const SizedBox(height: 20),
 
-                      // Feature icon
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: _pageColors[pageIndex].withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          icon,
-                          size: 40,
-                          color: _pageColors[pageIndex],
-                        ),
-                      ),
+                      // Feature icon or image
+                      imagePath != null
+                          ? Image.asset(
+                              imagePath,
+                              width: 300,
+                              height: 300,
+                              fit: BoxFit.contain,
+                            )
+                          : Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: _pageColors[pageIndex].withOpacity(0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                icon,
+                                size: 40,
+                                color: _pageColors[pageIndex],
+                              ),
+                            ),
                       const SizedBox(height: 20),
 
                       // Feature title
                       Text(
                         title,
                         style: TextStyle(
-                          fontSize: 22,
+                          fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: _pageColors[pageIndex],
                         ),
@@ -353,11 +358,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Text(
                         description,
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: Colors.black87,
                           height: 1.4,
                         ),
-                        textAlign: TextAlign.center,
+                        textAlign: TextAlign.left,
                       ),
 
                       const SizedBox(height: 10),
