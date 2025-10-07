@@ -16,16 +16,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final LiquidController _liquidController = LiquidController();
   int _currentPage = 0;
   String _selectedLanguage = 'English';
-  
+
   final List<String> languages = ['English', 'සිංහල', 'தமிழ்'];
 
   // Colorful liquid colors for each page
   final List<Color> _pageColors = [
-    const Color(0xFF4CB050), // Green for language selection
-    const Color(0xFF6C5CE7), // Purple for feature 1
-    const Color(0xFF00B894), // Teal for feature 2
-    const Color(0xFFE17055), // Orange for feature 3
-    const Color(0xFF74B9FF), // Blue for feature 4
+    const Color(0xFF6BBF59), // Green for language selection
+    const Color(0xFFFFB84D), // Purple for feature 1
+    const Color(0xFF3FA9F5), // Teal for feature 2
+    const Color(0xFFA3CB38), // Orange for feature 3
+    const Color(0xFF43A047), // Blue for feature 4
   ];
 
   @override
@@ -56,7 +56,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   void _completeOnboarding() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.markOnboardingCompleted();
-    
+
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
@@ -74,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body:       LiquidSwipe(
+      body: LiquidSwipe(
         pages: _buildPages(),
         liquidController: _liquidController,
         enableSideReveal: true,
@@ -142,7 +142,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
-            
+
             // Main content with white background
             Expanded(
               child: Container(
@@ -164,7 +164,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // Logo
                       Container(
                         width: 100,
@@ -180,7 +180,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Title
                       Text(
                         'Welcome to FarmLink',
@@ -192,7 +192,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 10),
-                      
+
                       // Subtitle
                       Text(
                         'Please select your preferred language',
@@ -203,17 +203,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 70),
-                      
+
                       // Language options
-                      ...languages.map((language) => _buildLanguageOption(language)),
-                      
+                      ...languages.map(
+                        (language) => _buildLanguageOption(language),
+                      ),
+
                       const SizedBox(height: 10),
                     ],
                   ),
                 ),
               ),
             ),
-            
+
             // Bottom navigation
             _buildBottomNavigation(),
           ],
@@ -231,7 +233,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? _pageColors[0].withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+            color: isSelected
+                ? _pageColors[0].withOpacity(0.1)
+                : Colors.grey.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? _pageColors[0] : Colors.grey.withOpacity(0.3),
@@ -241,7 +245,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Row(
             children: [
               Icon(
-                isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                isSelected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
                 color: isSelected ? _pageColors[0] : Colors.grey,
                 size: 20,
               ),
@@ -292,7 +298,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
             ),
-            
+
             // Main content with white background
             Expanded(
               child: Container(
@@ -314,7 +320,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const SizedBox(height: 20),
-                      
+
                       // Feature icon
                       Container(
                         width: 80,
@@ -330,7 +336,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      
+
                       // Feature title
                       Text(
                         title,
@@ -342,7 +348,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 10),
-                      
+
                       // Feature description
                       Text(
                         description,
@@ -353,14 +359,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 10),
                     ],
                   ),
                 ),
               ),
             ),
-            
+
             // Bottom navigation
             _buildBottomNavigation(),
           ],
@@ -391,7 +397,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               );
             }),
           ),
-          
+
           // Animated circular next button
           _buildAnimatedNextButton(),
         ],
@@ -408,10 +414,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white,
-          border: Border.all(
-            color: Colors.white,
-            width: 3.0,
-          ),
+          border: Border.all(color: Colors.white, width: 3.0),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
