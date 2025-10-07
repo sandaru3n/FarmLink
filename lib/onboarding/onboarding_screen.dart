@@ -17,7 +17,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
   String _selectedLanguage = 'English';
   
-  final List<String> languages = ['English', 'Sinhala', 'Tamil'];
+  final List<String> languages = ['English', 'සිංහල', 'தமிழ்'];
 
   // Colorful liquid colors for each page
   final List<Color> _pageColors = [
@@ -183,7 +183,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       
                       // Title
                       Text(
-                        getLocalizedText('welcome_title', _selectedLanguage),
+                        'Welcome to FarmLink',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -195,14 +195,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       
                       // Subtitle
                       Text(
-                        getLocalizedText('select_language', _selectedLanguage),
+                        'Please select your preferred language',
                         style: const TextStyle(
                           fontSize: 15,
                           color: Colors.black87,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 70),
                       
                       // Language options
                       ...languages.map((language) => _buildLanguageOption(language)),
@@ -432,9 +432,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
 String getLocalizedText(String key, String language) {
   switch (language) {
-    case 'Sinhala':
+    case 'සිංහල':
       return sinhalaTexts[key] ?? key;
-    case 'Tamil':
+    case 'தமிழ்':
       return tamilTexts[key] ?? key;
     default:
       return englishTexts[key] ?? key;
