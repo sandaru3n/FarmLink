@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 import '../providers/auth_provider.dart';
 import '../screens/auth/login_screen.dart';
 import 'onboarding_content.dart';
@@ -12,21 +13,29 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  final PageController _pageController = PageController();
+  final LiquidController _liquidController = LiquidController();
   int _currentPage = 0;
   String _selectedLanguage = 'English';
   
   final List<String> languages = ['English', 'Sinhala', 'Tamil'];
 
+  // Colorful liquid colors for each page
+  final List<Color> _pageColors = [
+    const Color(0xFF4CB050), // Green for language selection
+    const Color(0xFF6C5CE7), // Purple for feature 1
+    const Color(0xFF00B894), // Teal for feature 2
+    const Color(0xFFE17055), // Orange for feature 3
+    const Color(0xFF74B9FF), // Blue for feature 4
+  ];
+
   @override
   void dispose() {
-    _pageController.dispose();
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
+  void _onPageChanged(int activePageIndex) {
     setState(() {
-      _currentPage = index;
+      _currentPage = activePageIndex;
     });
   }
 
@@ -36,7 +45,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
   }
 
-  void _saveLanguageAndContinue() async {
+  void _nextPage() {
+    if (_currentPage < 4) {
+      _liquidController.animateToPage(page: _currentPage + 1);
+    } else {
+      _completeOnboarding();
+    }
+  }
+
+  void _completeOnboarding() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.markOnboardingCompleted();
     
@@ -57,134 +74,148 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF4CB050),
-      body: SafeArea(
+      body:       LiquidSwipe(
+        pages: _buildPages(),
+        liquidController: _liquidController,
+        enableSideReveal: true,
+        onPageChangeCallback: _onPageChanged,
+        slideIconWidget: const Icon(Icons.arrow_back_ios, color: Colors.white),
+        positionSlideIcon: 0.8,
+        waveType: WaveType.liquidReveal,
+        fullTransitionValue: 300,
+        enableLoop: false,
+      ),
+    );
+  }
+
+  List<Widget> _buildPages() {
+    return [
+      _buildLanguageSelectionPage(),
+      _buildFeaturePage(
+        title: getLocalizedText('feature1_title', _selectedLanguage),
+        description: getLocalizedText('feature1_desc', _selectedLanguage),
+        icon: Icons.agriculture,
+        pageIndex: 1,
+      ),
+      _buildFeaturePage(
+        title: getLocalizedText('feature2_title', _selectedLanguage),
+        description: getLocalizedText('feature2_desc', _selectedLanguage),
+        icon: Icons.shopping_cart,
+        pageIndex: 2,
+      ),
+      _buildFeaturePage(
+        title: getLocalizedText('feature3_title', _selectedLanguage),
+        description: getLocalizedText('feature3_desc', _selectedLanguage),
+        icon: Icons.analytics,
+        pageIndex: 3,
+      ),
+      _buildFeaturePage(
+        title: getLocalizedText('feature4_title', _selectedLanguage),
+        description: getLocalizedText('feature4_desc', _selectedLanguage),
+        icon: Icons.support_agent,
+        pageIndex: 4,
+      ),
+    ];
+  }
+
+  Widget _buildLanguageSelectionPage() {
+    return Container(
+      color: _pageColors[0],
+      child: SafeArea(
         child: Column(
           children: [
             // Skip button
-            if (_currentPage < 4)
-              Align(
-                alignment: Alignment.topRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: TextButton(
-                    onPressed: _saveLanguageAndContinue,
-                    child: Text(
-                      getLocalizedText('skip', _selectedLanguage),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextButton(
+                  onPressed: _completeOnboarding,
+                  child: Text(
+                    getLocalizedText('skip', _selectedLanguage),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
               ),
+            ),
             
-            // Page content
+            // Main content with white background
             Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return _buildPageContent(index);
-                },
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(20, 20, 20, 80),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      
+                      // Logo
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: _pageColors[0].withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.agriculture,
+                          size: 50,
+                          color: _pageColors[0],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Title
+                      Text(
+                        getLocalizedText('welcome_title', _selectedLanguage),
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: _pageColors[0],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      
+                      // Subtitle
+                      Text(
+                        getLocalizedText('select_language', _selectedLanguage),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          color: Colors.black87,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Language options
+                      ...languages.map((language) => _buildLanguageOption(language)),
+                      
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
               ),
             ),
             
             // Bottom navigation
             _buildBottomNavigation(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPageContent(int index) {
-    switch (index) {
-      case 0:
-        return _buildLanguageSelectionPage();
-      case 1:
-        return _buildFeaturePage(
-          title: getLocalizedText('feature1_title', _selectedLanguage),
-          description: getLocalizedText('feature1_desc', _selectedLanguage),
-          icon: Icons.agriculture,
-        );
-      case 2:
-        return _buildFeaturePage(
-          title: getLocalizedText('feature2_title', _selectedLanguage),
-          description: getLocalizedText('feature2_desc', _selectedLanguage),
-          icon: Icons.shopping_cart,
-        );
-      case 3:
-        return _buildFeaturePage(
-          title: getLocalizedText('feature3_title', _selectedLanguage),
-          description: getLocalizedText('feature3_desc', _selectedLanguage),
-          icon: Icons.analytics,
-        );
-      case 4:
-        return _buildFeaturePage(
-          title: getLocalizedText('feature4_title', _selectedLanguage),
-          description: getLocalizedText('feature4_desc', _selectedLanguage),
-          icon: Icons.support_agent,
-        );
-      default:
-        return Container();
-    }
-  }
-
-  Widget _buildLanguageSelectionPage() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.of(context).size.height - 200, // Account for top and bottom areas
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.agriculture,
-                size: 60,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 30),
-            
-            // Title
-            Text(
-              getLocalizedText('welcome_title', _selectedLanguage),
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 15),
-            
-            // Subtitle
-            Text(
-              getLocalizedText('select_language', _selectedLanguage),
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white.withOpacity(0.9),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 30),
-            
-            // Language options
-            ...languages.map((language) => _buildLanguageOption(language)),
           ],
         ),
       ),
@@ -200,10 +231,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           decoration: BoxDecoration(
-            color: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+            color: isSelected ? _pageColors[0].withOpacity(0.1) : Colors.grey.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isSelected ? Colors.white : Colors.white.withOpacity(0.3),
+              color: isSelected ? _pageColors[0] : Colors.grey.withOpacity(0.3),
               width: 2,
             ),
           ),
@@ -211,7 +242,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             children: [
               Icon(
                 isSelected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-                color: isSelected ? const Color(0xFF4CB050) : Colors.white,
+                color: isSelected ? _pageColors[0] : Colors.grey,
                 size: 20,
               ),
               const SizedBox(width: 12),
@@ -221,7 +252,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? const Color(0xFF4CB050) : Colors.white,
+                    color: isSelected ? _pageColors[0] : Colors.black87,
                   ),
                 ),
               ),
@@ -236,54 +267,102 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     required String title,
     required String description,
     required IconData icon,
+    required int pageIndex,
   }) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          minHeight: MediaQuery.of(context).size.height - 200,
-        ),
+    return Container(
+      color: _pageColors[pageIndex],
+      child: SafeArea(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Feature icon
-            Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                size: 50,
-                color: Colors.white,
+            // Skip button
+            Align(
+              alignment: Alignment.topRight,
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextButton(
+                  onPressed: _completeOnboarding,
+                  child: Text(
+                    getLocalizedText('skip', _selectedLanguage),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 30),
             
-            // Feature title
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+            // Main content with white background
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(20, 20, 20, 60),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 20),
+                      
+                      // Feature icon
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: _pageColors[pageIndex].withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          icon,
+                          size: 40,
+                          color: _pageColors[pageIndex],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Feature title
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: _pageColors[pageIndex],
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 10),
+                      
+                      // Feature description
+                      Text(
+                        description,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 15),
             
-            // Feature description
-            Text(
-              description,
-              style: TextStyle(
-                fontSize: 15,
-                color: Colors.white.withOpacity(0.9),
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            // Bottom navigation
+            _buildBottomNavigation(),
           ],
         ),
       ),
@@ -313,37 +392,39 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             }),
           ),
           
-          // Next/Get Started button
-          ElevatedButton(
-            onPressed: () {
-              if (_currentPage < 4) {
-                _pageController.nextPage(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOut,
-                );
-              } else {
-                _saveLanguageAndContinue();
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF4CB050),
-              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(25),
-              ),
-            ),
-            child: Text(
-              _currentPage < 4
-                  ? getLocalizedText('next', _selectedLanguage)
-                  : getLocalizedText('get_started', _selectedLanguage),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
+          // Animated circular next button
+          _buildAnimatedNextButton(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAnimatedNextButton() {
+    return GestureDetector(
+      onTap: _nextPage,
+      child: Container(
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.white,
+          border: Border.all(
+            color: Colors.white,
+            width: 3.0,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Icon(
+          _currentPage < 4 ? Icons.arrow_forward_ios : Icons.check,
+          color: _pageColors[_currentPage],
+          size: 24,
+        ),
       ),
     );
   }

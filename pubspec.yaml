@@ -64,6 +64,9 @@ dependencies:
   
   # Charts for analytics
   fl_chart: ^0.69.0
+  
+  # Liquid swipe for colorful onboarding
+  liquid_swipe: ^3.0.0
 
 dev_dependencies:
   flutter_test:
