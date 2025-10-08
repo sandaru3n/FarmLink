@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/crop_provider.dart';
 import '../../../models/user_model.dart';
@@ -105,34 +107,45 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
             ],
           ),
           body: _buildDashboardContent(userProfile),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.green,
-            unselectedItemColor: Colors.grey,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.home),
-                label: 'Home',
+          bottomNavigationBar: Container(
+            color: Colors.white,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).padding.bottom,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: Colors.black,
+                activeColor: const Color(0xFF2E7D32), // Deep green for active
+                tabBackgroundColor: const Color(0xFFE8F5E8), // Light green background
+                gap: 8,
+                onTabChange: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                padding: const EdgeInsets.all(16),
+                tabs: const [
+                  GButton(
+                    icon: LineAwesomeIcons.home,
+                    text: 'Home',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.seedling,
+                    text: 'Crops',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.truck,
+                    text: 'Delivery',
+                  ),
+                  GButton(
+                    icon: Icons.analytics,
+                    text: 'Analytics',
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.agriculture),
-                label: 'Crops',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.local_shipping),
-                label: 'Delivery',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.analytics),
-                label: 'Analytics',
-              ),
-            ],
+            ),
           ),
         );
       },
