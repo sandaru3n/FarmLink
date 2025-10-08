@@ -101,6 +101,7 @@ flutter:
     - assets/images/
     - assets/images/onboarding_images/
     - assets/images/splash_images/
+    - assets/images/auth_images/
     - assets/images/onboarding_images/fllogo.png
     - assets/images/onboarding_images/smartfarming.png
     - assets/images/onboarding_images/farmmarketplace.png
@@ -108,6 +109,8 @@ flutter:
     - assets/images/onboarding_images/farmercommunity.png
     - assets/images/splash_images/fllogowhite.png
     - assets/images/splash_images/FarmLinkwhite.png
+    - assets/images/auth_images/welcome_image.png
+    - assets/images/auth_images/google_logo.png
     - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
