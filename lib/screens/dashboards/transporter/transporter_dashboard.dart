@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/transport_order_provider.dart';
 import '../../../providers/delivery_order_provider.dart';
@@ -85,38 +87,49 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
             ],
           ),
           body: _buildDashboardContent(userProfile),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.purple,
-            unselectedItemColor: Colors.grey,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.home),
-                label: 'Home',
+          bottomNavigationBar: Container(
+            color: Colors.white,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).padding.bottom,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 20),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: Colors.black,
+                activeColor: const Color(0xFF673AB7), // Deep purple for active
+                tabBackgroundColor: const Color(0xFFEDE7F6), // Light purple background
+                gap: 4,
+                onTabChange: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                tabs: const [
+                  GButton(
+                    icon: LineAwesomeIcons.home,
+                    text: 'Home',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.truck,
+                    text: 'Available',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.map_marker,
+                    text: 'My Transports',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.history,
+                    text: 'History',
+                  ),
+                  GButton(
+                    icon: Icons.analytics,
+                    text: 'Analytics',
+                  ),
+                ],
               ),
-                             BottomNavigationBarItem(
-                 icon: const Icon(Icons.local_shipping),
-                 label: 'Available',
-               ),
-                             BottomNavigationBarItem(
-                 icon: const Icon(Icons.map),
-                 label: 'My Transports',
-               ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.history),
-                label: 'History',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.analytics),
-                label: 'Analytics',
-              ),
-            ],
+            ),
           ),
         );
       },
