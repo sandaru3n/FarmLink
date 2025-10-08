@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/transport_order_provider.dart';
 import '../../../providers/delivery_order_provider.dart';
@@ -25,14 +26,17 @@ class TransporterDashboard extends StatefulWidget {
   State<TransporterDashboard> createState() => _TransporterDashboardState();
 }
 
-class _TransporterDashboardState extends State<TransporterDashboard> {
+class _TransporterDashboardState extends State<TransporterDashboard>
+    with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   String _selectedDateFilter = 'All Time';
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialTabIndex;
+    _tabController = TabController(length: 2, vsync: this);
     
     // Load data when dashboard initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -42,6 +46,23 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
       transportOrderProvider.loadTransporterTransportOrders();
       deliveryOrderProvider.loadPendingDeliveryOrders();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleRefresh() async {
+    final transportOrderProvider = Provider.of<TransportOrderProvider>(context, listen: false);
+    final deliveryOrderProvider = Provider.of<DeliveryOrderProvider>(context, listen: false);
+    
+    // Load all data
+    await Future.wait([
+      transportOrderProvider.loadTransporterTransportOrders(),
+      deliveryOrderProvider.loadPendingDeliveryOrders(),
+    ]);
   }
 
   @override
@@ -70,12 +91,17 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Transporter Dashboard'),
-            backgroundColor: Colors.purple,
+            backgroundColor: Colors.deepPurple[300],
+            elevation: 0,
             foregroundColor: Colors.white,
+            title: Text(
+              _getAppBarTitle(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.settings),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -83,10 +109,36 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                     ),
                   );
                 },
+                icon: const Icon(Icons.settings),
               ),
             ],
+            bottom: _currentIndex == 1 ? TabBar(
+              controller: _tabController,
+              indicatorColor: Colors.white,
+              labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70,
+              tabs: const [
+                Tab(text: 'Available'),
+                Tab(text: 'Schedule'),
+              ],
+            ) : null,
           ),
-          body: _buildDashboardContent(userProfile),
+          body: LiquidPullToRefresh(
+            onRefresh: _handleRefresh,
+            color: Colors.deepPurple[300]!,
+            backgroundColor: Colors.deepPurple[100]!,
+            animSpeedFactor: 2,
+            showChildOpacityTransition: true,
+            child: _currentIndex == 1 
+              ? TabBarView(
+                  controller: _tabController,
+                  children: [
+                    _buildAvailableDeliveriesTab(),
+                    _buildDeliveryScheduleTab(),
+                  ],
+                )
+              : _buildDashboardContent(userProfile),
+          ),
           bottomNavigationBar: Container(
             color: Colors.white,
             padding: EdgeInsets.only(
@@ -113,7 +165,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                   ),
                   GButton(
                     icon: LineAwesomeIcons.truck,
-                    text: 'Available',
+                    text: 'Delivery',
                   ),
                   GButton(
                     icon: LineAwesomeIcons.map_marker,
@@ -134,6 +186,23 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
         );
       },
     );
+  }
+
+  String _getAppBarTitle() {
+    switch (_currentIndex) {
+      case 0:
+        return 'Home';
+      case 1:
+        return 'Delivery';
+      case 2:
+        return 'My Transports';
+      case 3:
+        return 'History';
+      case 4:
+        return 'Analytics';
+      default:
+        return 'Transporter Dashboard';
+    }
   }
 
   Widget _buildDashboardContent(UserModel? userProfile) {
@@ -185,7 +254,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                         children: [
                           CircleAvatar(
                             radius: 20,
-                            backgroundColor: Colors.purple.withOpacity(0.1),
+                            backgroundColor: Colors.purple.withValues(alpha: 0.1),
                             child: const Icon(
                               Icons.local_shipping,
                               size: 20,
@@ -472,9 +541,9 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -551,7 +620,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                         width: 16,
                         height: barHeight,
                         decoration: BoxDecoration(
-                          color: Colors.purple.withOpacity(0.7),
+                          color: Colors.purple.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -595,7 +664,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                 width: 35,
                 height: 35,
                 decoration: BoxDecoration(
-                  color: Colors.purple.withOpacity(0.1),
+                  color: Colors.purple.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -640,6 +709,582 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
 
   Widget _buildDeliveriesTab() {
     return const DeliveryOrdersScreen();
+  }
+
+  Widget _buildAvailableDeliveriesTab() {
+    return Consumer<DeliveryOrderProvider>(
+      builder: (context, deliveryOrderProvider, child) {
+        if (deliveryOrderProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        if (deliveryOrderProvider.error != null) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'Error: ${deliveryOrderProvider.error}',
+                  style: TextStyle(color: Colors.grey[600]),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton(
+                  onPressed: () {
+                    deliveryOrderProvider.clearError();
+                    deliveryOrderProvider.loadPendingDeliveryOrders();
+                  },
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (deliveryOrderProvider.pendingDeliveryOrders.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.local_shipping_outlined, size: 64, color: Colors.grey[400]),
+                const SizedBox(height: 16),
+                Text(
+                  'No available deliveries',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'New delivery orders will appear here',
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            await deliveryOrderProvider.loadPendingDeliveryOrders();
+          },
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: deliveryOrderProvider.pendingDeliveryOrders.length,
+            itemBuilder: (context, index) {
+              final deliveryOrder = deliveryOrderProvider.pendingDeliveryOrders[index];
+              return _buildDeliveryCard(deliveryOrder, isAvailable: true);
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDeliveryScheduleTab() {
+    return Consumer<DeliveryOrderProvider>(
+      builder: (context, deliveryOrderProvider, child) {
+        if (deliveryOrderProvider.isLoading) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Timeline Card
+              _buildTimelineCard(),
+              const SizedBox(height: 20),
+              
+              // Available Deliveries Card
+              _buildAvailableDeliveriesCard(deliveryOrderProvider),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTimelineCard() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.timeline, color: Colors.purple, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Weekly Schedule',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            _buildTimelineView(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimelineView() {
+    final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    
+    return SizedBox(
+      height: 400, // Fixed height to prevent overflow
+      child: SingleChildScrollView(
+        child: Column(
+          children: weekdays.asMap().entries.map((entry) {
+            final index = entry.key;
+            final day = entry.value;
+            final isToday = index == DateTime.now().weekday - 1;
+            final scheduledCount = 0; // Placeholder for scheduled deliveries
+            
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                children: [
+                  // Day label with count
+                  Container(
+                    width: 50,
+                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: isToday ? Colors.purple : Colors.grey[100],
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          day,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isToday ? Colors.white : Colors.grey[700],
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (scheduledCount > 0) ...[
+                          const SizedBox(height: 2),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: isToday ? Colors.white : Colors.purple,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              '$scheduledCount',
+                              style: TextStyle(
+                                color: isToday ? Colors.purple : Colors.white,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  
+                  // Drop zone for deliveries
+                  Expanded(
+                    child: Container(
+                      constraints: const BoxConstraints(minHeight: 60),
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[50],
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: Colors.grey[200]!,
+                          style: BorderStyle.solid,
+                        ),
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        constraints: const BoxConstraints(minHeight: 60),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[200]!, width: 1),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              constraints: BoxConstraints(minHeight: 50),
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.add_circle_outline,
+                                      color: Colors.grey[400],
+                                      size: 18,
+                                    ),
+                                    SizedBox(height: 2),
+                                    Flexible(
+                                      child: Text(
+                                        'Drop delivery here\n(Max 3 per day)',
+                                        style: TextStyle(
+                                          color: Colors.grey[500],
+                                          fontSize: 9,
+                                          fontWeight: FontWeight.normal,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvailableDeliveriesCard(DeliveryOrderProvider deliveryOrderProvider) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.local_shipping, color: Colors.green, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  'Available Deliveries',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (deliveryOrderProvider.pendingDeliveryOrders.isEmpty)
+              Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.inbox_outlined, size: 32, color: Colors.grey[400]),
+                    const SizedBox(height: 8),
+                    Text(
+                      'No available deliveries',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              SizedBox(
+                height: 400, // Fixed height to prevent layout issues
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: deliveryOrderProvider.pendingDeliveryOrders
+                        .where((deliveryOrder) => 
+                            deliveryOrder.status == 'pending')
+                        .map((deliveryOrder) {
+                      return _buildDraggableDeliveryCard(deliveryOrder);
+                    }).toList(),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDraggableDeliveryCard(deliveryOrder) {
+    return Draggable<Object>(
+      data: deliveryOrder,
+      feedback: Material(
+        elevation: 12,
+        borderRadius: BorderRadius.circular(16),
+        shadowColor: Colors.purple.withValues(alpha: 0.3),
+        child: Container(
+          width: 320,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.purple, width: 2),
+          ),
+          child: _buildDeliveryCard(deliveryOrder, isAvailable: true),
+        ),
+      ),
+      childWhenDragging: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Transform.scale(
+          scale: 0.95,
+          child: Opacity(
+            opacity: 0.6,
+            child: _buildDeliveryCard(deliveryOrder, isAvailable: true),
+          ),
+        ),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        child: _buildDeliveryCard(deliveryOrder, isAvailable: true),
+      ),
+    );
+  }
+
+  Widget _buildDeliveryCard(deliveryOrder, {required bool isAvailable}) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {
+          // Navigate to delivery details if needed
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header with image and status
+              Row(
+                children: [
+                  // Crop image
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      deliveryOrder.cropImageUrl,
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(Icons.image, color: Colors.grey[600]),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  // Order details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          deliveryOrder.cropName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${deliveryOrder.quantity} kg',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '₹${deliveryOrder.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Status indicator
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.orange,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'Available',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // Route information
+              Row(
+                children: [
+                  // Pickup location
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, color: Colors.green, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Pickup',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          deliveryOrder.pickupLocation,
+                          style: const TextStyle(fontSize: 14),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          deliveryOrder.farmerName,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Arrow
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    child: Icon(Icons.arrow_forward, color: Colors.grey[400]),
+                  ),
+                  
+                  // Delivery location
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.location_on, color: Colors.red, size: 16),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Delivery',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[600],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          deliveryOrder.distributorLocation,
+                          style: const TextStyle(fontSize: 14),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          deliveryOrder.distributorName,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              // Action buttons for available deliveries
+              if (isAvailable) ...[
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          // Reject delivery
+                        },
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: Text(
+                          'Reject',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // Accept delivery
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Accept'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildTransportOrdersTab() {
@@ -769,7 +1414,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
           _selectedDateFilter = label;
         });
       },
-      selectedColor: Colors.purple.withOpacity(0.2),
+      selectedColor: Colors.purple.withValues(alpha: 0.2),
       checkmarkColor: Colors.purple,
       labelStyle: TextStyle(
         color: isSelected ? Colors.purple : Colors.grey[700],
@@ -1090,9 +1735,9 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
+                  color: Colors.green.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
                 ),
                 child: Row(
                   children: [
@@ -1203,7 +1848,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                   margin: const EdgeInsets.only(bottom: 8),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: _getStatusColor(order.status).withOpacity(0.1),
+                      backgroundColor: _getStatusColor(order.status).withValues(alpha: 0.1),
                       child: Icon(_getStatusIcon(order.status), color: _getStatusColor(order.status)),
                     ),
                     title: Text(order.cropName),

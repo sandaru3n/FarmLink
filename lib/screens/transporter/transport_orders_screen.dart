@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/transport_order_model.dart';
 import 'transport_order_detail_screen.dart';
@@ -43,42 +44,61 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
     super.dispose();
   }
 
+  Future<void> _handleRefresh() async {
+    final transportOrderProvider = Provider.of<TransportOrderProvider>(context, listen: false);
+    await transportOrderProvider.loadTransporterTransportOrders();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Transport Orders'),
-        backgroundColor: Colors.purple,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              final transportOrderProvider = Provider.of<TransportOrderProvider>(context, listen: false);
-              transportOrderProvider.loadTransporterTransportOrders();
-            },
-          ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'Accepted'),
-            Tab(text: 'In Transit'),
-            Tab(text: 'Delivered'),
-            Tab(text: 'Cancelled'),
-          ],
-        ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          _buildAcceptedTransportsTab(),
-          _buildInTransitTransportsTab(),
-          _buildDeliveredTransportsTab(),
-          _buildCancelledTransportsTab(),
+          Container(
+            color: Colors.deepPurple[300],
+            child: SafeArea(
+              bottom: false,
+              child: TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.white,
+                indicatorWeight: 3,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                labelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                unselectedLabelStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.normal,
+                ),
+                tabs: const [
+                  Tab(text: 'Accepted'),
+                  Tab(text: 'In Transit'),
+                  Tab(text: 'Delivered'),
+                  Tab(text: 'Cancelled'),
+                ],
+              ),
+            ),
+          ),
+          Expanded(
+            child: LiquidPullToRefresh(
+              onRefresh: _handleRefresh,
+              color: Colors.deepPurple[300]!,
+              backgroundColor: Colors.deepPurple[100]!,
+              animSpeedFactor: 2,
+              showChildOpacityTransition: true,
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildAcceptedTransportsTab(),
+                  _buildInTransitTransportsTab(),
+                  _buildDeliveredTransportsTab(),
+                  _buildCancelledTransportsTab(),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -561,15 +581,15 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.purple.withOpacity(0.1), Colors.purple.withOpacity(0.05)],
+                      colors: [Colors.purple.withValues(alpha: 0.1), Colors.purple.withValues(alpha: 0.05)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.purple.withOpacity(0.3), width: 1),
+                    border: Border.all(color: Colors.purple.withValues(alpha: 0.3), width: 1),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.purple.withOpacity(0.1),
+                        color: Colors.purple.withValues(alpha: 0.1),
                         blurRadius: 3,
                         offset: Offset(0, 1),
                       ),
@@ -602,7 +622,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                             decoration: BoxDecoration(
-                              color: Colors.purple.withOpacity(0.2),
+                              color: Colors.purple.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -658,9 +678,9 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                         Container(
                           padding: EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.1),
+                            color: Colors.amber.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.amber.withOpacity(0.3)),
+                            border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -816,9 +836,9 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

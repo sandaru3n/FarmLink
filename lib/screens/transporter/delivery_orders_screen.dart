@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import '../../providers/delivery_order_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transport_order_provider.dart';
@@ -78,18 +79,20 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
     super.dispose();
   }
 
+  Future<void> _handleRefresh() async {
+    final deliveryOrderProvider = Provider.of<DeliveryOrderProvider>(context, listen: false);
+    await Future.wait([
+      deliveryOrderProvider.loadPendingDeliveryOrders(),
+      deliveryOrderProvider.loadTransporterDeliveryOrders(),
+      deliveryOrderProvider.loadDeliveryStatistics(),
+    ]);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
-          'Delivery Orders',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
         backgroundColor: Colors.purple,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -104,12 +107,19 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildAvailableDeliveriesTab(),
-          _buildDeliveryScheduleTab(),
-        ],
+      body: LiquidPullToRefresh(
+        onRefresh: _handleRefresh,
+        color: Colors.deepPurple[300]!,
+        backgroundColor: Colors.deepPurple[100]!,
+        animSpeedFactor: 2,
+        showChildOpacityTransition: true,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _buildAvailableDeliveriesTab(),
+            _buildDeliveryScheduleTab(),
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _refreshData,

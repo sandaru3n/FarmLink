@@ -79,6 +79,9 @@ dependencies:
   
   # Line Awesome icons
   line_awesome_flutter: ^1.0.2
+  
+  # Liquid pull to refresh
+  liquid_pull_to_refresh: ^3.0.1
 
 dev_dependencies:
   flutter_test:
