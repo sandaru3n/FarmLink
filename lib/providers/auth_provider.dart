@@ -143,6 +143,36 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // Sign in with Google
+  Future<bool> signInWithGoogle() async {
+    _setLoading(true);
+    _clearError();
+    
+    try {
+      UserCredential userCredential = await _authService.signInWithGoogle();
+      
+      _currentUser = userCredential.user;
+      
+      // Check if user profile exists, if not, they need to select a role
+      await _loadUserProfile();
+      await _loadUserRole();
+      
+      // If user profile exists, set the current role from the profile
+      if (_userProfile != null && _userProfile!.currentActiveRole != null) {
+        _currentRole = _userProfile!.currentActiveRole;
+      }
+      
+      // Start listening to real-time profile updates
+      startListeningToProfileUpdates();
+      return true;
+    } catch (e) {
+      _setError(e.toString());
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // Sign out
   Future<void> signOut() async {
     _setLoading(true);
