@@ -73,6 +73,12 @@ dependencies:
   
   # Smooth page indicator for better navigation
   smooth_page_indicator: ^1.1.0
+  
+  # Google navigation bar
+  google_nav_bar: ^5.0.7
+  
+  # Line Awesome icons
+  line_awesome_flutter: ^1.0.2
 
 dev_dependencies:
   flutter_test:

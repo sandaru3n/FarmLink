@@ -325,6 +325,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.3+1"
+  google_nav_bar:
+    dependency: "direct main"
+    description:
+      name: google_nav_bar
+      sha256: bb12dd21514ee1b041ab3127673e2fd85e693337df308f7f2b75cd1e8e92eaf4
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.7"
   google_sign_in:
     dependency: "direct main"
     description:
@@ -493,6 +501,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  line_awesome_flutter:
+    dependency: "direct main"
+    description:
+      name: line_awesome_flutter
+      sha256: "6e1ec935d75c2ccc12e83f609975efa271d82709bb99c170aa52dd549f19f637"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.0-nullsafety"
   lints:
     dependency: transitive
     description:
