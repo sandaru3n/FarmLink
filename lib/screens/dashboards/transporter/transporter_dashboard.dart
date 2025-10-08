@@ -185,7 +185,7 @@ class _TransporterDashboardState extends State<TransporterDashboard> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Welcome, Transporter!',
+                                  'Welcome, ${userProfile?.displayName ?? 'User'}!',
                                   style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,

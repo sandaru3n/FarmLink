@@ -40,6 +40,7 @@ class AuthProvider extends ChangeNotifier {
 
   // Sign up
   Future<bool> signUp({
+    required String fullName,
     required String email,
     required String password,
     required String confirmPassword,
@@ -55,6 +56,17 @@ class AuthProvider extends ChangeNotifier {
       );
       
       _currentUser = userCredential.user;
+      
+      // Update the user's display name in Firebase Auth
+      if (_currentUser != null) {
+        print('Updating Firebase Auth displayName to: $fullName');
+        await _currentUser!.updateDisplayName(fullName);
+        // Reload the user to get the updated display name
+        await _currentUser!.reload();
+        _currentUser = _authService.currentUser;
+        print('Firebase Auth displayName after update: ${_currentUser!.displayName}');
+      }
+      
       notifyListeners();
       return true;
     } catch (e) {
@@ -79,11 +91,17 @@ class AuthProvider extends ChangeNotifier {
     _clearError();
     
     try {
+      // Use the display name from Firebase Auth (which should contain the full name from signup)
+      final fullName = displayName ?? _currentUser!.displayName ?? 'User';
+      
+      // Debug: Print the full name being stored
+      print('Creating user profile with displayName: $fullName');
+      
       await _authService.createUserProfile(
         uid: _currentUser!.uid,
         email: _currentUser!.email!,
         role: role,
-        displayName: displayName,
+        displayName: fullName,
       );
       
       _currentRole = role;

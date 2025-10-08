@@ -79,6 +79,8 @@ class AuthService {
     String? displayName,
   }) async {
     try {
+      print('AuthService: Creating user profile with displayName: $displayName');
+      
       UserModel userModel = UserModel(
         uid: uid,
         email: email,
@@ -90,7 +92,9 @@ class AuthService {
         lastLoginAt: DateTime.now(),
       );
 
+      print('AuthService: UserModel created with displayName: ${userModel.displayName}');
       await _firestore.collection('users').doc(uid).set(userModel.toMap());
+      print('AuthService: User profile saved to Firestore successfully');
       
       // Save role to local storage
       await _saveUserRole(role);

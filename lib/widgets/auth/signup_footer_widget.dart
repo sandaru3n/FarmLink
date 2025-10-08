@@ -1,17 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:farmlink/constants/app_constants.dart';
-import '../../screens/auth/signup_screen.dart';
-import '../../utils/app_localizations.dart';
+import '../../screens/auth/login_screen.dart';
 
-class LoginFooterWidget extends StatelessWidget {
-  const LoginFooterWidget({Key? key}) : super(key: key);
+class SignupFooterWidget extends StatelessWidget {
+  const SignupFooterWidget({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Text("OR"),
         
@@ -21,13 +17,13 @@ class LoginFooterWidget extends StatelessWidget {
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(
-            icon: const Image(
-              image: AssetImage(TConstants.googleLogoImage), 
-              width: 20.0,
-            ),
             onPressed: () {
               // Add Google sign-in functionality
             },
+            icon: const Image(
+              image: AssetImage(TConstants.googleLogoImage),
+              width: 20.0,
+            ),
             style: OutlinedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
@@ -38,9 +34,9 @@ class LoginFooterWidget extends StatelessWidget {
               ),
               elevation: 2,
             ),
-            label: const Text(
-              TConstants.signInWithGoogle,
-              style: TextStyle(
+            label: Text(
+              TConstants.signInWithGoogle.toUpperCase(),
+              style: const TextStyle(
                 fontWeight: FontWeight.w500,
                 fontSize: 16,
               ),
@@ -50,22 +46,25 @@ class LoginFooterWidget extends StatelessWidget {
         
         const SizedBox(height: TConstants.formHeight - 20),
         
-        // Sign Up Prompt
+        // Login Prompt
         TextButton(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const SignUpScreen()),
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const LoginScreen(),
+              ),
             );
           },
           child: Text.rich(
             TextSpan(
-              text: TConstants.dontHaveAnAccount,
-              style: Theme.of(context).textTheme.bodyLarge,
-              children: const [
+              children: [
                 TextSpan(
-                  text: TConstants.signup, 
-                  style: TextStyle(color: Colors.blue)
+                  text: TConstants.alreadyHaveAnAccount,
+                  style: Theme.of(context).textTheme.bodyLarge,
+                ),
+                TextSpan(
+                  text: TConstants.loginText.toUpperCase(),
+                  style: const TextStyle(color: Colors.blue)
                 )
               ]
             ),

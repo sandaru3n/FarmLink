@@ -197,7 +197,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Welcome, Farmer!',
+                              'Welcome, ${userProfile?.displayName ?? 'User'}!',
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),

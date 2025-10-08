@@ -142,7 +142,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
       case 2:
         return const ConsumerOrdersScreen();
       case 3:
-        return _buildProfileTab();
+        return _buildProfileTab(userProfile);
       default:
         return _buildHomeTab(userProfile);
     }
@@ -237,7 +237,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
     );
   }
 
-  Widget _buildProfileTab() {
+  Widget _buildProfileTab(UserModel? userProfile) {
     return Column(
       children: [
         // Profile Header
@@ -292,7 +292,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Welcome, Consumer!',
+                                    'Welcome, ${userProfile?.displayName ?? 'User'}!',
                                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),
