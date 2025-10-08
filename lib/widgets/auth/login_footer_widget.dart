@@ -80,7 +80,10 @@ class LoginFooterWidget extends StatelessWidget {
               children: const [
                 TextSpan(
                   text: TConstants.signup, 
-                  style: TextStyle(color: Colors.blue)
+                  style: TextStyle(
+                    color: Color(0xFF4CB050),
+                    fontWeight: FontWeight.w600,
+                  )
                 )
               ]
             ),

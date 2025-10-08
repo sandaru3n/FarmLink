@@ -120,6 +120,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     final l10n = AppLocalizations.of(context);
     
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [

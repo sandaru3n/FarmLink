@@ -79,7 +79,10 @@ class SignupFooterWidget extends StatelessWidget {
                 ),
                 TextSpan(
                   text: TConstants.loginText.toUpperCase(),
-                  style: const TextStyle(color: Colors.blue)
+                  style: const TextStyle(
+                    color: Color(0xFF4CB050),
+                    fontWeight: FontWeight.w600,
+                  )
                 )
               ]
             ),

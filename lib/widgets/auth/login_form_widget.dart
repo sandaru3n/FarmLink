@@ -4,6 +4,7 @@ import 'package:farmlink/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_localizations.dart';
 import '../../screens/dashboards/dashboard_router.dart';
+import '../../screens/auth/forgot_password_screen.dart';
 
 class LoginFormWidget extends StatefulWidget {
   const LoginFormWidget({Key? key}) : super(key: key);
@@ -91,13 +92,19 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
               alignment: Alignment.centerRight,
               child: TextButton(
                 onPressed: () {
-                  // Add forget password functionality
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ForgotPasswordScreen(),
+                    ),
+                  );
                 },
                 child: const Text(
                   TConstants.forgetPassword,
                   style: TextStyle(
-                    color: Colors.blue,
+                    color: Color(0xFF4CB050),
                     fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
