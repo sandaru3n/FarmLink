@@ -33,6 +33,21 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
     _currentIndex = widget.initialTabIndex ?? _lastIndex;
   }
 
+  String _getAppBarTitle() {
+    switch (_currentIndex) {
+      case 0:
+        return 'Home';
+      case 1:
+        return 'Marketplace';
+      case 2:
+        return 'My Orders';
+      case 3:
+        return 'Products';
+      default:
+        return 'Distributor Dashboard';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -58,13 +73,30 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text('Distributor Dashboard'),
-            backgroundColor: Colors.orange,
+          appBar: _currentIndex == 0 ? null : AppBar(
+            flexibleSpace: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.orange.shade700,
+                    Colors.orange.shade500,
+                    Colors.orange.shade400,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+            ),
+            backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
+            elevation: 0,
+            title: Text(
+              _getAppBarTitle(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.settings),
+                icon: const Icon(Icons.settings_outlined),
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -169,13 +201,185 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   }
 
   Widget _buildHomeTab(UserModel? userProfile) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (userProfile != null) _buildBidAnalyticsSection(userProfile),
+    return Column(
+      children: [
+        // Modern Header
+        _buildHomeHeader(userProfile),
+        
+        // Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 20, 16, 96),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (userProfile != null) _buildBidAnalyticsSection(userProfile),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHomeHeader(UserModel? userProfile) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade700,
+            Colors.orange.shade500,
+            Colors.orange.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
         ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.store,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Home',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const FoodDistributorSettingsScreen(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.white,
+                      size: 26,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Welcome Card
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.white.withOpacity(0.25),
+                      Colors.white.withOpacity(0.15),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.amber.shade400, Colors.amber.shade600],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Icon(Icons.business, color: Colors.white, size: 36),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hello, ${userProfile?.displayName ?? 'User'}! 👋',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            userProfile?.email ?? '',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade700,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'Distributor',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -258,7 +462,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                           children: [
                             _analyticsMetric('Won auctions', '$wonAuctions', Colors.green, Icons.emoji_events),
                             const SizedBox(width: 12),
-                            _analyticsMetric('Total spent', '₹${totalSpent.toStringAsFixed(0)}', Colors.purple, Icons.account_balance_wallet),
+                            _analyticsMetric('Total spent', 'LKR ${totalSpent.toStringAsFixed(0)}', Colors.purple, Icons.account_balance_wallet),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -289,47 +493,63 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
 
   Widget _analyticsMetric(String title, String value, Color color, IconData icon) {
     return Expanded(
-      child: Card(
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: Colors.grey.shade200),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.shade300,
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+              spreadRadius: 1,
+            ),
+          ],
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(10),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [color.withOpacity(0.8), color],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                child: Icon(icon, color: color),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      value,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-                    Text(
-                      title,
-                      style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                    ),
-                  ],
-                ),
+              child: Icon(icon, color: Colors.white, size: 26),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade900,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 11,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ),
       ),
     );
@@ -347,38 +567,89 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
     }
     final double maxVal = bins.fold<double>(0.0, (m, v) => v > m ? v : m);
 
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              runSpacing: 8,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.analytics, color: Colors.orange),
-                    SizedBox(width: 8),
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade400, Colors.orange.shade600],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.analytics, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 10),
                     Text(
                       'Last 7 days bid trend',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Colors.grey.shade900,
+                      ),
                     ),
                   ],
                 ),
-                Wrap(
-                  spacing: 8,
-                  children: [
-                    _smallPill('Avg bid: ₹${avgBid.toStringAsFixed(0)}', Colors.blue),
-                    _smallPill('Win rate: ${(winRate * 100).round()}%', Colors.green),
-                  ],
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Text(
+                    'Avg: LKR ${avgBid.toStringAsFixed(0)}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.blue.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.shade200),
+                  ),
+                  child: Text(
+                    'Win: ${(winRate * 100).round()}%',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.green.shade700,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -437,22 +708,47 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
 
   Widget _endingSoonCard(List<CropModel> items, String distributorId) {
     if (items.isEmpty) return const SizedBox.shrink();
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.timer, color: Colors.red),
-                SizedBox(width: 8),
-                Text('Ending soon', style: TextStyle(fontWeight: FontWeight.bold)),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade400, Colors.red.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.timer, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Ending soon',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -501,7 +797,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text('₹${c.highestBid?.amount.toStringAsFixed(0) ?? '-'}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('LKR ${c.highestBid?.amount.toStringAsFixed(0) ?? '-'}', style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
               );
@@ -515,22 +811,47 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   Widget _topSpendCard(List<MapEntry<String, double>> top3Spend) {
     if (top3Spend.isEmpty) return const SizedBox.shrink();
     final double maxVal = top3Spend.map((e) => e.value).fold<double>(0.0, (m, v) => v > m ? v : m);
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              children: const [
-                Icon(Icons.bar_chart, color: Colors.purple),
-                SizedBox(width: 8),
-                Text('Top spend by crop', style: TextStyle(fontWeight: FontWeight.bold)),
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.purple.shade400, Colors.purple.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.bar_chart, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  'Top spend by crop',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 12),
@@ -547,7 +868,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                           child: Text(e.key, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
                         ),
                         const SizedBox(width: 8),
-                        Text('₹${e.value.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w600)),
+                        Text('LKR ${e.value.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.w600)),
                       ],
                     ),
                     const SizedBox(height: 6),
