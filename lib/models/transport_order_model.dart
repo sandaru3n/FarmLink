@@ -4,6 +4,7 @@ class TransportOrderModel {
   final String id;
   final String deliveryOrderId; // Reference to the delivery order
   final String orderId; // Reference to the original order
+  final String transportOrderKey; // Transport order key for identification
   final String cropImageUrl;
   final String cropName;
   final double quantity;
@@ -34,6 +35,7 @@ class TransportOrderModel {
     required this.id,
     required this.deliveryOrderId,
     required this.orderId,
+    required this.transportOrderKey,
     required this.cropImageUrl,
     required this.cropName,
     required this.quantity,
@@ -66,6 +68,7 @@ class TransportOrderModel {
       id: map['id'] ?? '',
       deliveryOrderId: map['deliveryOrderId'] ?? '',
       orderId: map['orderId'] ?? '',
+      transportOrderKey: map['transportOrderKey'] ?? map['id'] ?? '',
       cropImageUrl: map['cropImageUrl'] ?? '',
       cropName: map['cropName'] ?? '',
       quantity: (map['quantity'] ?? 0).toDouble(),
@@ -107,6 +110,7 @@ class TransportOrderModel {
       'id': id,
       'deliveryOrderId': deliveryOrderId,
       'orderId': orderId,
+      'transportOrderKey': transportOrderKey,
       'cropImageUrl': cropImageUrl,
       'cropName': cropName,
       'quantity': quantity,
@@ -139,6 +143,7 @@ class TransportOrderModel {
     String? id,
     String? deliveryOrderId,
     String? orderId,
+    String? transportOrderKey,
     String? cropImageUrl,
     String? cropName,
     double? quantity,
@@ -169,6 +174,7 @@ class TransportOrderModel {
       id: id ?? this.id,
       deliveryOrderId: deliveryOrderId ?? this.deliveryOrderId,
       orderId: orderId ?? this.orderId,
+      transportOrderKey: transportOrderKey ?? this.transportOrderKey,
       cropImageUrl: cropImageUrl ?? this.cropImageUrl,
       cropName: cropName ?? this.cropName,
       quantity: quantity ?? this.quantity,
