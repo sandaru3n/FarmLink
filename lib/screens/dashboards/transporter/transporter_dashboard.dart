@@ -90,8 +90,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: (_currentIndex == 0 || _currentIndex == 1 || _currentIndex == 2) ? null : AppBar(
-            flexibleSpace: (_currentIndex == 3 || _currentIndex == 4)
+          appBar: (_currentIndex == 0 || _currentIndex == 1 || _currentIndex == 2 || _currentIndex == 4) ? null : AppBar(
+            flexibleSpace: (_currentIndex == 3)
                 ? Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -106,10 +106,10 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     ),
                   )
                 : null,
-            backgroundColor: (_currentIndex == 3 || _currentIndex == 4)
+            backgroundColor: (_currentIndex == 3)
                 ? Colors.transparent
                 : Colors.deepPurple[300],
-            shape: (_currentIndex == 3 || _currentIndex == 4)
+            shape: (_currentIndex == 3)
                 ? const RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(20),
@@ -117,7 +117,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     ),
                   )
                 : null,
-            clipBehavior: (_currentIndex == 3 || _currentIndex == 4)
+            clipBehavior: (_currentIndex == 3)
                 ? Clip.antiAlias
                 : Clip.none,
             elevation: 0,
@@ -398,35 +398,52 @@ class _TransporterDashboardState extends State<TransporterDashboard>
   }
 
   Widget _buildScreenshotStyleCard(String title, String value, IconData icon, Color color) {
+    // Convert to MaterialColor for gradient
+    final MaterialColor materialColor = color is MaterialColor ? color : Colors.deepPurple;
+    final List<Color> gradientColors = color is MaterialColor 
+        ? [color.shade400, color.shade600]
+        : [color, color];
+    
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1), // Light background color matching the screenshot
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.grey.shade300,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+            spreadRadius: 1,
           ),
         ],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Icon in circular background
+          // Icon in circular gradient background
           Container(
-            width: 50,
-            height: 50,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(25),
+              gradient: LinearGradient(
+                colors: gradientColors,
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: color.withOpacity(0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Icon(
               icon,
               color: Colors.white,
-              size: 24,
+              size: 28,
             ),
           ),
           const SizedBox(height: 16),
@@ -434,9 +451,10 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           Text(
             value,
             style: TextStyle(
-              fontSize: 28,
+              fontSize: 30,
               fontWeight: FontWeight.bold,
-              color: Colors.grey[800],
+              color: Colors.grey.shade900,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 8),
@@ -444,9 +462,9 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           Text(
             title,
             style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
           ),
@@ -2261,18 +2279,86 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           return const Center(child: CircularProgressIndicator());
         }
         
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Analytics Overview',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
+        return Column(
+          children: [
+            // Modern Header
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepPurple.shade700,
+                    Colors.deepPurple.shade500,
+                    Colors.deepPurple.shade400,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.deepPurple.withOpacity(0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.analytics,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Analytics',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const TransporterSettingsScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 24),
+            ),
+            
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 96),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
               
               // Analytics Cards Grid (2x2 layout like screenshot)
               Column(
@@ -2284,8 +2370,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         child: _buildScreenshotStyleCard(
                           'Total Orders',
                           allOrders.length.toString(),
-                          Icons.shopping_bag,
-                          const Color(0xFF2196F3), // Light blue
+                          Icons.local_shipping,
+                          Colors.blue,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -2293,8 +2379,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         child: _buildScreenshotStyleCard(
                           'Completed',
                           completedOrders.length.toString(),
-                          Icons.check,
-                          const Color(0xFF4CAF50), // Light green
+                          Icons.check_circle,
+                          Colors.green,
                         ),
                       ),
                     ],
@@ -2308,7 +2394,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                           'Total Earnings',
                           'LKR ${totalEarnings.toStringAsFixed(0)}',
                           Icons.account_balance_wallet,
-                          const Color(0xFFFF9800), // Light orange
+                          Colors.orange,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -2317,93 +2403,128 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                           'Avg Per Order',
                           'LKR ${averageEarnings.toStringAsFixed(0)}',
                           Icons.trending_up,
-                          const Color(0xFF9C27B0), // Light purple
+                          Colors.deepPurple,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              
-              // Recent Activity
-              Text(
-                'Recent Activity',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              
-              if (allOrders.isEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(32),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[200]!),
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(Icons.analytics_outlined, size: 64, color: Colors.grey),
-                      SizedBox(height: 16),
-                      Text(
-                        'No activity yet',
-                        style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500),
+                    const SizedBox(height: 24),
+                    
+                    // Recent Activity
+                    Text(
+                      'Recent Activity',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.grey.shade900,
                       ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Start accepting deliveries to see analytics',
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                ...allOrders.take(5).map((order) => Container(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.grey[200]!),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.all(16),
-                    leading: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        order.cropImageUrl ?? '',
-                        width: 48,
-                        height: 48,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(8),
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    if (allOrders.isEmpty)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(40),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.shade300,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
                             ),
-                            child: const Icon(Icons.image, color: Colors.grey),
-                          );
-                        },
-                      ),
-                    ),
-                    title: Text(
-                      order.cropName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.grey.shade400, Colors.grey.shade600],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.analytics_outlined, size: 48, color: Colors.white),
+                            ),
+                            const SizedBox(height: 20),
+                            Text(
+                              'No activity yet',
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade900,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Start accepting deliveries to see analytics',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      ...allOrders.take(5).map((order) => Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.shade300,
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(16),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey.shade300, width: 2),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  order.cropImageUrl ?? '',
+                                  width: 56,
+                                  height: 56,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade200,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Icon(Icons.agriculture, color: Colors.grey.shade600, size: 28),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+                          title: Text(
+                            order.cropName,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -2424,32 +2545,39 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         ),
                       ],
                     ),
-                    trailing: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[200],
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.grey[400]!),
-                          ),
-                          child: Text(
-                            'LKR ${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.green.shade400, Colors.green.shade600],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.green.withOpacity(0.3),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              'LKR ${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                )).toList(),
-            ],
-          ),
+                      )).toList(),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
