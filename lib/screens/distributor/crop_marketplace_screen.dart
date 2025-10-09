@@ -665,7 +665,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
           icon: const Icon(Icons.gavel),
           label: const Text('Place Bid'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.orange.shade600,
             foregroundColor: Colors.white,
             padding: const EdgeInsets.symmetric(vertical: 12),
           ),
@@ -803,7 +803,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                }
              },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: Colors.orange.shade600,
               foregroundColor: Colors.white,
             ),
             child: const Text('Place Bid'),

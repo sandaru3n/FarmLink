@@ -310,7 +310,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hello, ${userProfile?.displayName ?? 'User'}! 👋',
+                            'Hi, ${userProfile?.displayName ?? 'User'}! ',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 17,
@@ -874,6 +874,12 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           onSelected: (s) {
             if (s) setState(() => _analyticsDays = 7);
           },
+          selectedColor: Colors.amber.shade300,
+          backgroundColor: Colors.amber.shade50,
+          labelStyle: TextStyle(
+            color: _analyticsDays == 7 ? Colors.grey.shade900 : Colors.grey.shade700,
+            fontWeight: _analyticsDays == 7 ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
         ChoiceChip(
           label: const Text('Last 30 days'),
@@ -881,6 +887,12 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           onSelected: (s) {
             if (s) setState(() => _analyticsDays = 30);
           },
+          selectedColor: Colors.amber.shade300,
+          backgroundColor: Colors.amber.shade50,
+          labelStyle: TextStyle(
+            color: _analyticsDays == 30 ? Colors.grey.shade900 : Colors.grey.shade700,
+            fontWeight: _analyticsDays == 30 ? FontWeight.bold : FontWeight.normal,
+          ),
         ),
       ],
     );
