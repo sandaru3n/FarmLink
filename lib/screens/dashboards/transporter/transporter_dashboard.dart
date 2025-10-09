@@ -90,7 +90,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: AppBar(
+          appBar: _currentIndex == 0 ? null : AppBar(
             backgroundColor: Colors.deepPurple[300],
             elevation: 0,
             foregroundColor: Colors.white,
@@ -239,65 +239,20 @@ class _TransporterDashboardState extends State<TransporterDashboard>
         final availableDeliveries = deliveryOrderProvider.pendingDeliveryOrders.length;
         
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.purple.withValues(alpha: 0.1),
-                            child: const Icon(
-                              Icons.local_shipping,
-                              size: 20,
-                              color: Colors.purple,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Welcome, ${userProfile?.displayName ?? 'User'}!',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  userProfile?.displayName ?? userProfile?.email ?? 'Transporter',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                Text(
-                                  'Delivering fresh produce safely!',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.purple,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              // Top Bar similar to consumer browse products
+              _buildHomeTopBar(userProfile, availableDeliveries, activeDeliveries, totalEarnings),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
+
+              // Welcome section removed
 
               // Quick Stats
               Row(
@@ -319,7 +274,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: _buildStatCard('Total Earnings', '₹${totalEarnings.toStringAsFixed(0)}', Icons.trending_up, Colors.orange),
+                    child: _buildStatCard('Total Earnings', 'LKR ${totalEarnings.toStringAsFixed(0)}', Icons.trending_up, Colors.orange),
                   ),
                 ],
               ),
@@ -395,6 +350,9 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                   });
                 },
               ),
+                  ],
+                ),
+              ),
             ],
           ),
         );
@@ -428,6 +386,170 @@ class _TransporterDashboardState extends State<TransporterDashboard>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHomeTopBar(UserModel? userProfile, int availableDeliveries, int activeDeliveries, double totalEarnings) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.deepPurple.shade700,
+            Colors.deepPurple.shade500,
+            Colors.deepPurple.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.white.withValues(alpha: 0.15),
+                    backgroundImage: (userProfile?.photoUrl != null && userProfile!.photoUrl!.isNotEmpty)
+                        ? NetworkImage(userProfile!.photoUrl!)
+                        : null,
+                    child: (userProfile?.photoUrl == null || userProfile!.photoUrl!.isEmpty)
+                        ? const Icon(Icons.person, color: Colors.white)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hi, ${userProfile?.displayName ?? 'User'}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'Let\'s deliver with care today',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = 1; // Jump to Delivery tab
+                        });
+                      },
+                      icon: const Icon(Icons.local_shipping_outlined, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Quick glance chips
+              Row(
+                children: [
+                  _buildInfoChip(Icons.inventory_2_outlined, '$availableDeliveries available', Colors.white),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(Icons.directions_car_filled_outlined, '$activeDeliveries active', Colors.white),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(Icons.trending_up, 'LKR ${totalEarnings.toStringAsFixed(0)}', Colors.white),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Subactions
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = 1; // Delivery tab
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.local_shipping),
+                      label: const Text('Find deliveries'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = 2; // My Transports
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white70),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.list_alt),
+                      label: const Text('My transports'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }
