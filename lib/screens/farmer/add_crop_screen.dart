@@ -247,70 +247,195 @@ class _AddCropScreenState extends State<AddCropScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add New Crop'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade600,
+                Colors.green.shade700,
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.add_circle,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Add New Crop',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: Container(
+        color: Colors.grey.shade50,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // Crop Image
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Crop Image',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      GestureDetector(
-                        onTap: _pickImage,
-                        child: Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey.shade300),
-                            borderRadius: BorderRadius.circular(12),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.green.shade400,
+                                  Colors.green.shade600,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.image,
+                              color: Colors.white,
+                              size: 20,
+                            ),
                           ),
-                          child: _selectedImage != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.file(
-                                    _selectedImage!,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                  ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Crop Image',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        width: double.infinity,
+                        height: 250,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.green.shade300,
+                            width: 2,
+                          ),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(20),
+                            bottomRight: Radius.circular(20),
+                          ),
+                          gradient: _selectedImage == null
+                              ? LinearGradient(
+                                  colors: [
+                                    Colors.green.shade50,
+                                    Colors.green.shade100,
+                                  ],
                                 )
-                              : Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
+                              : null,
+                        ),
+                        child: _selectedImage != null
+                            ? ClipRRect(
+                                borderRadius: const BorderRadius.only(
+                                  bottomLeft: Radius.circular(18),
+                                  bottomRight: Radius.circular(18),
+                                ),
+                                child: Image.file(
+                                  _selectedImage!,
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                ),
+                              )
+                            : Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(18),
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.green.shade400,
+                                          Colors.green.shade600,
+                                        ],
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
                                       Icons.add_photo_alternate,
                                       size: 48,
-                                      color: Colors.grey.shade400,
+                                      color: Colors.white,
                                     ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      'Tap to add crop image',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Text(
+                                    'Tap to add crop image',
+                                    style: TextStyle(
+                                      color: Colors.green.shade700,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                  ],
-                                ),
-                        ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Upload a clear photo of your crop',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade500,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -318,10 +443,23 @@ class _AddCropScreenState extends State<AddCropScreen> {
               // Crop Name
               TextFormField(
                 controller: _cropNameController,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Crop Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.agriculture),
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                  ),
+                  prefixIcon: Icon(Icons.agriculture, color: Colors.green.shade600),
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -339,10 +477,23 @@ class _AddCropScreenState extends State<AddCropScreen> {
                     child: TextFormField(
                       controller: _quantityController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Quantity (kg)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.scale),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                        ),
+                        prefixIcon: Icon(Icons.scale, color: Colors.green.shade600),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -355,15 +506,28 @@ class _AddCropScreenState extends State<AddCropScreen> {
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: TextFormField(
                       controller: _minBidPriceController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Min Bid Price (₹)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.attach_money),
+                      decoration: InputDecoration(
+                        labelText: 'Min Bid (LKR)',
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.grey.shade300),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                        ),
+                        prefixIcon: Icon(Icons.attach_money, color: Colors.green.shade600),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -381,17 +545,52 @@ class _AddCropScreenState extends State<AddCropScreen> {
               const SizedBox(height: 16),
 
               // Start Date and Time
-              Card(
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Bidding Start',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue.shade400,
+                                  Colors.blue.shade600,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Bidding Start',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade900,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -400,19 +599,26 @@ class _AddCropScreenState extends State<AddCropScreen> {
                             child: InkWell(
                               onTap: () => _selectDate(context, true),
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
                                   border: Border.all(color: Colors.grey.shade300),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.calendar_today),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _startDate != null
-                                          ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}'
-                                          : 'Select Date',
+                                    Icon(Icons.calendar_today, color: Colors.blue.shade600, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _startDate != null
+                                            ? '${_startDate!.day}/${_startDate!.month}/${_startDate!.year}'
+                                            : 'Select Date',
+                                        style: TextStyle(
+                                          fontWeight: _startDate != null ? FontWeight.bold : FontWeight.normal,
+                                          color: _startDate != null ? Colors.grey.shade900 : Colors.grey.shade600,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -424,19 +630,26 @@ class _AddCropScreenState extends State<AddCropScreen> {
                             child: InkWell(
                               onTap: () => _selectTime(context, true),
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
                                   border: Border.all(color: Colors.grey.shade300),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.access_time),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _startTime != null
-                                          ? _startTime!.format(context)
-                                          : 'Select Time',
+                                    Icon(Icons.access_time, color: Colors.blue.shade600, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _startTime != null
+                                            ? _startTime!.format(context)
+                                            : 'Select Time',
+                                        style: TextStyle(
+                                          fontWeight: _startTime != null ? FontWeight.bold : FontWeight.normal,
+                                          color: _startTime != null ? Colors.grey.shade900 : Colors.grey.shade600,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -452,17 +665,52 @@ class _AddCropScreenState extends State<AddCropScreen> {
               const SizedBox(height: 16),
 
               // End Date and Time
-              Card(
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Bidding End',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.red.shade400,
+                                  Colors.red.shade600,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.stop,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Bidding End',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade900,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -471,19 +719,26 @@ class _AddCropScreenState extends State<AddCropScreen> {
                             child: InkWell(
                               onTap: () => _selectDate(context, false),
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
                                   border: Border.all(color: Colors.grey.shade300),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.calendar_today),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _endDate != null
-                                          ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
-                                          : 'Select Date',
+                                    Icon(Icons.calendar_today, color: Colors.red.shade600, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _endDate != null
+                                            ? '${_endDate!.day}/${_endDate!.month}/${_endDate!.year}'
+                                            : 'Select Date',
+                                        style: TextStyle(
+                                          fontWeight: _endDate != null ? FontWeight.bold : FontWeight.normal,
+                                          color: _endDate != null ? Colors.grey.shade900 : Colors.grey.shade600,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -495,19 +750,26 @@ class _AddCropScreenState extends State<AddCropScreen> {
                             child: InkWell(
                               onTap: () => _selectTime(context, false),
                               child: Container(
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(14),
                                 decoration: BoxDecoration(
+                                  color: Colors.grey.shade50,
                                   border: Border.all(color: Colors.grey.shade300),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.access_time),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _endTime != null
-                                          ? _endTime!.format(context)
-                                          : 'Select Time',
+                                    Icon(Icons.access_time, color: Colors.red.shade600, size: 20),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        _endTime != null
+                                            ? _endTime!.format(context)
+                                            : 'Select Time',
+                                        style: TextStyle(
+                                          fontWeight: _endTime != null ? FontWeight.bold : FontWeight.normal,
+                                          color: _endTime != null ? Colors.grey.shade900 : Colors.grey.shade600,
+                                        ),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -523,47 +785,103 @@ class _AddCropScreenState extends State<AddCropScreen> {
               const SizedBox(height: 16),
 
               // Pickup Location with Map Picker
-              Card(
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.orange.shade400,
+                                  Colors.orange.shade600,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               'Pickup Location',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              style: TextStyle(
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
+                                color: Colors.grey.shade900,
                               ),
                             ),
                           ),
-                          ElevatedButton.icon(
-                            onPressed: _openMapPicker,
-                            icon: const Icon(Icons.map, size: 18),
-                            label: const Text('Select on Map'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 8,
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.green.shade500,
+                                  Colors.green.shade700,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: ElevatedButton.icon(
+                              onPressed: _openMapPicker,
+                              icon: const Icon(Icons.map, size: 18),
+                              label: const Text('Map'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: Colors.white,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
                               ),
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 16),
                       TextFormField(
                         controller: _pickupLocationController,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          hintText: 'Tap "Select on Map" to choose location',
-                          border: const OutlineInputBorder(),
-                          prefixIcon: const Icon(Icons.location_on),
+                          hintText: 'Tap "Map" button to choose location',
+                          filled: true,
+                          fillColor: Colors.grey.shade50,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.grey.shade300),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(color: Colors.green.shade600, width: 2),
+                          ),
+                          prefixIcon: Icon(Icons.location_on, color: Colors.orange.shade600),
                           suffixIcon: _pickupLatitude != null && _pickupLongitude != null
-                              ? const Icon(Icons.check_circle, color: Colors.green)
+                              ? Icon(Icons.check_circle, color: Colors.green.shade600)
                               : null,
                         ),
                         validator: (value) {
@@ -591,32 +909,60 @@ class _AddCropScreenState extends State<AddCropScreen> {
               const SizedBox(height: 24),
 
               // Submit Button
-              ElevatedButton(
-                onPressed: _isLoading ? null : _submitCrop,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.green.shade500,
+                      Colors.green.shade700,
+                    ],
                   ),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.shade300,
+                      blurRadius: 12,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submitCrop,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.add_circle_outline, size: 24),
+                            SizedBox(width: 10),
+                            Text(
+                              'Add Crop Listing',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ],
                         ),
-                      )
-                    : const Text(
-                        'Add Crop Listing',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                ),
               ),
+              const SizedBox(height: 80),
             ],
           ),
+        ),
         ),
       ),
     );
