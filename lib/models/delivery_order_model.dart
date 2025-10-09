@@ -8,8 +8,12 @@ class DeliveryOrderModel {
   final double quantity;
   final String farmerName;
   final String pickupLocation;
+  final double? pickupLatitude;
+  final double? pickupLongitude;
   final String distributorName;
   final String distributorLocation;
+  final double? distributorLatitude;
+  final double? distributorLongitude;
   final double price;
   final String status; // 'pending', 'accepted', 'rejected', 'in_transit', 'delivered'
   final String? transporterId;
@@ -49,8 +53,12 @@ class DeliveryOrderModel {
     required this.quantity,
     required this.farmerName,
     required this.pickupLocation,
+    this.pickupLatitude,
+    this.pickupLongitude,
     required this.distributorName,
     required this.distributorLocation,
+    this.distributorLatitude,
+    this.distributorLongitude,
     required this.price,
     this.status = 'pending',
     this.transporterId,
@@ -90,8 +98,12 @@ class DeliveryOrderModel {
       quantity: (map['quantity'] ?? 0).toDouble(),
       farmerName: map['farmerName'] ?? '',
       pickupLocation: map['pickupLocation'] ?? '',
+      pickupLatitude: map['pickupLatitude']?.toDouble(),
+      pickupLongitude: map['pickupLongitude']?.toDouble(),
       distributorName: map['distributorName'] ?? '',
       distributorLocation: map['distributorLocation'] ?? '',
+      distributorLatitude: map['distributorLatitude']?.toDouble(),
+      distributorLongitude: map['distributorLongitude']?.toDouble(),
       price: (map['price'] ?? 0).toDouble(),
       status: map['status'] ?? 'pending',
       transporterId: map['transporterId'],
@@ -144,8 +156,12 @@ class DeliveryOrderModel {
       'quantity': quantity,
       'farmerName': farmerName,
       'pickupLocation': pickupLocation,
+      'pickupLatitude': pickupLatitude,
+      'pickupLongitude': pickupLongitude,
       'distributorName': distributorName,
       'distributorLocation': distributorLocation,
+      'distributorLatitude': distributorLatitude,
+      'distributorLongitude': distributorLongitude,
       'price': price,
       'status': status,
       'transporterId': transporterId,
@@ -185,8 +201,12 @@ class DeliveryOrderModel {
     double? quantity,
     String? farmerName,
     String? pickupLocation,
+    double? pickupLatitude,
+    double? pickupLongitude,
     String? distributorName,
     String? distributorLocation,
+    double? distributorLatitude,
+    double? distributorLongitude,
     double? price,
     String? status,
     String? transporterId,
@@ -224,8 +244,12 @@ class DeliveryOrderModel {
       quantity: quantity ?? this.quantity,
       farmerName: farmerName ?? this.farmerName,
       pickupLocation: pickupLocation ?? this.pickupLocation,
+      pickupLatitude: pickupLatitude ?? this.pickupLatitude,
+      pickupLongitude: pickupLongitude ?? this.pickupLongitude,
       distributorName: distributorName ?? this.distributorName,
       distributorLocation: distributorLocation ?? this.distributorLocation,
+      distributorLatitude: distributorLatitude ?? this.distributorLatitude,
+      distributorLongitude: distributorLongitude ?? this.distributorLongitude,
       price: price ?? this.price,
       status: status ?? this.status,
       transporterId: transporterId ?? this.transporterId,

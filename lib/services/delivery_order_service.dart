@@ -29,7 +29,7 @@ class DeliveryOrderService {
       // Create delivery order ID
       final deliveryOrderId = 'delivery_${order.id}';
 
-      // Create delivery order model
+      // Create delivery order model with coordinates
       final deliveryOrder = DeliveryOrderModel(
         id: deliveryOrderId,
         orderId: order.id,
@@ -38,8 +38,12 @@ class DeliveryOrderService {
         quantity: order.quantity,
         farmerName: order.farmerName,
         pickupLocation: order.pickupLocation,
+        pickupLatitude: order.pickupLatitude,
+        pickupLongitude: order.pickupLongitude,
         distributorName: order.distributorName,
         distributorLocation: order.distributorLocation,
+        distributorLatitude: order.distributorLatitude,
+        distributorLongitude: order.distributorLongitude,
         price: order.finalPrice,
         status: 'pending',
         createdAt: DateTime.now(),

@@ -6,19 +6,19 @@ import '../../providers/delivery_order_provider.dart';
 import '../../services/directions_service.dart';
 import 'dart:async';
 
-class DeliveryOrderDetailScreen extends StatefulWidget {
+class DeliveryOrderDetailScreenEnhanced extends StatefulWidget {
   final DeliveryOrderModel deliveryOrder;
 
-  const DeliveryOrderDetailScreen({
+  const DeliveryOrderDetailScreenEnhanced({
     super.key,
     required this.deliveryOrder,
   });
 
   @override
-  State<DeliveryOrderDetailScreen> createState() => _DeliveryOrderDetailScreenState();
+  State<DeliveryOrderDetailScreenEnhanced> createState() => _DeliveryOrderDetailScreenEnhancedState();
 }
 
-class _DeliveryOrderDetailScreenState extends State<DeliveryOrderDetailScreen> {
+class _DeliveryOrderDetailScreenEnhancedState extends State<DeliveryOrderDetailScreenEnhanced> {
   GoogleMapController? _mapController;
   DirectionsResult? _directionsResult;
   bool _isLoadingDirections = true;
