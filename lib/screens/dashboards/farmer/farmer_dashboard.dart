@@ -247,13 +247,13 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   ),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 8),
               Text(
                 'Hello, ${userProfile?.displayName ?? 'User'}! 👋',
                 style: const TextStyle(
-                  fontSize: 14,
+                  fontSize: 17,
                   color: Colors.white70,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
@@ -292,7 +292,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
@@ -312,7 +312,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                         child: const Icon(
                           Icons.wb_sunny_outlined,
                           color: Colors.white,
-                          size: 32,
+                          size: 36,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -324,7 +324,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                               userProfile?.email ?? 'Farmer',
                               style: TextStyle(
                                 color: Colors.grey.shade700,
-                                fontSize: 14,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -440,7 +441,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     Expanded(
                       child: _buildStatCard(
                         'This Month', 
-                        '₹${_dashboardStats?.thisMonthSales.toStringAsFixed(0) ?? '0'}', 
+                        'LKR ${_dashboardStats?.thisMonthSales.toStringAsFixed(0) ?? '0'}', 
                         Icons.trending_up, 
                         Colors.purple
                       ),

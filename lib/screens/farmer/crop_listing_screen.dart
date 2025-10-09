@@ -40,19 +40,89 @@ class _CropListingScreenState extends State<CropListingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Crops'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Pending'),
-            Tab(text: 'Active'),
-            Tab(text: 'Expired & Sold'),
-            Tab(text: 'All'),
-          ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(140),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade600,
+                Colors.green.shade700,
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.agriculture,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'My Crops',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Tab Bar
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelColor: Colors.green.shade700,
+                    unselectedLabelColor: Colors.white,
+                    labelStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    dividerColor: Colors.transparent,
+                    dividerHeight: 0,
+                    tabs: const [
+                      Tab(text: 'Pending'),
+                      Tab(text: 'Active'),
+                      Tab(text: 'Expired'),
+                      Tab(text: 'All'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
         ),
       ),
       body: Consumer<CropProvider>(
@@ -93,17 +163,35 @@ class _CropListingScreenState extends State<CropListingScreen>
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddCropScreen(),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Colors.green.shade500,
+              Colors.green.shade700,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.shade300,
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
-          );
-        },
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.add),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const AddCropScreen(),
+              ),
+            );
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, color: Colors.white, size: 28),
+        ),
       ),
     );
   }
@@ -114,17 +202,38 @@ class _CropListingScreenState extends State<CropListingScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.agriculture,
-              size: 64,
-              color: Colors.grey.shade400,
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.green.shade100,
+                    Colors.green.shade50,
+                  ],
+                ),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.agriculture,
+                size: 64,
+                color: Colors.green.shade400,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Text(
               emptyMessage,
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start adding crops to see them here',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
               ),
             ),
           ],
@@ -132,13 +241,16 @@ class _CropListingScreenState extends State<CropListingScreen>
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: crops.length,
-      itemBuilder: (context, index) {
-        final crop = crops[index];
-        return _buildCropCard(crop);
-      },
+    return Container(
+      color: Colors.grey.shade50,
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: crops.length,
+        itemBuilder: (context, index) {
+          final crop = crops[index];
+          return _buildCropCard(crop);
+        },
+      ),
     );
   }
 
@@ -150,14 +262,28 @@ class _CropListingScreenState extends State<CropListingScreen>
     final isActive = crop.isActive;
     final highestBid = crop.highestBid;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Crop Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+          // Crop Image with overlay gradient
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             child: Image.network(
               crop.imageUrl,
               height: 200,
@@ -204,10 +330,31 @@ class _CropListingScreenState extends State<CropListingScreen>
                 );
               },
             ),
+              ),
+              // Gradient overlay at bottom of image
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.3),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -217,25 +364,47 @@ class _CropListingScreenState extends State<CropListingScreen>
                     Expanded(
                       child: Text(
                         crop.cropName,
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: 22,
                           fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade900,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(crop.status),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        _getStatusText(crop.status),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                        gradient: LinearGradient(
+                          colors: _getStatusGradient(crop.status),
                         ),
+                        borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: _getStatusColor(crop.status).withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getStatusIcon(crop.status),
+                            color: Colors.white,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _getStatusText(crop.status),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -252,16 +421,17 @@ class _CropListingScreenState extends State<CropListingScreen>
                         '${crop.quantity} kg',
                       ),
                     ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _buildInfoRow(
                         Icons.attach_money,
                         'Min Bid',
-                        '₹${crop.minBidPrice}',
+                        'LKR ${crop.minBidPrice}',
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
                 // Location
                 _buildInfoRow(
@@ -269,7 +439,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                   'Pickup Location',
                   crop.pickupLocation,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
                 // Time information based on status
                 if (isPending) ...[
@@ -278,20 +448,21 @@ class _CropListingScreenState extends State<CropListingScreen>
                     'Bidding Starts',
                     _formatDateTime(crop.startDate),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   _buildInfoRow(
                     Icons.access_time,
                     'Time Until Start',
                     _formatDuration(timeUntilStart),
                   ),
+                  const SizedBox(height: 10),
                 ] else if (isActive && !isExpired) ...[
                   _buildInfoRow(
                     Icons.access_time,
                     'Time Left',
                     _formatDuration(timeLeft),
                   ),
+                  const SizedBox(height: 10),
                 ],
-                const SizedBox(height: 8),
 
                 // Bidding Info (only for active/expired crops)
                 if (!isPending) ...[
@@ -304,12 +475,13 @@ class _CropListingScreenState extends State<CropListingScreen>
                           '${crop.bids.length}',
                         ),
                       ),
+                      const SizedBox(width: 10),
                       if (highestBid != null)
                         Expanded(
                           child: _buildInfoRow(
                             Icons.trending_up,
                             'Highest Bid',
-                            '₹${highestBid.amount}',
+                            'LKR ${highestBid.amount}',
                           ),
                         ),
                     ],
@@ -357,21 +529,89 @@ class _CropListingScreenState extends State<CropListingScreen>
     }
   }
 
+  List<Color> _getStatusGradient(String status) {
+    switch (status) {
+      case 'pending':
+        return [Colors.orange.shade400, Colors.orange.shade600];
+      case 'active':
+        return [Colors.green.shade400, Colors.green.shade600];
+      case 'expired':
+        return [Colors.red.shade400, Colors.red.shade600];
+      case 'sold':
+        return [Colors.purple.shade400, Colors.purple.shade600];
+      default:
+        return [Colors.grey.shade400, Colors.grey.shade600];
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'pending':
+        return Icons.schedule;
+      case 'active':
+        return Icons.timer;
+      case 'expired':
+        return Icons.timer_off;
+      case 'sold':
+        return Icons.check_circle;
+      default:
+        return Icons.help;
+    }
+  }
+
   Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey.shade600),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            '$label: $value',
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 14,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade400,
+                  Colors.green.shade600,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: Colors.grey.shade900,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -468,7 +708,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                   child: ElevatedButton.icon(
                     onPressed: () => _confirmWinningDistributor(crop),
                     icon: const Icon(Icons.check_circle),
-                    label: const Text('Confirm Winner'),
+                    label: const Text('Confirm'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -493,7 +733,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Winner: ${crop.highestBid!.distributorName} - ₹${crop.highestBid!.amount.toStringAsFixed(0)}',
+                        'Winner: ${crop.highestBid!.distributorName} - LKR ${crop.highestBid!.amount.toStringAsFixed(0)}',
                         style: const TextStyle(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -663,7 +903,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                           if (crop.highestBid != null) ...[
                             Expanded(
                               child: Text(
-                                'Highest: ₹${crop.highestBid!.amount.toStringAsFixed(0)}',
+                                'Highest: LKR ${crop.highestBid!.amount.toStringAsFixed(0)}',
                                 style: const TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -726,7 +966,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                                     ? Colors.green 
                                     : Colors.green.shade100,
                                 child: Text(
-                                  '₹${bid.amount.toStringAsFixed(0)}',
+                                  'LKR ${bid.amount.toStringAsFixed(0)}',
                                   style: TextStyle(
                                     color: isHighest && isExpired 
                                         ? Colors.white 
@@ -773,7 +1013,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                                 ],
                               ),
                               trailing: Text(
-                                '₹${bid.amount.toStringAsFixed(2)}',
+                                'LKR ${bid.amount.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
@@ -799,7 +1039,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                       _confirmWinningDistributor(crop);
                     },
                     icon: const Icon(Icons.check_circle),
-                    label: const Text('Confirm Winner'),
+                    label: const Text('Confirm'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       foregroundColor: Colors.white,
@@ -860,7 +1100,7 @@ class _CropListingScreenState extends State<CropListingScreen>
                   ),
                   const SizedBox(height: 8),
                   Text('Distributor: ${highestBid.distributorName}'),
-                  Text('Winning Bid: ₹${highestBid.amount.toStringAsFixed(0)}'),
+                  Text('Winning Bid: LKR ${highestBid.amount.toStringAsFixed(0)}'),
                   Text('Crop: ${crop.cropName}'),
                   Text('Quantity: ${crop.quantity} kg'),
                 ],
@@ -891,7 +1131,7 @@ class _CropListingScreenState extends State<CropListingScreen>
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
             ),
-            child: const Text('Confirm Winner'),
+            child: const Text('Confirm'),
           ),
         ],
       ),
