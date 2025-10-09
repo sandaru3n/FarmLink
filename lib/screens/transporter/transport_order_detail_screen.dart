@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/transport_order_model.dart';
 import '../../providers/transport_order_provider.dart';
 
-class TransportOrderDetailScreen extends StatelessWidget {
+class TransportOrderDetailScreen extends StatefulWidget {
   final TransportOrderModel transportOrder;
 
   const TransportOrderDetailScreen({
@@ -12,29 +12,161 @@ class TransportOrderDetailScreen extends StatelessWidget {
   });
 
   @override
+  State<TransportOrderDetailScreen> createState() => _TransportOrderDetailScreenState();
+}
+
+class _TransportOrderDetailScreenState extends State<TransportOrderDetailScreen> {
+  bool _isCropExpanded = false;
+  bool _isRouteExpanded = false;
+  bool _isTransportDetailsExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text('Transport Details'),
-        backgroundColor: Colors.purple,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.deepPurple.shade700,
+                Colors.deepPurple.shade500,
+                Colors.deepPurple.shade400,
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        title: const Text(
+          'Transport Details',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildStatusHeader(),
-            const SizedBox(height: 24),
-            _buildCropSection(),
-            const SizedBox(height: 24),
-            _buildRouteSection(),
-            const SizedBox(height: 24),
-            _buildTransportDetailsSection(),
+            const SizedBox(height: 20),
+            _buildExpandableSection(
+              title: 'Crop Information',
+              icon: Icons.agriculture,
+              isExpanded: _isCropExpanded,
+              onTap: () => setState(() => _isCropExpanded = !_isCropExpanded),
+              child: _buildCropContent(),
+            ),
+            const SizedBox(height: 16),
+            _buildExpandableSection(
+              title: 'Route Information',
+              icon: Icons.route,
+              isExpanded: _isRouteExpanded,
+              onTap: () => setState(() => _isRouteExpanded = !_isRouteExpanded),
+              child: _buildRouteContent(),
+            ),
+            const SizedBox(height: 16),
+            _buildExpandableSection(
+              title: 'Transport Details',
+              icon: Icons.info_outline,
+              isExpanded: _isTransportDetailsExpanded,
+              onTap: () => setState(() => _isTransportDetailsExpanded = !_isTransportDetailsExpanded),
+              child: _buildTransportDetailsContent(),
+            ),
             const SizedBox(height: 24),
             _buildActionButtons(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildExpandableSection({
+    required String title,
+    required IconData icon,
+    required bool isExpanded,
+    required VoidCallback onTap,
+    required Widget child,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: onTap,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.deepPurple.shade400, Colors.deepPurple.shade600],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(16),
+                  bottom: isExpanded ? Radius.zero : const Radius.circular(16),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: isExpanded
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: child,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
       ),
     );
   }
@@ -45,18 +177,32 @@ class TransportOrderDetailScreen extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            _getStatusColor(transportOrder.status),
-            _getStatusColor(transportOrder.status).withOpacity(0.8),
+            _getStatusColor(widget.transportOrder.status),
+            _getStatusColor(widget.transportOrder.status).withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: _getStatusColor(widget.transportOrder.status).withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
-          Icon(
-            _getStatusIcon(transportOrder.status),
-            color: Colors.white,
-            size: 32,
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(
+              _getStatusIcon(widget.transportOrder.status),
+              color: Colors.white,
+              size: 32,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -64,7 +210,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _getStatusText(transportOrder.status),
+                  _getStatusText(widget.transportOrder.status),
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
@@ -73,9 +219,9 @@ class TransportOrderDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Transport Order #${transportOrder.id}',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
+                  'Transport Order #${widget.transportOrder.id}',
+                  style: const TextStyle(
+                    color: Colors.white,
                     fontSize: 14,
                   ),
                 ),
@@ -87,29 +233,16 @@ class TransportOrderDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCropSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCropContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            const Text(
-              'Crop Information',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    transportOrder.cropImageUrl,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                widget.transportOrder.cropImageUrl,
                     width: 80,
                     height: 80,
                     fit: BoxFit.cover,
@@ -132,45 +265,30 @@ class TransportOrderDetailScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        transportOrder.cropName,
+                        widget.transportOrder.cropName,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      _buildDetailRow('Quantity', '${transportOrder.quantity} kg'),
-                      _buildDetailRow('Price', '₹${transportOrder.price.toStringAsFixed(2)}'),
-                      if (transportOrder.deliveryFee != null)
-                        _buildDetailRow('Delivery Fee', '₹${transportOrder.deliveryFee!.toStringAsFixed(2)}'),
+                      _buildDetailRow('Quantity', '${widget.transportOrder.quantity} kg'),
+                      _buildDetailRow('Price', 'LKR ${widget.transportOrder.price.toStringAsFixed(2)}'),
+                      if (widget.transportOrder.deliveryFee != null)
+                        _buildDetailRow('Delivery Fee', 'LKR ${widget.transportOrder.deliveryFee!.toStringAsFixed(2)}'),
                     ],
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
-  Widget _buildRouteSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Route Information',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
+  Widget _buildRouteContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
             
             // Pickup Location
             Container(
@@ -205,12 +323,12 @@ class TransportOrderDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          transportOrder.pickupLocation,
+                          widget.transportOrder.pickupLocation,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Farmer: ${transportOrder.farmerName}',
+                          'Farmer: ${widget.transportOrder.farmerName}',
                           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
@@ -255,12 +373,12 @@ class TransportOrderDetailScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          transportOrder.distributorLocation,
+                          widget.transportOrder.distributorLocation,
                           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Distributor: ${transportOrder.distributorName}',
+                          'Distributor: ${widget.transportOrder.distributorName}',
                           style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                         ),
                       ],
@@ -269,51 +387,34 @@ class TransportOrderDetailScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 
-  Widget _buildTransportDetailsSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Transport Details',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildDetailRow('Transport Order ID', transportOrder.id),
-            _buildDetailRow('Delivery Order ID', transportOrder.deliveryOrderId),
-            _buildDetailRow('Original Order ID', transportOrder.orderId),
-            _buildDetailRow('Transporter', transportOrder.transporterName),
-            _buildDetailRow('Accepted At', _formatDateTime(transportOrder.acceptedAt)),
-            if (transportOrder.inTransitAt != null)
-              _buildDetailRow('In Transit At', _formatDateTime(transportOrder.inTransitAt!)),
-            if (transportOrder.deliveredAt != null)
-              _buildDetailRow('Delivered At', _formatDateTime(transportOrder.deliveredAt!)),
-            if (transportOrder.cancelledAt != null)
-              _buildDetailRow('Cancelled At', _formatDateTime(transportOrder.cancelledAt!)),
-            if (transportOrder.estimatedDeliveryTime != null)
-              _buildDetailRow('Estimated Time', transportOrder.estimatedDeliveryTime!),
-            if (transportOrder.actualDeliveryTime != null)
-              _buildDetailRow('Actual Time', transportOrder.actualDeliveryTime!),
-            if (transportOrder.notes != null && transportOrder.notes!.isNotEmpty)
-              _buildDetailRow('Notes', transportOrder.notes!),
-            if (transportOrder.cancellationReason != null)
-              _buildDetailRow('Cancellation Reason', transportOrder.cancellationReason!),
-          ],
-        ),
-      ),
+  Widget _buildTransportDetailsContent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildDetailRow('Transport Order ID', widget.transportOrder.id),
+        _buildDetailRow('Delivery Order ID', widget.transportOrder.deliveryOrderId),
+        _buildDetailRow('Original Order ID', widget.transportOrder.orderId),
+        _buildDetailRow('Transporter', widget.transportOrder.transporterName),
+        _buildDetailRow('Accepted At', _formatDateTime(widget.transportOrder.acceptedAt)),
+        if (widget.transportOrder.inTransitAt != null)
+          _buildDetailRow('In Transit At', _formatDateTime(widget.transportOrder.inTransitAt!)),
+        if (widget.transportOrder.deliveredAt != null)
+          _buildDetailRow('Delivered At', _formatDateTime(widget.transportOrder.deliveredAt!)),
+        if (widget.transportOrder.cancelledAt != null)
+          _buildDetailRow('Cancelled At', _formatDateTime(widget.transportOrder.cancelledAt!)),
+        if (widget.transportOrder.estimatedDeliveryTime != null)
+          _buildDetailRow('Estimated Time', widget.transportOrder.estimatedDeliveryTime!),
+        if (widget.transportOrder.actualDeliveryTime != null)
+          _buildDetailRow('Actual Time', widget.transportOrder.actualDeliveryTime!),
+        if (widget.transportOrder.notes != null && widget.transportOrder.notes!.isNotEmpty)
+          _buildDetailRow('Notes', widget.transportOrder.notes!),
+        if (widget.transportOrder.cancellationReason != null)
+          _buildDetailRow('Cancellation Reason', widget.transportOrder.cancellationReason!),
+      ],
     );
   }
 
@@ -334,7 +435,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            if (transportOrder.canBeInTransit) ...[
+            if (widget.transportOrder.canBeInTransit) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -368,7 +469,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ] else if (transportOrder.canBeDelivered) ...[
+            ] else if (widget.transportOrder.canBeDelivered) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
@@ -482,7 +583,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
 
   void _markInTransit(BuildContext context) async {
     final provider = Provider.of<TransportOrderProvider>(context, listen: false);
-    final success = await provider.markTransportInTransit(transportOrder.id);
+    final success = await provider.markTransportInTransit(widget.transportOrder.id);
     if (!context.mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -504,7 +605,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
 
   void _markDelivered(BuildContext context) async {
     final provider = Provider.of<TransportOrderProvider>(context, listen: false);
-    final success = await provider.markTransportDelivered(transportOrder.id);
+    final success = await provider.markTransportDelivered(widget.transportOrder.id);
     if (!context.mounted) return;
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -555,7 +656,7 @@ class TransportOrderDetailScreen extends StatelessWidget {
               Navigator.of(context).pop();
               final provider = Provider.of<TransportOrderProvider>(context, listen: false);
               final success = await provider.cancelTransportOrder(
-                transportOrder.id,
+                widget.transportOrder.id,
                 reasonController.text.trim().isEmpty ? 'No reason provided' : reasonController.text.trim(),
               );
               if (!context.mounted) return;

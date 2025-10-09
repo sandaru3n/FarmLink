@@ -273,25 +273,185 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      body: LiquidPullToRefresh(
-        onRefresh: _handleRefresh,
-        color: Colors.deepPurple[300]!,
-        backgroundColor: Colors.deepPurple[100]!,
-        animSpeedFactor: 2,
-        showChildOpacityTransition: true,
-        child: _currentTabIndex == 0
-            ? _buildAvailableDeliveriesTab()
-            : _buildDeliveryScheduleTab(),
+      body: Column(
+        children: [
+          // Custom Header
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.deepPurple.shade700,
+                  Colors.deepPurple.shade500,
+                  Colors.deepPurple.shade400,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.local_shipping,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'Delivery',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Tab Bar
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _currentTabIndex = 0;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: _currentTabIndex == 0 
+                                      ? Colors.white 
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'Available',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: _currentTabIndex == 0 
+                                        ? Colors.deepPurple.shade700 
+                                        : Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  _currentTabIndex = 1;
+                                });
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: _currentTabIndex == 1 
+                                      ? Colors.white 
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Text(
+                                  'Schedule',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: _currentTabIndex == 1 
+                                        ? Colors.deepPurple.shade700 
+                                        : Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: LiquidPullToRefresh(
+              onRefresh: _handleRefresh,
+              color: Colors.deepPurple[300]!,
+              backgroundColor: Colors.deepPurple[100]!,
+              animSpeedFactor: 2,
+              showChildOpacityTransition: true,
+              child: _currentTabIndex == 0
+                  ? _buildAvailableDeliveriesTab()
+                  : _buildDeliveryScheduleTab(),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _currentTabIndex = _currentTabIndex == 0 ? 1 : 0;
-          });
-        },
-        backgroundColor: Colors.deepPurple,
-        foregroundColor: Colors.white,
-        child: Icon(_currentTabIndex == 0 ? Icons.calendar_today : Icons.list),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple.shade700, Colors.deepPurple.shade500],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.deepPurple.withOpacity(0.4),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: FloatingActionButton(
+          onPressed: () {
+            setState(() {
+              _currentTabIndex = _currentTabIndex == 0 ? 1 : 0;
+            });
+          },
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: Colors.white,
+          child: Icon(_currentTabIndex == 0 ? Icons.calendar_today : Icons.list, size: 28),
+        ),
       ),
     );
   }
@@ -308,20 +468,74 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
-                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade400, Colors.red.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.error_outline, size: 64, color: Colors.white),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'Error: ${deliveryOrderProvider.error}',
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(
+                    color: Colors.grey.shade700,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () {
-                    deliveryOrderProvider.clearError();
-                    deliveryOrderProvider.loadPendingDeliveryOrders();
-                  },
-                  child: const Text('Retry'),
+                const SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.deepPurple.shade600, Colors.deepPurple.shade800],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.deepPurple.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      deliveryOrderProvider.clearError();
+                      deliveryOrderProvider.loadPendingDeliveryOrders();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.refresh, color: Colors.white),
+                        SizedBox(width: 8),
+                        Text('Retry', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -333,20 +547,41 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.local_shipping_outlined, size: 64, color: Colors.grey[400]),
-                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.deepPurple.shade400, Colors.deepPurple.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.deepPurple.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.local_shipping_outlined, size: 64, color: Colors.white),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'No available deliveries',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[600],
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'New delivery orders will appear here',
-                  style: TextStyle(color: Colors.grey[500]),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
@@ -358,7 +593,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
             await deliveryOrderProvider.loadPendingDeliveryOrders();
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             itemCount: deliveryOrderProvider.pendingDeliveryOrders.length,
             itemBuilder: (context, index) {
               final deliveryOrder = deliveryOrderProvider.pendingDeliveryOrders[index];
@@ -378,7 +613,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
         }
 
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
           child: Column(
             children: [
               // Timeline Card
@@ -1456,31 +1691,36 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
         deliveryOrder.distributorLatitude != null &&
         deliveryOrder.distributorLongitude != null;
 
-    // White color for all cards
-    final selectedColor = Colors.white;
-
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => DeliveryOrderDetailScreen(deliveryOrder: deliveryOrder),
-            ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Solid Color Header
-            Container(
-              decoration: BoxDecoration(
-                color: selectedColor,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => DeliveryOrderDetailScreen(deliveryOrder: deliveryOrder),
               ),
-              child: Padding(
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Map and Details Header
+              Padding(
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   height: 180,
@@ -1491,7 +1731,14 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                         child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.grey[300]!, width: 2),
+                            border: Border.all(color: Colors.grey.shade300, width: 2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.shade200,
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                           ),
                           child: ClipRRect(
                             borderRadius: BorderRadius.circular(10),
@@ -1508,100 +1755,213 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                   ),
                 ),
               ),
-            ),
-            
-            // Details Section
-            Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-                  // Uber-Style Price Display
-                  _buildPriceDisplay(deliveryOrder, hasCoordinates),
-                  
-                  const SizedBox(height: 12),
-                  const Divider(height: 1),
-                  
               
-              // Action buttons for available deliveries
-              if (isAvailable) ...[
-              const SizedBox(height: 16),
-                Row(
+              // Details Section
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _showRejectDialog(deliveryOrder),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: Colors.red),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: Text(
-                          'Reject',
-                          style: TextStyle(color: Colors.red),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _acceptDelivery(deliveryOrder),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        child: const Text('Accept'),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              
-              // Action buttons for active deliveries (accepted or in_transit)
-              if (!isAvailable && (deliveryOrder.status == 'accepted' || deliveryOrder.status == 'in_transit')) ...[
-                const SizedBox(height: 16),
-              Row(
-                children: [
-                    if (deliveryOrder.status == 'accepted') ...[
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _markInTransit(deliveryOrder),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                    // Uber-Style Price Display
+                    _buildPriceDisplay(deliveryOrder, hasCoordinates),
+                    
+                    const SizedBox(height: 16),
+                    Divider(height: 1, color: Colors.grey.shade300),
+                    
+                    // Action buttons for available deliveries
+                    if (isAvailable) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.red.shade400, width: 2),
+                              ),
+                              child: OutlinedButton(
+                                onPressed: () => _showRejectDialog(deliveryOrder),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide.none,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.close, color: Colors.red.shade600, size: 20),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Reject',
+                                      style: TextStyle(
+                                        color: Colors.red.shade600,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                          child: const Text('Start Delivery'),
-                        ),
-                      ),
-                    ] else if (deliveryOrder.status == 'in_transit') ...[
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () => _markDelivered(deliveryOrder),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.green.shade600, Colors.green.shade800],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green.withOpacity(0.4),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ElevatedButton(
+                                onPressed: () => _acceptDelivery(deliveryOrder),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.transparent,
+                                  shadowColor: Colors.transparent,
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.check_circle, color: Colors.white, size: 20),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Accept',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
-                          child: const Text('Mark Delivered'),
-                        ),
+                        ],
+                      ),
+                    ],
+                    
+                    // Action buttons for active deliveries (accepted or in_transit)
+                    if (!isAvailable && (deliveryOrder.status == 'accepted' || deliveryOrder.status == 'in_transit')) ...[
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          if (deliveryOrder.status == 'accepted') ...[
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.blue.shade600, Colors.blue.shade800],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blue.withOpacity(0.4),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: () => _markInTransit(deliveryOrder),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.local_shipping, color: Colors.white, size: 20),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Start Delivery',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ] else if (deliveryOrder.status == 'in_transit') ...[
+                            Expanded(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.green.shade600, Colors.green.shade800],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.green.withOpacity(0.4),
+                                      blurRadius: 12,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton(
+                                  onPressed: () => _markDelivered(deliveryOrder),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.check_circle, color: Colors.white, size: 20),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Mark Delivered',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ],
                   ],
                 ),
-              ],
-                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
