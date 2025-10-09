@@ -62,8 +62,26 @@ dependencies:
   # URL launcher for contact functionality
   url_launcher: ^6.2.5
   
+  # Google Sign-In
+  google_sign_in: ^6.2.1
+  
   # Charts for analytics
   fl_chart: ^0.69.0
+  
+  # Liquid swipe for colorful onboarding
+  liquid_swipe: ^3.0.0
+  
+  # Smooth page indicator for better navigation
+  smooth_page_indicator: ^1.1.0
+  
+  # Google navigation bar
+  google_nav_bar: ^5.0.7
+  
+  # Line Awesome icons
+  line_awesome_flutter: ^1.0.2
+  
+  # Liquid pull to refresh
+  liquid_pull_to_refresh: ^3.0.1
 
 dev_dependencies:
   flutter_test:
@@ -91,9 +109,21 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
-  #   - images/a_dot_ham.jpeg
+  assets:
+    - assets/images/
+    - assets/images/onboarding_images/
+    - assets/images/splash_images/
+    - assets/images/auth_images/
+    - assets/images/onboarding_images/fllogo.png
+    - assets/images/onboarding_images/smartfarming.png
+    - assets/images/onboarding_images/farmmarketplace.png
+    - assets/images/onboarding_images/farmanalytics.png
+    - assets/images/onboarding_images/farmercommunity.png
+    - assets/images/splash_images/fllogowhite.png
+    - assets/images/splash_images/FarmLinkwhite.png
+    - assets/images/auth_images/welcome_image.png
+    - assets/images/auth_images/google_logo.png
+    - assets/icons/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

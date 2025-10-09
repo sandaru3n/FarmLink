@@ -13,39 +13,105 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
+    with TickerProviderStateMixin {
+  late AnimationController _farmLinkAnimationController;
+  late AnimationController _fllogoAnimationController;
+  late AnimationController _textAnimationController;
+  
+  late Animation<double> _farmLinkFadeAnimation;
+  late Animation<double> _farmLinkScaleAnimation;
+  late Animation<double> _fllogoFadeAnimation;
+  late Animation<double> _fllogoScaleAnimation;
+  late Animation<double> _textFadeAnimation;
+  late Animation<double> _textSlideAnimation;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
+    
+    // FarmLink animation controller (first logo)
+    _farmLinkAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
 
-    _fadeAnimation = Tween<double>(
+    // Fllogo animation controller (second logo)
+    _fllogoAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+
+    // Text animation controller
+    _textAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    // FarmLink animations
+    _farmLinkFadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
+      parent: _farmLinkAnimationController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
     ));
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
+    _farmLinkScaleAnimation = Tween<double>(
+      begin: 0.2,
       end: 1.0,
     ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
+      parent: _farmLinkAnimationController,
+      curve: const Interval(0.0, 0.8, curve: Curves.elasticOut),
     ));
 
-    _animationController.forward();
+    // Fllogo animations
+    _fllogoFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fllogoAnimationController,
+      curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+    ));
 
-    // Initialize auth and navigate after 3 seconds
-    Future.delayed(const Duration(seconds: 3), () async {
+    _fllogoScaleAnimation = Tween<double>(
+      begin: 0.2,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fllogoAnimationController,
+      curve: const Interval(0.0, 0.8, curve: Curves.elasticOut),
+    ));
+
+    // Text animations
+    _textFadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _textAnimationController,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+    ));
+
+    _textSlideAnimation = Tween<double>(
+      begin: 50.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(
+      parent: _textAnimationController,
+      curve: const Interval(0.0, 0.8, curve: Curves.easeOut),
+    ));
+
+    // Start animations in sequence
+    // Start both logos at the same time
+    _farmLinkAnimationController.forward();
+    _fllogoAnimationController.forward();
+    
+    // Start text animation after logos (1.2 seconds delay)
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      if (mounted) {
+        _textAnimationController.forward();
+      }
+    });
+
+    // Initialize auth and navigate after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () async {
       if (mounted) {
         await _initializeAndNavigate();
       }
@@ -127,7 +193,9 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _farmLinkAnimationController.dispose();
+    _fllogoAnimationController.dispose();
+    _textAnimationController.dispose();
     super.dispose();
   }
 
@@ -147,68 +215,83 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
         child: Center(
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: ScaleTransition(
-                  scale: _scaleAnimation,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Logo/Icon
-                      Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.agriculture,
-                          size: 60,
-                          color: Colors.white,
-                        ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // First Logo - FarmLinkwhite.png
+              AnimatedBuilder(
+                animation: _farmLinkAnimationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _farmLinkFadeAnimation,
+                    child: ScaleTransition(
+                      scale: _farmLinkScaleAnimation,
+                      child: Image.asset(
+                        'assets/images/splash_images/FarmLinkwhite.png',
+                        width: 500,
+                        height: 250,
+                        
                       ),
-                      const SizedBox(height: 30),
-                      // App Name
-                      const Text(
-                        'FarmLink',
+                    ),
+                  );
+                },
+              ),
+              
+              // Second Logo - fllogowhite.png
+              AnimatedBuilder(
+                animation: _fllogoAnimationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fllogoFadeAnimation,
+                    child: ScaleTransition(
+                      scale: _fllogoScaleAnimation,
+                      child: Image.asset(
+                        'assets/images/splash_images/fllogowhite.png',
+                        width: 300,
+                        height: 200,
+                        
+                      ),
+                    ),
+                  );
+                },
+              ),
+              
+              // Animated Text
+              AnimatedBuilder(
+                animation: _textAnimationController,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _textFadeAnimation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 0.3),
+                        end: Offset.zero,
+                      ).animate(CurvedAnimation(
+                        parent: _textAnimationController,
+                        curve: Curves.easeOut,
+                      )),
+                      child: Text(
+                        'Smart Farming, Simple Connections',
                         style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 2.0,
+                          fontSize: 20,
+                          color: Colors.white.withOpacity(0.95),
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 1.2,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.3),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
+                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 20),
-                      // Subtitle
-                      Text(
-                        'Connecting Farmers',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white.withOpacity(0.9),
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                      const SizedBox(height: 50),
-                      // Loading indicator
-                      SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),

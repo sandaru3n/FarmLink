@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
@@ -74,39 +76,46 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
             ],
           ),
           body: _buildDashboardContent(userProfile),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-                _lastIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.orange,
-            unselectedItemColor: Colors.grey,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.home),
-                label: 'Home',
+          bottomNavigationBar: Container(
+            color: Colors.white,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).padding.bottom,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: Colors.black,
+                activeColor: const Color(0xFFF57F17), // Deep yellow for active
+                tabBackgroundColor: const Color(0xFFFFF9C4), // Light yellow background
+                gap: 8,
+                onTabChange: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                    _lastIndex = index;
+                  });
+                },
+                padding: const EdgeInsets.all(16),
+                tabs: const [
+                  GButton(
+                    icon: LineAwesomeIcons.home,
+                    text: 'Home',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.store,
+                    text: 'Marketplace',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.shopping_bag,
+                    text: 'My Orders',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.box,
+                    text: 'Products',
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.store),
-                label: 'Marketplace',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.shopping_bag),
-                label: 'My Orders',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.people),
-                label: 'Suppliers',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.inventory_2),
-                label: 'Products',
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -122,8 +131,6 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       case 2:
         return const DistributorOrdersTabbedScreen();
       case 3:
-        return _buildSuppliersTab();
-      case 4:
         return const ProductListScreen();
       default:
         return _buildHomeTab(userProfile);
@@ -669,47 +676,5 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       ),
     );
   }
-
-  Widget _buildSuppliersTab() {
-    return const Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.people,
-            size: 64,
-            color: Colors.grey,
-          ),
-          SizedBox(height: 16),
-          Text(
-            'Supplier Network',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Connect with local farmers and build relationships',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          SizedBox(height: 24),
-          Text(
-            'Coming Soon',
-            style: TextStyle(
-              fontSize: 18,
-              color: Colors.orange,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
 
 }
