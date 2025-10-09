@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/consumer_order_service.dart';
 import '../../models/consumer_order_model.dart';
 import 'consumer_payment_screen.dart';
+import 'browse_products_screen.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -710,24 +711,59 @@ class _CartScreenState extends State<CartScreen> {
                     ),
                   ),
                   const SizedBox(height: 32),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      // Navigate back or to products
-                      Navigator.of(context).pop();
-                    },
-                    icon: const Icon(Icons.shopping_bag_outlined),
-                    label: const Text('Browse Products'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade600,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
+                  Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.blue.shade600,
+                          Colors.blue.shade700,
+                        ],
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const BrowseProductsScreen(),
+                            ),
+                          );
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 32),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.shopping_bag_outlined,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                'Browse Products',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      elevation: 3,
                     ),
                   ),
                 ],
@@ -1051,8 +1087,8 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -1078,9 +1114,9 @@ class _CartScreenState extends State<CartScreen> {
                               children: [
                                 Text(
                                   'LKR ',
-                                  style: TextStyle(
+                          style: TextStyle(
                                     fontSize: 16,
-                                    fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.bold,
                                     color: Colors.green.shade700,
                           ),
                         ),
