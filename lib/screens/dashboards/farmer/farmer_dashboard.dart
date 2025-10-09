@@ -89,22 +89,12 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: AppBar(
-            title: Text('Farmer Dashboard'),
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const FarmerSettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
+          appBar: PreferredSize(
+            preferredSize: const Size.fromHeight(0),
+            child: AppBar(
+              backgroundColor: Colors.green.shade700,
+              elevation: 0,
+            ),
           ),
           body: _buildDashboardContent(userProfile),
           bottomNavigationBar: Container(
@@ -181,27 +171,148 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   }
 
   Widget _buildHomeTab(UserModel? userProfile) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Welcome Card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      children: [
+        // Static Modern Header with gradient
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.fromLTRB(16, 24, 16, 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade600,
+                Colors.green.shade700,
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.green.shade200,
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.green.withOpacity(0.1),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: const Icon(
                           Icons.agriculture,
-                          size: 30,
-                          color: Colors.green,
+                          color: Colors.white,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Home',
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.settings_outlined,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const FarmerSettingsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Hello, ${userProfile?.displayName ?? 'User'}! 👋',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Scrollable Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(0, 16, 0, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                // Welcome Card
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.green.shade50,
+                        Colors.green.shade100,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.green.shade200,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.green.shade400,
+                              Colors.green.shade600,
+                            ],
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.shade300,
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.wb_sunny_outlined,
+                          color: Colors.white,
+                          size: 32,
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -210,22 +321,31 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Welcome, ${userProfile?.displayName ?? 'User'}!',
-                              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
+                              userProfile?.email ?? 'Farmer',
+                              style: TextStyle(
+                                color: Colors.grey.shade700,
+                                fontSize: 14,
                               ),
                             ),
-                            Text(
-                              userProfile?.displayName ?? userProfile?.email ?? 'Farmer',
-                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                color: Colors.grey[600],
+                            const SizedBox(height: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Colors.green.shade600,
+                                    Colors.green.shade700,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                            Text(
-                              'Ready to grow and sell!',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.green,
-                                fontWeight: FontWeight.w500,
+                              child: const Text(
+                                'Farmer',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ],
@@ -233,246 +353,315 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                       ),
                     ],
                   ),
+                ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Column(
+                    children: [
+                // Quick Stats Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Farm Statistics',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.green.shade400,
+                            Colors.green.shade600,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        onPressed: () => _loadDashboardStats(showLoading: true),
+                        icon: _isLoadingStats 
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            )
+                          : const Icon(Icons.refresh, color: Colors.white),
+                        tooltip: 'Refresh Statistics',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Quick Stats
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Active Crops', 
+                        '${_dashboardStats?.activeCrops ?? 0}', 
+                        Icons.agriculture, 
+                        Colors.green
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        'Sold Crops', 
+                        '${_dashboardStats?.soldCrops ?? 0}', 
+                        Icons.check_circle, 
+                        Colors.blue
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        'Pending Crops', 
+                        '${_dashboardStats?.pendingOrders ?? 0}', 
+                        Icons.pending_actions, 
+                        Colors.orange
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        'This Month', 
+                        '₹${_dashboardStats?.thisMonthSales.toStringAsFixed(0) ?? '0'}', 
+                        Icons.trending_up, 
+                        Colors.purple
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+
+                // Quick Actions
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Quick Actions',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                    ],
+                  ),
+                ),
+                _buildQuickActionCard(
+                  'Add New Crop',
+                  'List your fresh produce for bidding',
+                  Icons.add_circle,
+                  () async {
+                    final result = await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AddCropScreen(),
+                      ),
+                    );
+                    // Refresh stats if a crop was added
+                    if (result == true) {
+                      _loadDashboardStats(showLoading: false);
+                    }
+                  },
+                ),
+                _buildQuickActionCard(
+                  'AI Crop Advisory',
+                  'Get AI-powered farming advice and insights',
+                  Icons.psychology,
+                  () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const CropAdvisoryScreen(),
+                      ),
+                    );
+                  },
+                ),
+                _buildQuickActionCard(
+                  'Weather Forecast',
+                  'Check weather conditions for farming decisions',
+                  Icons.wb_sunny,
+                  () {
+                    _showWeatherForecast(context);
+                  },
+                ),
+                const SizedBox(height: 80),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+    // Get shades based on color
+    final MaterialColor materialColor = color is MaterialColor ? color : Colors.green;
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            materialColor.shade100,
+            materialColor.shade50,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: materialColor.shade200,
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: materialColor.shade100.withOpacity(0.5),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  materialColor.shade400,
+                  materialColor.shade600,
                 ],
               ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: materialColor.shade300,
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
             ),
           ),
-          const SizedBox(height: 24),
-
-          // Quick Stats Header
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Farm Statistics',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              IconButton(
-                onPressed: () => _loadDashboardStats(showLoading: true),
-                icon: _isLoadingStats 
-                  ? const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.refresh),
-                tooltip: 'Refresh Statistics',
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // Quick Stats
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Active Crops', 
-                  '${_dashboardStats?.activeCrops ?? 0}', 
-                  Icons.agriculture, 
-                  Colors.green
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'Sold Crops', 
-                  '${_dashboardStats?.soldCrops ?? 0}', 
-                  Icons.check_circle, 
-                  Colors.blue
-                ),
-              ),
-            ],
-          ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatCard(
-                  'Pending Crops', 
-                  '${_dashboardStats?.pendingOrders ?? 0}', 
-                  Icons.agriculture, 
-                  Colors.orange
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildStatCard(
-                  'This Month Sales', 
-                  '₹${_dashboardStats?.thisMonthSales.toStringAsFixed(0) ?? '0'}', 
-                  Icons.trending_up, 
-                  Colors.purple
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Quick Actions
           Text(
-            'Quick Actions',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            value,
+            style: TextStyle(
               fontWeight: FontWeight.bold,
+              fontSize: 24,
+              color: materialColor.shade700,
             ),
           ),
-          const SizedBox(height: 16),
-          _buildQuickActionCard(
-            'Add New Crop',
-            'List your fresh produce for bidding',
-            Icons.add_circle,
-            () async {
-              final result = await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AddCropScreen(),
-                ),
-              );
-              // Refresh stats if a crop was added
-              if (result == true) {
-                _loadDashboardStats(showLoading: false);
-              }
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'Manage Crops',
-            'View and manage your crop listings',
-            Icons.agriculture,
-            () {
-              setState(() {
-                _currentIndex = 1; // Switch to crops tab
-              });
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'Track Deliveries',
-            'Monitor delivery status of your crops',
-            Icons.local_shipping,
-            () {
-              setState(() {
-                _currentIndex = 2; // Switch to delivery tab
-              });
-            },
-          ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'View Analytics',
-            'Track earnings and performance',
-            Icons.analytics,
-            () {
-              setState(() {
-                _currentIndex = 3; // Switch to analytics tab
-              });
-            },
-          ),
-          const SizedBox(height: 12),
-    _buildQuickActionCard(
-      'AI Crop Advisory',
-      'Get AI-powered farming advice and insights',
-      Icons.psychology,
-      () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const CropAdvisoryScreen(),
-          ),
-        );
-      },
-    ),
-          const SizedBox(height: 12),
-          _buildQuickActionCard(
-            'Weather Forecast',
-            'Check weather conditions for farming decisions',
-            Icons.wb_sunny,
-            () {
-              _showWeatherForecast(context);
-            },
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
-              textAlign: TextAlign.center,
+  Widget _buildQuickActionCard(String title, String subtitle, IconData icon, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Colors.green.shade500,
+              Colors.green.shade700,
+            ],
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.shade300,
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionCard(String title, String subtitle, IconData icon, VoidCallback onTap) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  icon,
-                  color: Colors.green,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(18),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.25),
+                      borderRadius: BorderRadius.circular(15),
                     ),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 14,
-                      ),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 26,
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          subtitle,
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 18,
+                  ),
+                ],
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey[400],
-                size: 16,
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -1195,3 +1384,4 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
     }
   }
 }
+
