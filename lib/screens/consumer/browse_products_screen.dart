@@ -763,8 +763,15 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.currency_rupee, size: 15, color: Colors.white),
-                            const SizedBox(width: 1),
+                            Text(
+                              'LKR ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                                color: Colors.white.withOpacity(0.95),
+                                letterSpacing: 0.3,
+                              ),
+                            ),
                             Text(
                               product.pricePerKg.toStringAsFixed(2),
                               style: const TextStyle(
