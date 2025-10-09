@@ -7,6 +7,7 @@ import '../auth/login_screen.dart';
 import '../dashboards/dashboard_router.dart';
 import '../../services/flexible_role_switching_service.dart';
 import 'real_time_settings_wrapper.dart';
+import '../distributor/update_location_screen.dart';
 
 class FoodDistributorSettingsScreen extends StatefulWidget {
   const FoodDistributorSettingsScreen({super.key});
@@ -218,6 +219,20 @@ class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsS
                         ),
                       ),
                       const SizedBox(height: 16),
+                      ListTile(
+                        leading: const Icon(Icons.location_on, color: Colors.orange),
+                        title: const Text('My Location'),
+                        subtitle: const Text('Update your default delivery location'),
+                        trailing: const Icon(Icons.arrow_forward_ios),
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const UpdateLocationScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1),
                       ListTile(
                         leading: const Icon(Icons.store, color: Colors.orange),
                         title: const Text('Business Details'),

@@ -55,7 +55,24 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
       body: Column(
         children: [
           Container(
-            color: Colors.deepPurple[300],
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.deepPurple.shade700,
+                  Colors.deepPurple.shade500,
+                  Colors.deepPurple.shade400,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.deepPurple.withOpacity(0.25),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
             child: SafeArea(
               bottom: false,
               child: TabBar(

@@ -53,14 +53,20 @@ flutter pub get
 
 ### 2. Firebase Storage Rules
 
-Make sure your Firebase Storage rules allow authenticated users to upload images. Here's a recommended rule set:
+Make sure your Firebase Storage rules allow authenticated users to upload images. Here's a recommended rule set (covers both crop images and profile photos):
 
 ```javascript
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Allow authenticated users to upload crop images
+    // Crop images
     match /crops/{userId}/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Profile photos
+    match /profiles/{userId}/{allPaths=**} {
       allow read: if request.auth != null;
       allow write: if request.auth != null && request.auth.uid == userId;
     }

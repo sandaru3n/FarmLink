@@ -334,6 +334,8 @@ class CropService {
           quantity: crop.quantity,
           finalPrice: crop.highestBid!.amount,
           pickupLocation: crop.pickupLocation,
+          pickupLatitude: crop.pickupLatitude,
+          pickupLongitude: crop.pickupLongitude,
           createdAt: DateTime.now(),
         );
 

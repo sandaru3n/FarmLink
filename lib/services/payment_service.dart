@@ -335,7 +335,12 @@ class PaymentService {
   }
 
   // Simple payment processing without Stripe SDK
-  Future<bool> processSimplePayment(OrderModel order, {String? distributorLocation}) async {
+  Future<bool> processSimplePayment(
+    OrderModel order, {
+    String? distributorLocation,
+    double? distributorLatitude,
+    double? distributorLongitude,
+  }) async {
     try {
       // Create payment intent
       final paymentResult = await createPaymentIntent(order);
@@ -344,7 +349,7 @@ class PaymentService {
         // Simulate payment processing
         await Future.delayed(const Duration(seconds: 2));
         
-        // Update order status with payment confirmation
+        // Update order status with payment confirmation and location coordinates
         await _ordersCollection.doc(order.id).update({
           'paymentStatus': 'completed',
           'paymentCompletedAt': Timestamp.fromDate(DateTime.now()),
@@ -354,10 +359,18 @@ class PaymentService {
           'stripeClientSecret': paymentResult['clientSecret'],
           'lastPaymentActivity': Timestamp.fromDate(DateTime.now()),
           if (distributorLocation != null) 'distributorLocation': distributorLocation,
+          if (distributorLatitude != null) 'distributorLatitude': distributorLatitude,
+          if (distributorLongitude != null) 'distributorLongitude': distributorLongitude,
         });
         
         // Update the embedded order in the crop collection
-        await _updateCropOrderStatus(order.cropId, order.id, distributorLocation);
+        await _updateCropOrderStatus(
+          order.cropId, 
+          order.id, 
+          distributorLocation,
+          distributorLatitude: distributorLatitude,
+          distributorLongitude: distributorLongitude,
+        );
         
         return true;
       } else {
@@ -394,7 +407,7 @@ class PaymentService {
       });
       
       // Update the embedded order in the crop collection
-      await _updateCropOrderStatus(cropId, orderId);
+      await _updateCropOrderStatus(cropId, orderId, null);
       
     } catch (e) {
       throw Exception('Failed to update payment status: $e');
@@ -402,7 +415,13 @@ class PaymentService {
   }
 
   // Update the embedded order status in crop collection
-  Future<void> _updateCropOrderStatus(String cropId, String orderId, [String? distributorLocation]) async {
+  Future<void> _updateCropOrderStatus(
+    String cropId, 
+    String orderId, 
+    String? distributorLocation, {
+    double? distributorLatitude,
+    double? distributorLongitude,
+  }) async {
     try {
       final cropDoc = await _firestore.collection('crops').doc(cropId).get();
       if (!cropDoc.exists) {
@@ -425,6 +444,14 @@ class PaymentService {
         // Add distributor location if provided
         if (distributorLocation != null) {
           updateData['order.distributorLocation'] = distributorLocation;
+        }
+        
+        // Add distributor coordinates if provided
+        if (distributorLatitude != null) {
+          updateData['order.distributorLatitude'] = distributorLatitude;
+        }
+        if (distributorLongitude != null) {
+          updateData['order.distributorLongitude'] = distributorLongitude;
         }
         
         await _firestore.collection('crops').doc(cropId).update(updateData);
