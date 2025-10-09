@@ -63,8 +63,10 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       body: Column(
         children: [
+          // Custom Header
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -76,35 +78,74 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.deepPurple.withOpacity(0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
+                  color: Colors.deepPurple.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: SafeArea(
               bottom: false,
-              child: TabBar(
-                controller: _tabController,
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white70,
-                labelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.normal,
-                ),
-                tabs: const [
-                  Tab(text: 'Accepted'),
-                  Tab(text: 'In Transit'),
-                  Tab(text: 'Delivered'),
-                  Tab(text: 'Cancelled'),
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.local_shipping,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'My Transports',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Tab Bar
+                  TabBar(
+                    controller: _tabController,
+                    indicatorColor: Colors.white,
+                    indicatorWeight: 3,
+                    labelColor: Colors.white,
+                    unselectedLabelColor: Colors.white70,
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    unselectedLabelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.normal,
+                    ),
+                    dividerColor: Colors.transparent,
+                    dividerHeight: 0,
+                    tabs: const [
+                      Tab(text: 'Accepted'),
+                      Tab(text: 'In Transit'),
+                      Tab(text: 'Delivered'),
+                      Tab(text: 'Cancelled'),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -148,27 +189,42 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.local_shipping_outlined, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade400, Colors.blue.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.local_shipping_outlined, size: 64, color: Colors.white),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'No accepted transports',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'Accepted transport orders will appear here',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'Total orders: ${transportOrderProvider.transporterTransportOrders.length}',
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-                if (transportOrderProvider.error != null)
-                  Text(
-                    'Error: ${transportOrderProvider.error}',
-                    style: TextStyle(fontSize: 12, color: Colors.red),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
                   ),
+                ),
               ],
             ),
           );
@@ -179,7 +235,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
             await transportOrderProvider.loadTransporterTransportOrders();
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             itemCount: acceptedTransports.length,
             itemBuilder: (context, index) {
               final transportOrder = acceptedTransports[index];
@@ -201,20 +257,45 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
         final inTransitTransports = transportOrderProvider.inTransitTransportOrders;
 
         if (inTransitTransports.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.directions_car_outlined, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.deepPurple.shade400, Colors.deepPurple.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.deepPurple.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.directions_car_outlined, size: 64, color: Colors.white),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'No in-transit transports',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'In-transit transport orders will appear here',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
@@ -226,7 +307,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
             await transportOrderProvider.loadTransporterTransportOrders();
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             itemCount: inTransitTransports.length,
             itemBuilder: (context, index) {
               final transportOrder = inTransitTransports[index];
@@ -248,20 +329,45 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
         final deliveredTransports = transportOrderProvider.deliveredTransportOrders;
 
         if (deliveredTransports.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.check_circle_outline, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.green.shade400, Colors.green.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.check_circle_outline, size: 64, color: Colors.white),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'No delivered transports',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'Delivered transport orders will appear here',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
@@ -273,7 +379,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
             await transportOrderProvider.loadTransporterTransportOrders();
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             itemCount: deliveredTransports.length,
             itemBuilder: (context, index) {
               final transportOrder = deliveredTransports[index];
@@ -295,20 +401,45 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
         final cancelledTransports = transportOrderProvider.cancelledTransportOrders;
 
         if (cancelledTransports.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.cancel_outlined, size: 64, color: Colors.grey),
-                SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.red.shade400, Colors.red.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.red.withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(Icons.cancel_outlined, size: 64, color: Colors.white),
+                ),
+                const SizedBox(height: 24),
                 Text(
                   'No cancelled transports',
-                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   'Cancelled transport orders will appear here',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.grey.shade600,
+                  ),
                 ),
               ],
             ),
@@ -320,7 +451,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
             await transportOrderProvider.loadTransporterTransportOrders();
           },
           child: ListView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 96),
             itemCount: cancelledTransports.length,
             itemBuilder: (context, index) {
               final transportOrder = cancelledTransports[index];
@@ -333,21 +464,33 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
   }
 
   Widget _buildTransportCard(TransportOrderModel transportOrder) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => TransportOrderDetailScreen(transportOrder: transportOrder),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => TransportOrderDetailScreen(transportOrder: transportOrder),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -872,6 +1015,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
           ),
         ),
       ),
+    ),
     );
   }
 
