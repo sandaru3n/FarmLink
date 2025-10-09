@@ -32,9 +32,7 @@ class DeliveryOrdersScreen extends StatefulWidget {
   State<DeliveryOrdersScreen> createState() => _DeliveryOrdersScreenState();
 }
 
-class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
   int _currentTabIndex = 0;
   
   // Track scheduled deliveries for each day
@@ -56,14 +54,6 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() {
-          _currentTabIndex = _tabController.index;
-        });
-      }
-    });
     
     // Load data when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -269,11 +259,6 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
     deliveryOrderProvider.loadTransporterDeliveryOrders();
   }
 
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
 
   Future<void> _handleRefresh() async {
     final deliveryOrderProvider = Provider.of<DeliveryOrderProvider>(context, listen: false);
@@ -288,40 +273,25 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        backgroundColor: Colors.purple,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'Available'),
-            Tab(text: 'Delivery Schedule'),
-          ],
-        ),
-      ),
       body: LiquidPullToRefresh(
         onRefresh: _handleRefresh,
         color: Colors.deepPurple[300]!,
         backgroundColor: Colors.deepPurple[100]!,
         animSpeedFactor: 2,
         showChildOpacityTransition: true,
-        child: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildAvailableDeliveriesTab(),
-            _buildDeliveryScheduleTab(),
-          ],
-        ),
+        child: _currentTabIndex == 0
+            ? _buildAvailableDeliveriesTab()
+            : _buildDeliveryScheduleTab(),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _refreshData,
-        backgroundColor: Colors.purple,
+        onPressed: () {
+          setState(() {
+            _currentTabIndex = _currentTabIndex == 0 ? 1 : 0;
+          });
+        },
+        backgroundColor: Colors.deepPurple,
         foregroundColor: Colors.white,
-        child: const Icon(Icons.refresh),
+        child: Icon(_currentTabIndex == 0 ? Icons.calendar_today : Icons.list),
       ),
     );
   }
@@ -1486,10 +1456,13 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
         deliveryOrder.distributorLatitude != null &&
         deliveryOrder.distributorLongitude != null;
 
+    // White color for all cards
+    final selectedColor = Colors.white;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
@@ -1502,23 +1475,37 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Split: Left half map, right half compact crop details
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                height: 180,
-                child: Row(
-                  children: [
-                    // Left: Map preview
-                    Expanded(
-                      child: _buildMapSection(deliveryOrder),
-                    ),
-                    const SizedBox(width: 12),
-                    // Right: Compact crop details with image
-                    Expanded(
-                      child: _buildCompactDetails(deliveryOrder),
-                    ),
-                  ],
+            // Solid Color Header
+            Container(
+              decoration: BoxDecoration(
+                color: selectedColor,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: SizedBox(
+                  height: 180,
+                  child: Row(
+                    children: [
+                      // Left: Map preview
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey[300]!, width: 2),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: _buildMapSection(deliveryOrder),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      // Right: Compact crop details with image
+                      Expanded(
+                        child: _buildCompactDetails(deliveryOrder),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1629,22 +1616,31 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                deliveryOrder.cropImageUrl,
-                width: 56,
-                height: 56,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!, width: 2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.network(
+                    deliveryOrder.cropImageUrl,
                     width: 56,
                     height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.image, color: Colors.grey[600], size: 24),
-                  );
-                },
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        width: 56,
+                        height: 56,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.image, color: Colors.grey, size: 24),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -1657,16 +1653,25 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    '${deliveryOrder.quantity} kg',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 13,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[200],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${deliveryOrder.quantity} kg',
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -1674,7 +1679,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
             ),
           ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         // Start and End cities row (resolved via reverse geocoding)
         FutureBuilder<_CityPair>(
           future: _getStartEndCities(deliveryOrder),
@@ -1682,27 +1687,41 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
             final bool loading = snapshot.connectionState == ConnectionState.waiting;
             final String startCity = snapshot.hasData ? snapshot.data!.startCity : _extractCity(deliveryOrder.pickupLocation);
             final String endCity = snapshot.hasData ? snapshot.data!.endCity : _extractCity(deliveryOrder.distributorLocation);
-            return Row(
-              children: [
-                Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
-                const SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    '$startCity → $endCity',
-                    style: TextStyle(
-                      color: Colors.grey[700],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
+            return Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      '$startCity → $endCity',
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                if (loading) ...[
-                  const SizedBox(width: 6),
-                  SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5)),
+                  if (loading) ...[
+                    const SizedBox(width: 6),
+                    const SizedBox(
+                      width: 10, 
+                      height: 10, 
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.5,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.grey),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             );
           },
         ),

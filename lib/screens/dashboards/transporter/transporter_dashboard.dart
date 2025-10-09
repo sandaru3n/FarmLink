@@ -123,22 +123,16 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               ],
             ) : null,
           ),
-          body: LiquidPullToRefresh(
-            onRefresh: _handleRefresh,
-            color: Colors.deepPurple[300]!,
-            backgroundColor: Colors.deepPurple[100]!,
-            animSpeedFactor: 2,
-            showChildOpacityTransition: true,
-            child: _currentIndex == 1 
-              ? TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildAvailableDeliveriesTab(),
-                    _buildDeliveryScheduleTab(),
-                  ],
-                )
-              : _buildDashboardContent(userProfile),
-          ),
+          body: _currentIndex == 1
+              ? const DeliveryOrdersScreen()
+              : LiquidPullToRefresh(
+                  onRefresh: _handleRefresh,
+                  color: Colors.deepPurple[300]!,
+                  backgroundColor: Colors.deepPurple[100]!,
+                  animSpeedFactor: 2,
+                  showChildOpacityTransition: true,
+                  child: _buildDashboardContent(userProfile),
+                ),
           bottomNavigationBar: Container(
             color: Colors.white,
             padding: EdgeInsets.only(
@@ -209,10 +203,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab(userProfile);
-             case 1:
-         return _buildDeliveriesTab();
-       case 2:
-         return _buildTransportOrdersTab();
+      case 2:
+        return _buildTransportOrdersTab();
       case 3:
         return _buildHistoryTab();
       case 4:
@@ -252,104 +244,17 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                   children: [
                     const SizedBox(height: 12),
 
-              // Welcome section removed
+                    // Balance Card (Uber-style)
+                    _buildBalanceCard(totalEarnings, completedToday, activeDeliveries),
+                    const SizedBox(height: 16),
 
-              // Quick Stats
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard('Active Deliveries', activeDeliveries.toString(), Icons.local_shipping, Colors.purple),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard('Completed Today', completedToday.toString(), Icons.check_circle, Colors.green),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard('Available Deliveries', availableDeliveries.toString(), Icons.local_shipping_outlined, Colors.blue),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatCard('Total Earnings', 'LKR ${totalEarnings.toStringAsFixed(0)}', Icons.trending_up, Colors.orange),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                    const SizedBox(height: 16),
 
               // Earnings Summary Section
               _buildEarningsSummaryCard(transportOrderProvider.deliveredTransportOrders),
               const SizedBox(height: 16),
 
-              // Quick Actions
-              Text(
-                'Quick Actions',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Show available deliveries if any
-              if (availableDeliveries > 0) ...[
-                _buildQuickActionCard(
-                  'View Available Deliveries',
-                  '$availableDeliveries new delivery opportunities',
-                  Icons.local_shipping,
-                  () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const DeliveryOrdersScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
-              
-              // Show active deliveries if any
-              if (activeDeliveries > 0) ...[
-                _buildQuickActionCard(
-                  'View Active Deliveries',
-                  '$activeDeliveries current delivery assignments',
-                  Icons.directions_car,
-                  () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const DeliveryOrdersScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
-              
-              _buildQuickActionCard(
-                'View My Transport Orders',
-                'Manage your accepted transport orders',
-                Icons.list_alt,
-                () {
-                  setState(() {
-                    _currentIndex = 2; // Switch to My Transports tab
-                  });
-                },
-              ),
-              const SizedBox(height: 8),
-              
-              _buildQuickActionCard(
-                'Delivery History',
-                'View completed deliveries',
-                Icons.history,
-                () {
-                  setState(() {
-                    _currentIndex = 3; // Switch to History tab
-                  });
-                },
-              ),
+              // Quick Actions removed as requested
                   ],
                 ),
               ),
@@ -357,6 +262,120 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBalanceCard(double totalEarnings, int completedToday, int activeDeliveries) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1a1a2e), Color(0xFF16213e)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Balance',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'LKR ${totalEarnings.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildBalanceStat(
+                  'Completed',
+                  completedToday.toString(),
+                  Icons.check_circle,
+                ),
+              ),
+              Container(
+                height: 30,
+                width: 1,
+                color: Colors.white.withOpacity(0.2),
+              ),
+              Expanded(
+                child: _buildBalanceStat(
+                  'Active',
+                  activeDeliveries.toString(),
+                  Icons.local_shipping,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBalanceStat(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white.withOpacity(0.7), size: 20),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
     );
   }
 
@@ -593,9 +612,20 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           .fold<double>(0, (sum, order) => sum + (order.deliveryFee ?? 0));
     });
     
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -603,58 +633,79 @@ class _TransporterDashboardState extends State<TransporterDashboard>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Earnings Summary',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    // Navigate to detailed earnings page
-                    _navigateToEarningsDetails();
-                  },
-                  icon: Icon(
-                    Icons.more_horiz,
-                    color: Colors.purple,
-                    size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                  child: IconButton(
+                    onPressed: () {
+                      // Navigate to detailed earnings page
+                      _navigateToEarningsDetails();
+                    },
+                    icon: const Icon(
+                      Icons.analytics,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             
-            // Today's and This Week's earnings row
-            Row(
-              children: [
-                Expanded(
-                  child: _buildEarningsSubCard(
-                    'Today\'s Earnings',
-                    '₹${todayEarnings.toStringAsFixed(0)}',
-                    Icons.today,
-                    Colors.green,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildEarningsSubCard(
-                    'This Week\'s Earnings',
-                    '₹${weekEarnings.toStringAsFixed(0)}',
-                    Icons.date_range,
-                    Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+            // Chart only (no today/weekly sub-cards)
+            const SizedBox(height: 8),
             
             // 7-day earnings chart
-            _buildEarningsChart(last7DaysEarnings),
+            _buildModernEarningsChart(last7DaysEarnings),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildModernEarningsSubCard(String title, String amount, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            amount,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -686,6 +737,84 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernEarningsChart(List<double> earnings) {
+    final maxEarnings = earnings.isEmpty ? 1.0 : earnings.reduce((a, b) => a > b ? a : b);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    // Generate day labels for the last 7 days
+    final dayLabels = List.generate(7, (index) {
+      final date = today.subtract(Duration(days: 6 - index));
+      final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return weekdays[date.weekday - 1];
+    });
+    
+    return Container(
+      height: 120,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Last 7 Days Earnings',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: earnings.asMap().entries.map((entry) {
+                final index = entry.key;
+                final value = entry.value;
+                final height = maxEarnings > 0 ? (value / maxEarnings) : 0.0;
+                final barHeight = (40 * height).clamp(4.0, 40.0);
+                
+                return Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 20,
+                        height: barHeight,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.white, Colors.white70],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        dayLabels[index],
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
