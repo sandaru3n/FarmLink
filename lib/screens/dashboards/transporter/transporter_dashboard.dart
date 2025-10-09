@@ -91,7 +91,35 @@ class _TransporterDashboardState extends State<TransporterDashboard>
 
         return Scaffold(
           appBar: _currentIndex == 0 ? null : AppBar(
-            backgroundColor: Colors.deepPurple[300],
+            flexibleSpace: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.deepPurple.shade700,
+                          Colors.deepPurple.shade500,
+                          Colors.deepPurple.shade400,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  )
+                : null,
+            backgroundColor: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? Colors.transparent
+                : Colors.deepPurple[300],
+            shape: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  )
+                : null,
+            clipBehavior: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? Clip.antiAlias
+                : Clip.none,
             elevation: 0,
             foregroundColor: Colors.white,
             title: Text(
@@ -109,7 +137,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     ),
                   );
                 },
-                icon: const Icon(Icons.settings),
+                icon: const Icon(Icons.settings_outlined),
               ),
             ],
             bottom: _currentIndex == 1 ? TabBar(
@@ -376,6 +404,61 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildModernAnalyticsCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2046,27 +2129,47 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               ),
               const SizedBox(height: 24),
               
-              // Statistics Cards
+              // Modern Statistics Cards
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard('Total Orders', allOrders.length.toString(), Icons.list_alt, Colors.blue),
+                    child: _buildModernAnalyticsCard(
+                      'Total Orders', 
+                      allOrders.length.toString(), 
+                      Icons.inventory_2_outlined, 
+                      const Color(0xFF1976D2),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard('Completed', completedOrders.length.toString(), Icons.check_circle, Colors.green),
+                    child: _buildModernAnalyticsCard(
+                      'Completed', 
+                      completedOrders.length.toString(), 
+                      Icons.check_circle_outline, 
+                      const Color(0xFF388E3C),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard('Total Earnings', '₹${totalEarnings.toStringAsFixed(0)}', Icons.trending_up, Colors.orange),
+                    child: _buildModernAnalyticsCard(
+                      'Total Earnings', 
+                      'LKR ${totalEarnings.toStringAsFixed(0)}', 
+                      Icons.trending_up_outlined, 
+                      const Color(0xFFF57C00),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard('Avg. Per Order', '₹${averageEarnings.toStringAsFixed(0)}', Icons.analytics, Colors.purple),
+                    child: _buildModernAnalyticsCard(
+                      'Avg. Per Order', 
+                      'LKR ${averageEarnings.toStringAsFixed(0)}', 
+                      Icons.analytics_outlined, 
+                      const Color(0xFF7B1FA2),
+                    ),
                   ),
                 ],
               ),
@@ -2082,33 +2185,102 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               const SizedBox(height: 16),
               
               if (allOrders.isEmpty)
-                const Center(
-                  child: Column(
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: const Column(
                     children: [
-                      Icon(Icons.analytics, size: 64, color: Colors.grey),
+                      Icon(Icons.analytics_outlined, size: 64, color: Colors.grey),
                       SizedBox(height: 16),
                       Text(
                         'No activity yet',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                        style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Start accepting deliveries to see analytics',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
                 )
               else
-                ...allOrders.take(5).map((order) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
+                ...allOrders.take(5).map((order) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: _getStatusColor(order.status).withValues(alpha: 0.1),
-                      child: Icon(_getStatusIcon(order.status), color: _getStatusColor(order.status)),
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        order.cropImageUrl ?? '',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.image, color: Colors.grey),
+                          );
+                        },
+                      ),
                     ),
-                    title: Text(order.cropName),
-                    subtitle: Text('${order.status} - ${order.createdAt.toString().split(' ')[0]}'),
-                    trailing: Text(
-                      '₹${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
+                    title: Text(
+                      order.cropName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          '${order.status.replaceAll('_', ' ').toUpperCase()} • ${order.createdAt.toString().split(' ')[0]}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green[200]!),
+                      ),
+                      child: Text(
+                        'LKR ${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Color(0xFF2E7D32),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),
