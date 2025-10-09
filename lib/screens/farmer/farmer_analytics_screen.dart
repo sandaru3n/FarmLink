@@ -72,17 +72,87 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Analytics & Earnings'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          tabs: const [
-            Tab(text: 'Overview', icon: Icon(Icons.dashboard)),
-            Tab(text: 'Earnings', icon: Icon(Icons.trending_up)),
-          ],
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(160),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade600,
+                Colors.green.shade700,
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Header
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.analytics,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Analytics & Earnings',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Tab Bar
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: TabBar(
+                    controller: _tabController,
+                    indicator: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    indicatorSize: TabBarIndicatorSize.tab,
+                    labelColor: Colors.green.shade700,
+                    unselectedLabelColor: Colors.white,
+                    labelStyle: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    dividerColor: Colors.transparent,
+                    dividerHeight: 0,
+                    tabs: const [
+                      Tab(text: 'Overview', icon: Icon(Icons.dashboard, size: 20)),
+                      Tab(text: 'Earnings', icon: Icon(Icons.trending_up, size: 20)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+            ),
+          ),
         ),
       ),
       body: _buildBody(),
@@ -128,35 +198,43 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
   }
 
   Widget _buildOverviewTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Key Metrics Cards
-          _buildKeyMetrics(),
-          const SizedBox(height: 24),
+    return Container(
+      color: Colors.grey.shade50,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Key Metrics Cards
+            _buildKeyMetrics(),
+            const SizedBox(height: 24),
 
-          // Quick Stats
-          _buildQuickStats(),
-          const SizedBox(height: 24),
+            // Quick Stats
+            _buildQuickStats(),
+            const SizedBox(height: 24),
 
-          // Recent Activity
-          _buildRecentActivity(),
-        ],
+            // Recent Activity
+            _buildRecentActivity(),
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildEarningsTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Monthly Breakdown
-          _buildMonthlyBreakdown(),
-        ],
+    return Container(
+      color: Colors.grey.shade50,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Monthly Breakdown
+            _buildMonthlyBreakdown(),
+            const SizedBox(height: 80),
+          ],
+        ),
       ),
     );
   }
@@ -166,11 +244,12 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Key Metrics',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
         const SizedBox(height: 16),
@@ -179,7 +258,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
             Expanded(
               child: _buildMetricCard(
                 'Total Earnings',
-                '₹${_analytics!.totalEarnings.toStringAsFixed(0)}',
+                'LKR ${_analytics!.totalEarnings.toStringAsFixed(0)}',
                 Icons.attach_money,
                 Colors.green,
               ),
@@ -210,7 +289,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
             Expanded(
               child: _buildMetricCard(
                 'Avg Order Value',
-                '₹${_analytics!.averageOrderValue.toStringAsFixed(0)}',
+                'LKR ${_analytics!.averageOrderValue.toStringAsFixed(0)}',
                 Icons.shopping_bag,
                 Colors.orange,
               ),
@@ -225,11 +304,12 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Farm Statistics',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
         const SizedBox(height: 16),
@@ -237,7 +317,6 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
         _buildStatRow('Crops Sold', '${_analytics!.soldCrops}'),
         _buildStatRow('Active Listings', '${_analytics!.activeCrops}'),
         _buildStatRow('Total Quantity', '${_analytics!.totalQuantity.toStringAsFixed(1)} kg'),
-        const SizedBox(height: 16),
         _buildStatRow('Pending Orders', '${_analytics!.pendingOrders}'),
         _buildStatRow('Deliveries Completed', '${_analytics!.deliveredCount}'),
         _buildStatRow('In Transit', '${_analytics!.inTransitCount}'),
@@ -249,11 +328,12 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Recent Activity',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
         const SizedBox(height: 16),
@@ -271,11 +351,12 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Monthly Breakdown',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
         const SizedBox(height: 16),
@@ -287,45 +368,105 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
 
 
   Widget _buildMetricCard(String title, String value, IconData icon, Color color) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
+    final MaterialColor materialColor = color is MaterialColor ? color : Colors.green;
+    
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: materialColor.shade200,
+          width: 1.5,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: materialColor.shade100,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  materialColor.shade400,
+                  materialColor.shade600,
+                ],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: materialColor.shade300,
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: materialColor.shade700,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey.shade700,
+              fontSize: 14,
+            ),
+          ),
           Text(
             value,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.grey.shade900,
+            ),
           ),
         ],
       ),
@@ -333,33 +474,90 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
   }
 
   Widget _buildActivityItem(RecentActivity activity) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: _getActivityColor(activity.type),
-          child: Icon(
-            _getActivityIcon(activity.type),
-            color: Colors.white,
-            size: 20,
-          ),
+    final MaterialColor activityColor = _getActivityColor(activity.type);
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
-        title: Text(activity.title),
-        subtitle: Text(activity.description),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
           children: [
-            Text(
-              '₹${activity.amount.toStringAsFixed(0)}',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    activityColor.shade400,
+                    activityColor.shade600,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                _getActivityIcon(activity.type),
+                color: Colors.white,
+                size: 22,
               ),
             ),
-            Text(
-              _formatDate(activity.timestamp),
-              style: const TextStyle(fontSize: 12),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    activity.title,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    activity.description,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  'LKR ${activity.amount.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: activityColor.shade700,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _formatDate(activity.timestamp),
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -368,28 +566,90 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
   }
 
   Widget _buildMonthlyItem(MonthlyEarnings monthly) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.green,
-          child: Text(
-            monthly.month.month.toString(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
         ),
-        title: Text(_getMonthName(monthly.month.month)),
-        subtitle: Text('${monthly.orders} orders • ${monthly.quantity.toStringAsFixed(1)} kg'),
-        trailing: Text(
-          '₹${monthly.earnings.toStringAsFixed(0)}',
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.green,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade200,
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.green.shade400,
+                    Colors.green.shade600,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    monthly.month.month.toString().padLeft(2, '0'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  const Text(
+                    'Mo',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getMonthName(monthly.month.month),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${monthly.orders} orders • ${monthly.quantity.toStringAsFixed(1)} kg',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Text(
+              'LKR ${monthly.earnings.toStringAsFixed(0)}',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 17,
+                color: Colors.green.shade700,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -397,7 +657,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
 
 
 
-  Color _getActivityColor(ActivityType type) {
+  MaterialColor _getActivityColor(ActivityType type) {
     switch (type) {
       case ActivityType.cropListed:
         return Colors.blue;

@@ -31,10 +31,54 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Delivery Tracking'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(100),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade600,
+                Colors.green.shade700,
+              ],
+            ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.local_shipping,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Delivery Tracking',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
       body: _buildDeliveryTrackingTab(),
     );
@@ -76,33 +120,63 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
             final deliveryOrders = snapshot.data ?? [];
 
             if (deliveryOrders.isEmpty) {
-              return const Center(
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.local_shipping, size: 64, color: Colors.grey),
-                    SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.green.shade100,
+                            Colors.green.shade50,
+                          ],
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.local_shipping,
+                        size: 64,
+                        color: Colors.green.shade400,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     Text(
                       'No deliveries in progress',
-                      style: TextStyle(fontSize: 18, color: Colors.grey),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey.shade700,
+                      ),
                     ),
-                    SizedBox(height: 8),
-                    Text(
-                      'Delivery tracking will appear here once transporters accept your orders',
-                      style: TextStyle(fontSize: 14, color: Colors.grey),
+                    const SizedBox(height: 8),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        'Delivery tracking will appear here once transporters accept your orders',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
                     ),
                   ],
                 ),
               );
             }
 
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: deliveryOrders.length,
-              itemBuilder: (context, index) {
-                final deliveryOrder = deliveryOrders[index];
-                return _buildDeliveryTrackingCard(deliveryOrder);
-              },
+            return Container(
+              color: Colors.grey.shade50,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(16),
+                itemCount: deliveryOrders.length,
+                itemBuilder: (context, index) {
+                  final deliveryOrder = deliveryOrders[index];
+                  return _buildDeliveryTrackingCard(deliveryOrder);
+                },
+              ),
             );
           },
         );
@@ -112,33 +186,47 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
 
 
   Widget _buildDeliveryTrackingCard(DeliveryOrderModel deliveryOrder) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Delivery Header
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: _getDeliveryStatusColor(deliveryOrder.status).withOpacity(0.1),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              gradient: LinearGradient(
+                colors: _getDeliveryStatusGradient(deliveryOrder.status),
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: _getDeliveryStatusColor(deliveryOrder.status),
-                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     _getDeliveryStatusIcon(deliveryOrder.status),
                     color: Colors.white,
-                    size: 20,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -146,31 +234,32 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                       Text(
                         deliveryOrder.cropName,
                         style: const TextStyle(
-                          fontSize: 18,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Delivery #${deliveryOrder.id.substring(0, 8)}',
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 12,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
                         ),
                       ),
                     ],
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: _getDeliveryStatusColor(deliveryOrder.status),
-                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(15),
                   ),
                   child: Text(
                     _getDeliveryStatusText(deliveryOrder.status),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: _getDeliveryStatusTextColor(deliveryOrder.status),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
@@ -182,7 +271,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
 
           // Delivery Details
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -195,16 +284,17 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                         deliveryOrder.distributorName,
                       ),
                     ),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: _buildInfoRow(
                         Icons.attach_money,
                         'Amount',
-                        '₹${deliveryOrder.price.toStringAsFixed(0)}',
+                        'LKR ${deliveryOrder.price.toStringAsFixed(0)}',
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Row(
                   children: [
                     Expanded(
@@ -214,6 +304,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                         '${deliveryOrder.quantity} kg',
                       ),
                     ),
+                    const SizedBox(width: 10),
                     if (deliveryOrder.transporterName != null)
                       Expanded(
                         child: _buildInfoRow(
@@ -224,13 +315,13 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 _buildInfoRow(
                   Icons.location_on,
                   'Pickup',
                   deliveryOrder.pickupLocation,
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 _buildInfoRow(
                   Icons.location_city,
                   'Delivery',
@@ -396,20 +487,58 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
-    return Row(
-      children: [
-        Icon(icon, size: 16, color: Colors.grey.shade600),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            '$label: $value',
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 14,
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade400,
+                  Colors.green.shade600,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: Colors.white),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: Colors.grey.shade900,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -428,6 +557,40 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
         return Colors.red;
       default:
         return Colors.grey;
+    }
+  }
+
+  List<Color> _getDeliveryStatusGradient(String status) {
+    switch (status) {
+      case 'pending':
+        return [Colors.orange.shade400, Colors.orange.shade600];
+      case 'accepted':
+        return [Colors.blue.shade400, Colors.blue.shade600];
+      case 'in_transit':
+        return [Colors.purple.shade400, Colors.purple.shade600];
+      case 'delivered':
+        return [Colors.green.shade400, Colors.green.shade600];
+      case 'rejected':
+        return [Colors.red.shade400, Colors.red.shade600];
+      default:
+        return [Colors.grey.shade400, Colors.grey.shade600];
+    }
+  }
+
+  Color _getDeliveryStatusTextColor(String status) {
+    switch (status) {
+      case 'pending':
+        return Colors.orange.shade700;
+      case 'accepted':
+        return Colors.blue.shade700;
+      case 'in_transit':
+        return Colors.purple.shade700;
+      case 'delivered':
+        return Colors.green.shade700;
+      case 'rejected':
+        return Colors.red.shade700;
+      default:
+        return Colors.grey.shade700;
     }
   }
 
@@ -474,64 +637,219 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
   void _showDeliveryDetails(DeliveryOrderModel deliveryOrder) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Delivery Details - ${deliveryOrder.cropName}'),
-        content: SingleChildScrollView(
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+          ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildDetailRow('Delivery ID', deliveryOrder.id),
-              _buildDetailRow('Crop', deliveryOrder.cropName),
-              _buildDetailRow('Quantity', '${deliveryOrder.quantity} kg'),
-              _buildDetailRow('Price', '₹${deliveryOrder.price.toStringAsFixed(2)}'),
-              _buildDetailRow('Buyer', deliveryOrder.distributorName),
-              _buildDetailRow('Pickup Location', deliveryOrder.pickupLocation),
-              _buildDetailRow('Delivery Address', deliveryOrder.distributorLocation),
-              _buildDetailRow('Status', _getDeliveryStatusText(deliveryOrder.status)),
-              if (deliveryOrder.transporterName != null)
-                _buildDetailRow('Transporter', deliveryOrder.transporterName!),
-              if (deliveryOrder.estimatedDeliveryTime != null)
-                _buildDetailRow('Estimated Time', deliveryOrder.estimatedDeliveryTime!),
-              if (deliveryOrder.actualDeliveryTime != null)
-                _buildDetailRow('Actual Time', deliveryOrder.actualDeliveryTime!),
-              _buildDetailRow('Created', _formatDate(deliveryOrder.createdAt)),
-              if (deliveryOrder.acceptedAt != null)
-                _buildDetailRow('Accepted', _formatDate(deliveryOrder.acceptedAt!)),
-              if (deliveryOrder.inTransitAt != null)
-                _buildDetailRow('In Transit', _formatDate(deliveryOrder.inTransitAt!)),
-              if (deliveryOrder.deliveredAt != null)
-                _buildDetailRow('Delivered', _formatDate(deliveryOrder.deliveredAt!)),
-              if (deliveryOrder.rejectionReason != null)
-                _buildDetailRow('Rejection Reason', deliveryOrder.rejectionReason!),
+              // Modern Header with gradient
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: _getDeliveryStatusGradient(deliveryOrder.status),
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            _getDeliveryStatusIcon(deliveryOrder.status),
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Delivery Details',
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                deliveryOrder.cropName,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDetailRow('Crop', deliveryOrder.cropName, Icons.agriculture),
+                      _buildDetailRow('Delivery ID', deliveryOrder.id, Icons.tag),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDetailRow('Quantity', '${deliveryOrder.quantity} kg', Icons.scale),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: _buildDetailRow('Price', 'LKR ${deliveryOrder.price.toStringAsFixed(2)}', Icons.attach_money),
+                          ),
+                        ],
+                      ),
+                      _buildDetailRow('Buyer', deliveryOrder.distributorName, Icons.person),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDetailRow('Status', _getDeliveryStatusText(deliveryOrder.status), Icons.info),
+                          ),
+                          const SizedBox(width: 10),
+                          if (deliveryOrder.transporterName != null)
+                            Expanded(
+                              child: _buildDetailRow('Transporter', deliveryOrder.transporterName!, Icons.local_shipping),
+                            ),
+                        ],
+                      ),
+                      _buildDetailRow('Pickup Location', deliveryOrder.pickupLocation, Icons.location_on),
+                      _buildDetailRow('Delivery Address', deliveryOrder.distributorLocation, Icons.location_city),
+                      if (deliveryOrder.estimatedDeliveryTime != null)
+                        _buildDetailRow('Estimated Time', deliveryOrder.estimatedDeliveryTime!, Icons.schedule),
+                      if (deliveryOrder.actualDeliveryTime != null)
+                        _buildDetailRow('Actual Time', deliveryOrder.actualDeliveryTime!, Icons.access_time),
+                      _buildDetailRow('Created', _formatDate(deliveryOrder.createdAt), Icons.calendar_today),
+                      if (deliveryOrder.acceptedAt != null)
+                        _buildDetailRow('Accepted', _formatDate(deliveryOrder.acceptedAt!), Icons.check_circle),
+                      if (deliveryOrder.inTransitAt != null)
+                        _buildDetailRow('In Transit', _formatDate(deliveryOrder.inTransitAt!), Icons.local_shipping),
+                      if (deliveryOrder.deliveredAt != null)
+                        _buildDetailRow('Delivered', _formatDate(deliveryOrder.deliveredAt!), Icons.home),
+                      if (deliveryOrder.rejectionReason != null)
+                        _buildDetailRow('Rejection Reason', deliveryOrder.rejectionReason!, Icons.cancel),
+                    ],
+                  ),
+                ),
+              ),
+              // Action Button
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _getDeliveryStatusColor(deliveryOrder.status),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+  Widget _buildDetailRow(String label, String value, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.shade200,
+          width: 1,
+        ),
+      ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              '$label:',
-              style: const TextStyle(fontWeight: FontWeight.w500),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade400,
+                  Colors.green.shade600,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 18,
             ),
           ),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(value),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -582,3 +900,4 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
     );
   }
 }
+
