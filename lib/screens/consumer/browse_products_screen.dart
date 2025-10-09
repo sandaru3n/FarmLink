@@ -152,23 +152,23 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                     ),
                                     if (favoritesProvider.favoriteProducts.isNotEmpty)
                                       Positioned(
-                                        right: 6,
-                                        top: 6,
+                                        right: 8,
+                                        top: 8,
                                         child: Container(
-                                          padding: const EdgeInsets.all(4),
+                                          padding: const EdgeInsets.all(2),
                                           decoration: BoxDecoration(
                                             color: Colors.red,
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius: BorderRadius.circular(8),
                                           ),
                                           constraints: const BoxConstraints(
-                                            minWidth: 18,
-                                            minHeight: 18,
+                                            minWidth: 14,
+                                            minHeight: 14,
                                           ),
                                           child: Text(
                                             '${favoritesProvider.favoriteProducts.length}',
                                             style: const TextStyle(
                                               color: Colors.white,
-                                              fontSize: 10,
+                                              fontSize: 8,
                                               fontWeight: FontWeight.bold,
                                             ),
                                             textAlign: TextAlign.center,
