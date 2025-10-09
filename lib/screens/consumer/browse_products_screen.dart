@@ -796,71 +796,313 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
   void _showFilterDialog(BuildContext context) {
     showDialog(
       context: context,
+      barrierDismissible: true,
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('Filter Products'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Sort options
-                  const Text('Sort by:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _selectedFilter,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                    items: _filterOptions.map((String option) {
-                      return DropdownMenuItem<String>(
-                        value: option,
-                        child: Text(option),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedFilter = newValue!;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // Price range
-                  const Text('Price Range:', style: TextStyle(fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  RangeSlider(
-                    values: _priceRange,
-                    min: 0,
-                    max: 1000,
-                    divisions: 20,
-                    labels: RangeLabels(
-                      '₹${_priceRange.start.round()}',
-                      '₹${_priceRange.end.round()}',
-                    ),
-                    onChanged: (RangeValues values) {
-                      setState(() {
-                        _priceRange = values;
-                      });
-                    },
-                  ),
-                ],
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Cancel'),
+              elevation: 8,
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: Colors.white,
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    this.setState(() {});
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Apply'),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Modern Header with Gradient
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.shade600,
+                            Colors.blue.shade400,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(24),
+                          topRight: Radius.circular(24),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.tune,
+                              color: Colors.white,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Filter Products',
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                'Customize your search',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Content
+                    Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Sort Section
+                          Row(
+                            children: [
+                              Icon(Icons.sort, color: Colors.blue.shade600, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Sort By',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.blue.shade200,
+                                width: 1,
+                              ),
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedFilter,
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                                prefixIcon: Icon(
+                                  Icons.filter_list,
+                                  color: Colors.blue.shade600,
+                                  size: 20,
+                                ),
+                              ),
+                              dropdownColor: Colors.white,
+                              icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade600),
+                              items: _filterOptions.map((String option) {
+                                return DropdownMenuItem<String>(
+                                  value: option,
+                                  child: Text(
+                                    option,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  _selectedFilter = newValue!;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          
+                          // Price Range Section
+                          Row(
+                            children: [
+                              Icon(Icons.attach_money, color: Colors.blue.shade600, size: 20),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Price Range',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey.shade800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blue.shade200),
+                                  ),
+                                  child: Text(
+                                    '₹${_priceRange.start.round()}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.arrow_forward, color: Colors.blue.shade300, size: 18),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: Colors.blue.shade200),
+                                  ),
+                                  child: Text(
+                                    '₹${_priceRange.end.round()}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          SliderTheme(
+                            data: SliderThemeData(
+                              activeTrackColor: Colors.blue.shade400,
+                              inactiveTrackColor: Colors.blue.shade100,
+                              thumbColor: Colors.blue.shade600,
+                              overlayColor: Colors.blue.shade100.withOpacity(0.3),
+                              thumbShape: const RoundSliderThumbShape(
+                                enabledThumbRadius: 10,
+                              ),
+                              overlayShape: const RoundSliderOverlayShape(
+                                overlayRadius: 20,
+                              ),
+                              rangeThumbShape: const RoundRangeSliderThumbShape(
+                                enabledThumbRadius: 10,
+                              ),
+                              rangeTrackShape: const RoundedRectRangeSliderTrackShape(),
+                            ),
+                            child: RangeSlider(
+                              values: _priceRange,
+                              min: 0,
+                              max: 1000,
+                              divisions: 20,
+                              labels: RangeLabels(
+                                '₹${_priceRange.start.round()}',
+                                '₹${_priceRange.end.round()}',
+                              ),
+                              onChanged: (RangeValues values) {
+                                setState(() {
+                                  _priceRange = values;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Modern Action Buttons
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                side: BorderSide(color: Colors.blue.shade600, width: 2),
+                              ),
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue.shade600,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                this.setState(() {});
+                                Navigator.of(context).pop();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                backgroundColor: Colors.blue.shade600,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.check, size: 20),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Apply Filters',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         );
