@@ -298,8 +298,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1a1a2e), Color(0xFF16213e)],
+        gradient: LinearGradient(
+          colors: [Colors.deepPurple[200]!, Colors.deepPurple[300]!],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -404,6 +404,64 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildScreenshotStyleCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1), // Light background color matching the screenshot
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Icon in circular background
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: color,
+              borderRadius: BorderRadius.circular(25),
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Value
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey[800],
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Title
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -697,11 +755,15 @@ class _TransporterDashboardState extends State<TransporterDashboard>
     
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black,
+        gradient: LinearGradient(
+          colors: [Colors.deepPurple[200]!, Colors.deepPurple[300]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.deepPurple.withOpacity(0.2),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -2129,47 +2191,53 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               ),
               const SizedBox(height: 24),
               
-              // Modern Statistics Cards
-              Row(
+              // Analytics Cards Grid (2x2 layout like screenshot)
+              Column(
                 children: [
-                  Expanded(
-                    child: _buildModernAnalyticsCard(
-                      'Total Orders', 
-                      allOrders.length.toString(), 
-                      Icons.inventory_2_outlined, 
-                      const Color(0xFF1976D2),
-                    ),
+                  // First row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildScreenshotStyleCard(
+                          'Total Orders',
+                          allOrders.length.toString(),
+                          Icons.shopping_bag,
+                          const Color(0xFF2196F3), // Light blue
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildScreenshotStyleCard(
+                          'Completed',
+                          completedOrders.length.toString(),
+                          Icons.check,
+                          const Color(0xFF4CAF50), // Light green
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildModernAnalyticsCard(
-                      'Completed', 
-                      completedOrders.length.toString(), 
-                      Icons.check_circle_outline, 
-                      const Color(0xFF388E3C),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildModernAnalyticsCard(
-                      'Total Earnings', 
-                      'LKR ${totalEarnings.toStringAsFixed(0)}', 
-                      Icons.trending_up_outlined, 
-                      const Color(0xFFF57C00),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: _buildModernAnalyticsCard(
-                      'Avg. Per Order', 
-                      'LKR ${averageEarnings.toStringAsFixed(0)}', 
-                      Icons.analytics_outlined, 
-                      const Color(0xFF7B1FA2),
-                    ),
+                  const SizedBox(height: 16),
+                  // Second row
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildScreenshotStyleCard(
+                          'Total Earnings',
+                          'LKR ${totalEarnings.toStringAsFixed(0)}',
+                          Icons.account_balance_wallet,
+                          const Color(0xFFFF9800), // Light orange
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildScreenshotStyleCard(
+                          'Avg Per Order',
+                          'LKR ${averageEarnings.toStringAsFixed(0)}',
+                          Icons.trending_up,
+                          const Color(0xFF9C27B0), // Light purple
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -2257,31 +2325,43 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const SizedBox(height: 4),
-                        Text(
-                          '${order.status.replaceAll('_', ' ').toUpperCase()} • ${order.createdAt.toString().split(' ')[0]}',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        Row(
+                          children: [
+                            _buildStatusChip(order.status),
+                            const SizedBox(width: 8),
+                            Text(
+                              _getRelativeTime(order.createdAt),
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green[200]!),
-                      ),
-                      child: Text(
-                        'LKR ${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          color: Color(0xFF2E7D32),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[200],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.grey[400]!),
+                          ),
+                          child: Text(
+                            'LKR ${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 )).toList(),
@@ -2292,6 +2372,82 @@ class _TransporterDashboardState extends State<TransporterDashboard>
     );
   }
   
+  String _getRelativeTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+    
+    if (difference.inMinutes < 1) {
+      return 'Just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else if (difference.inDays < 14) {
+      return 'Last week';
+    } else if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()}w ago';
+    } else if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()}mo ago';
+    } else {
+      // For very old dates, show the actual date
+      return '${dateTime.day}/${dateTime.month}/${dateTime.year}';
+    }
+  }
+
+  Widget _buildStatusChip(String status) {
+    Color backgroundColor;
+    Color textColor;
+    String displayText;
+    
+    switch (status.toLowerCase()) {
+      case 'accepted':
+        backgroundColor = Colors.blue[100]!;
+        textColor = Colors.blue[800]!;
+        displayText = 'Accepted';
+        break;
+      case 'in_transit':
+        backgroundColor = Colors.orange[100]!;
+        textColor = Colors.orange[800]!;
+        displayText = 'In Transit';
+        break;
+      case 'delivered':
+        backgroundColor = Colors.green[100]!;
+        textColor = Colors.green[800]!;
+        displayText = 'Delivered';
+        break;
+      case 'cancelled':
+        backgroundColor = Colors.red[100]!;
+        textColor = Colors.red[800]!;
+        displayText = 'Cancelled';
+        break;
+      default:
+        backgroundColor = Colors.grey[100]!;
+        textColor = Colors.grey[800]!;
+        displayText = status.replaceAll('_', ' ').toUpperCase();
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: textColor.withOpacity(0.3)),
+      ),
+      child: Text(
+        displayText,
+        style: TextStyle(
+          color: textColor,
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
   Color _getStatusColor(String status) {
     switch (status) {
       case 'accepted':

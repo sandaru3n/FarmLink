@@ -1,11 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math';
 import '../models/transport_order_model.dart';
 import '../models/delivery_order_model.dart';
+import 'directions_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class TransportOrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DirectionsService _directionsService = DirectionsService();
 
   // Collection references
   CollectionReference get _transportOrdersCollection => _firestore.collection('transport_orders');
@@ -34,11 +38,43 @@ class TransportOrderService {
       // Create transport order ID
       final transportOrderId = 'transport_${deliveryOrder.id}';
 
+      // Calculate delivery fee based on distance using Directions API
+      double deliveryFee = 0.0;
+      String estimatedDeliveryTime = '2-3 hours';
+      
+      if (deliveryOrder.pickupLatitude != null && 
+          deliveryOrder.pickupLongitude != null &&
+          deliveryOrder.distributorLatitude != null && 
+          deliveryOrder.distributorLongitude != null) {
+        try {
+          final directionsResult = await _directionsService.getDirections(
+            origin: LatLng(deliveryOrder.pickupLatitude!, deliveryOrder.pickupLongitude!),
+            destination: LatLng(deliveryOrder.distributorLatitude!, deliveryOrder.distributorLongitude!),
+          );
+          
+          if (directionsResult != null) {
+            deliveryFee = directionsResult.deliveryPrice; // LKR 100 per km
+            estimatedDeliveryTime = directionsResult.duration;
+          } else {
+            // Fallback to minimum fee if directions API fails
+            deliveryFee = 500.0; // Minimum LKR 500
+          }
+        } catch (e) {
+          print('Error calculating delivery fee: $e');
+          // Fallback to minimum fee if directions API fails
+          deliveryFee = 500.0; // Minimum LKR 500
+        }
+      } else {
+        // Fallback to minimum fee if coordinates are not available
+        deliveryFee = 500.0; // Minimum LKR 500
+      }
+
       // Create transport order model
       final transportOrder = TransportOrderModel(
         id: transportOrderId,
         deliveryOrderId: deliveryOrder.id,
         orderId: deliveryOrder.orderId,
+        transportOrderKey: '${Random().nextInt(90000) + 10000}',
         cropImageUrl: deliveryOrder.cropImageUrl,
         cropName: deliveryOrder.cropName,
         quantity: deliveryOrder.quantity,
@@ -52,8 +88,8 @@ class TransportOrderService {
         status: 'accepted',
         createdAt: DateTime.now(),
         acceptedAt: DateTime.now(),
-        deliveryFee: deliveryOrder.price * 0.1, // 10% delivery fee
-        estimatedDeliveryTime: '2-3 hours',
+        deliveryFee: deliveryFee,
+        estimatedDeliveryTime: estimatedDeliveryTime,
         scheduledDay: scheduledDay,
       );
 

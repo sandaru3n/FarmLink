@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/delivery_order_model.dart';
+import 'directions_service.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/crop_model.dart';
 
 class DeliveryOrderService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final DirectionsService _directionsService = DirectionsService();
 
   // Collection references
   CollectionReference get _deliveryOrdersCollection => _firestore.collection('delivery_orders');
@@ -167,6 +170,46 @@ class DeliveryOrderService {
       // Create delivery order ID
       final deliveryOrderId = 'delivery_${orderId}';
       
+      // Calculate delivery fee based on real distance using Directions API
+      double deliveryFee = 0.0;
+      String estimatedDeliveryTime = '2-3 hours';
+      
+      if (orderData['pickupLatitude'] != null && 
+          orderData['pickupLongitude'] != null &&
+          orderData['distributorLatitude'] != null && 
+          orderData['distributorLongitude'] != null) {
+        try {
+          final directionsResult = await _directionsService.getDirections(
+            origin: LatLng(
+              (orderData['pickupLatitude'] as num).toDouble(), 
+              (orderData['pickupLongitude'] as num).toDouble()
+            ),
+            destination: LatLng(
+              (orderData['distributorLatitude'] as num).toDouble(), 
+              (orderData['distributorLongitude'] as num).toDouble()
+            ),
+          );
+          
+          if (directionsResult != null) {
+            deliveryFee = directionsResult.deliveryPrice; // LKR 100 per km
+            estimatedDeliveryTime = directionsResult.duration;
+            print('Calculated delivery fee: LKR ${deliveryFee.toStringAsFixed(2)} for ${directionsResult.distanceInKm.toStringAsFixed(2)} km');
+          } else {
+            // Fallback to minimum fee if directions API fails
+            deliveryFee = 500.0; // Minimum LKR 500
+            print('Directions API failed, using minimum delivery fee: LKR 500');
+          }
+        } catch (e) {
+          print('Error calculating delivery fee: $e');
+          // Fallback to minimum fee if directions API fails
+          deliveryFee = 500.0; // Minimum LKR 500
+        }
+      } else {
+        // Fallback to minimum fee if coordinates are not available
+        deliveryFee = 500.0; // Minimum LKR 500
+        print('Coordinates not available, using minimum delivery fee: LKR 500');
+      }
+      
       // Create delivery order document in delivery_orders collection
       final deliveryOrderData = {
         'id': deliveryOrderId,
@@ -197,9 +240,9 @@ class DeliveryOrderService {
         'paymentCompletedAt': orderData['paymentCompletedAt'],
         'confirmedAt': orderData['confirmedAt'],
         'lastPaymentActivity': orderData['lastPaymentActivity'],
-        // Transport-specific fields
-        'deliveryFee': (orderData['finalPrice'] ?? 0) * 0.1, // 10% delivery fee
-        'estimatedDeliveryTime': '2-3 hours',
+        // Transport-specific fields with real distance-based pricing
+        'deliveryFee': deliveryFee,
+        'estimatedDeliveryTime': estimatedDeliveryTime,
       };
       
       // Save to delivery_orders collection
@@ -211,6 +254,7 @@ class DeliveryOrderService {
         'id': transportOrderId,
         'deliveryOrderId': deliveryOrderId,
         'orderId': orderId,
+        'transportOrderKey': '${DateTime.now().millisecondsSinceEpoch.toString().substring(8)}', // 5-digit random-like key
         'cropImageUrl': orderData['cropImageUrl'] ?? '',
         'cropName': orderData['cropName'] ?? '',
         'quantity': orderData['quantity'] ?? 0,
@@ -224,8 +268,8 @@ class DeliveryOrderService {
         'status': 'accepted',
         'createdAt': Timestamp.fromDate(DateTime.now()),
         'acceptedAt': Timestamp.fromDate(DateTime.now()),
-        'deliveryFee': (orderData['finalPrice'] ?? 0) * 0.1, // 10% delivery fee
-        'estimatedDeliveryTime': '2-3 hours',
+        'deliveryFee': deliveryFee, // Real distance-based delivery fee
+        'estimatedDeliveryTime': estimatedDeliveryTime, // Real estimated time
         'scheduledDay': scheduledDay,
         'scheduledDate': null, // Will be set when specific date is chosen
         'scheduledTime': null, // Will be set when specific time is chosen

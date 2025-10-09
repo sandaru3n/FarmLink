@@ -5,6 +5,8 @@ import '../../providers/transport_order_provider.dart';
 import '../../models/transport_order_model.dart';
 import 'transport_order_detail_screen.dart';
 import 'distributor_feedback_dialog.dart';
+import '../../providers/delivery_order_provider.dart'
+    ;
 
 class TransportOrdersScreen extends StatefulWidget {
   const TransportOrdersScreen({super.key});
@@ -17,6 +19,15 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   int _currentTabIndex = 0;
+  final Map<String, Future<dynamic>> _deliveryDetailsFutures = {};
+
+  Future<dynamic> _getDeliveryDetails(String deliveryOrderId) {
+    return _deliveryDetailsFutures.putIfAbsent(
+      deliveryOrderId,
+      () => Provider.of<DeliveryOrderProvider>(context, listen: false)
+          .getDeliveryOrderById(deliveryOrderId),
+    );
+  }
 
   @override
   void initState() {
@@ -344,14 +355,19 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Transport Order #${transportOrder.id.substring(0, 8)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
+                Expanded(
+                  child: Text(
+                    'Transport Order ${transportOrder.transportOrderKey}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -428,10 +444,10 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.attach_money, size: 14, color: Colors.green[600]),
+                            
                             const SizedBox(width: 4),
                             Text(
-                              '₹${transportOrder.price.toStringAsFixed(2)}',
+                              'LKR ${transportOrder.price.toStringAsFixed(2)}',
                               style: TextStyle(
                                 color: Colors.green[600],
                                 fontWeight: FontWeight.bold,
@@ -441,10 +457,10 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                             if (transportOrder.deliveryFee != null) ...[
                               const SizedBox(width: 6),
                               Text(
-                                '+ ₹${transportOrder.deliveryFee!.toStringAsFixed(2)} delivery fee',
+                                '+ LKR ${transportOrder.deliveryFee!.toStringAsFixed(2)} delivery fee',
                                 style: TextStyle(
                                   color: Colors.blue[600],
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),
                               ),
@@ -508,12 +524,32 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
-                              Text(
-                                'Farmer: ${transportOrder.farmerName}',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 10,
-                                ),
+                              FutureBuilder(
+                                future: _getDeliveryDetails(transportOrder.deliveryOrderId),
+                                builder: (context, snapshot) {
+                                  final farmerEmail = snapshot.hasData ? (snapshot.data?.farmerEmail ?? '') : '';
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Farmer: ${transportOrder.farmerName}',
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      if (farmerEmail.isNotEmpty)
+                                        Text(
+                                          farmerEmail,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -573,12 +609,32 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
-                              Text(
-                                'Distributor: ${transportOrder.distributorName}',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 10,
-                                ),
+                              FutureBuilder(
+                                future: _getDeliveryDetails(transportOrder.deliveryOrderId),
+                                builder: (context, snapshot) {
+                                  final distributorEmail = snapshot.hasData ? (snapshot.data?.distributorEmail ?? '') : '';
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Distributor: ${transportOrder.distributorName}',
+                                        style: TextStyle(
+                                          color: Colors.grey[800],
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      if (distributorEmail.isNotEmpty)
+                                        Text(
+                                          distributorEmail,
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                    ],
+                                  );
+                                },
                               ),
                             ],
                           ),
@@ -764,7 +820,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                         icon: const Icon(Icons.local_shipping, size: 16),
                         label: const Text('Start Delivery'),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
+                          backgroundColor: Colors.purple[300],
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(6),
@@ -784,7 +840,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                     icon: const Icon(Icons.check_circle, size: 16),
                     label: const Text('Mark as Delivered'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green,
+                      backgroundColor: Colors.purple[300],
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(6),
@@ -822,7 +878,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
   Color _getStatusColor(String status) {
     switch (status) {
       case 'accepted':
-        return Colors.blue;
+        return Colors.purple[300]!;
       case 'in_transit':
         return Colors.purple;
       case 'delivered':
