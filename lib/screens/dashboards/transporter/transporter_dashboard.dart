@@ -90,8 +90,36 @@ class _TransporterDashboardState extends State<TransporterDashboard>
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: AppBar(
-            backgroundColor: Colors.deepPurple[300],
+          appBar: _currentIndex == 0 ? null : AppBar(
+            flexibleSpace: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.deepPurple.shade700,
+                          Colors.deepPurple.shade500,
+                          Colors.deepPurple.shade400,
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                  )
+                : null,
+            backgroundColor: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? Colors.transparent
+                : Colors.deepPurple[300],
+            shape: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  )
+                : null,
+            clipBehavior: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+                ? Clip.antiAlias
+                : Clip.none,
             elevation: 0,
             foregroundColor: Colors.white,
             title: Text(
@@ -109,7 +137,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     ),
                   );
                 },
-                icon: const Icon(Icons.settings),
+                icon: const Icon(Icons.settings_outlined),
               ),
             ],
             bottom: _currentIndex == 1 ? TabBar(
@@ -123,22 +151,16 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               ],
             ) : null,
           ),
-          body: LiquidPullToRefresh(
-            onRefresh: _handleRefresh,
-            color: Colors.deepPurple[300]!,
-            backgroundColor: Colors.deepPurple[100]!,
-            animSpeedFactor: 2,
-            showChildOpacityTransition: true,
-            child: _currentIndex == 1 
-              ? TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildAvailableDeliveriesTab(),
-                    _buildDeliveryScheduleTab(),
-                  ],
-                )
-              : _buildDashboardContent(userProfile),
-          ),
+          body: _currentIndex == 1
+              ? const DeliveryOrdersScreen()
+              : LiquidPullToRefresh(
+                  onRefresh: _handleRefresh,
+                  color: Colors.deepPurple[300]!,
+                  backgroundColor: Colors.deepPurple[100]!,
+                  animSpeedFactor: 2,
+                  showChildOpacityTransition: true,
+                  child: _buildDashboardContent(userProfile),
+                ),
           bottomNavigationBar: Container(
             color: Colors.white,
             padding: EdgeInsets.only(
@@ -209,10 +231,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
     switch (_currentIndex) {
       case 0:
         return _buildHomeTab(userProfile);
-             case 1:
-         return _buildDeliveriesTab();
-       case 2:
-         return _buildTransportOrdersTab();
+      case 2:
+        return _buildTransportOrdersTab();
       case 3:
         return _buildHistoryTab();
       case 4:
@@ -239,166 +259,206 @@ class _TransporterDashboardState extends State<TransporterDashboard>
         final availableDeliveries = deliveryOrderProvider.pendingDeliveryOrders.length;
         
         return SingleChildScrollView(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.zero,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 20,
-                            backgroundColor: Colors.purple.withValues(alpha: 0.1),
-                            child: const Icon(
-                              Icons.local_shipping,
-                              size: 20,
-                              color: Colors.purple,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Welcome, ${userProfile?.displayName ?? 'User'}!',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  userProfile?.displayName ?? userProfile?.email ?? 'Transporter',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                Text(
-                                  'Delivering fresh produce safely!',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.purple,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              // Top Bar similar to consumer browse products
+              _buildHomeTopBar(userProfile, availableDeliveries, activeDeliveries, totalEarnings),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 12),
 
-              // Quick Stats
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard('Active Deliveries', activeDeliveries.toString(), Icons.local_shipping, Colors.purple),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _buildStatCard('Completed Today', completedToday.toString(), Icons.check_circle, Colors.green),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard('Available Deliveries', availableDeliveries.toString(), Icons.local_shipping_outlined, Colors.blue),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: _buildStatCard('Total Earnings', '₹${totalEarnings.toStringAsFixed(0)}', Icons.trending_up, Colors.orange),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                    // Balance Card (Uber-style)
+                    _buildBalanceCard(totalEarnings, completedToday, activeDeliveries),
+                    const SizedBox(height: 16),
+
+                    const SizedBox(height: 16),
 
               // Earnings Summary Section
               _buildEarningsSummaryCard(transportOrderProvider.deliveredTransportOrders),
               const SizedBox(height: 16),
 
-              // Quick Actions
-              Text(
-                'Quick Actions',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+              // Quick Actions removed as requested
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Show available deliveries if any
-              if (availableDeliveries > 0) ...[
-                _buildQuickActionCard(
-                  'View Available Deliveries',
-                  '$availableDeliveries new delivery opportunities',
-                  Icons.local_shipping,
-                  () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const DeliveryOrdersScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
-              
-              // Show active deliveries if any
-              if (activeDeliveries > 0) ...[
-                _buildQuickActionCard(
-                  'View Active Deliveries',
-                  '$activeDeliveries current delivery assignments',
-                  Icons.directions_car,
-                  () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const DeliveryOrdersScreen(),
-                      ),
-                    );
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
-              
-              _buildQuickActionCard(
-                'View My Transport Orders',
-                'Manage your accepted transport orders',
-                Icons.list_alt,
-                () {
-                  setState(() {
-                    _currentIndex = 2; // Switch to My Transports tab
-                  });
-                },
-              ),
-              const SizedBox(height: 8),
-              
-              _buildQuickActionCard(
-                'Delivery History',
-                'View completed deliveries',
-                Icons.history,
-                () {
-                  setState(() {
-                    _currentIndex = 3; // Switch to History tab
-                  });
-                },
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _buildBalanceCard(double totalEarnings, int completedToday, int activeDeliveries) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1a1a2e), Color(0xFF16213e)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Balance',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'LKR ${totalEarnings.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildBalanceStat(
+                  'Completed',
+                  completedToday.toString(),
+                  Icons.check_circle,
+                ),
+              ),
+              Container(
+                height: 30,
+                width: 1,
+                color: Colors.white.withOpacity(0.2),
+              ),
+              Expanded(
+                child: _buildBalanceStat(
+                  'Active',
+                  activeDeliveries.toString(),
+                  Icons.local_shipping,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBalanceStat(String label, String value, IconData icon) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white.withOpacity(0.7), size: 20),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.7),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildModernAnalyticsCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[200]!),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.grey[600],
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -428,6 +488,170 @@ class _TransporterDashboardState extends State<TransporterDashboard>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHomeTopBar(UserModel? userProfile, int availableDeliveries, int activeDeliveries, double totalEarnings) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.deepPurple.shade700,
+            Colors.deepPurple.shade500,
+            Colors.deepPurple.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.deepPurple.withValues(alpha: 0.25),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 22,
+                    backgroundColor: Colors.white.withValues(alpha: 0.15),
+                    backgroundImage: (userProfile?.photoUrl != null && userProfile!.photoUrl!.isNotEmpty)
+                        ? NetworkImage(userProfile!.photoUrl!)
+                        : null,
+                    child: (userProfile?.photoUrl == null || userProfile!.photoUrl!.isEmpty)
+                        ? const Icon(Icons.person, color: Colors.white)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hi, ${userProfile?.displayName ?? 'User'}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          'Let\'s deliver with care today',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = 1; // Jump to Delivery tab
+                        });
+                      },
+                      icon: const Icon(Icons.local_shipping_outlined, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // Quick glance chips
+              Row(
+                children: [
+                  _buildInfoChip(Icons.inventory_2_outlined, '$availableDeliveries available', Colors.white),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(Icons.directions_car_filled_outlined, '$activeDeliveries active', Colors.white),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(Icons.trending_up, 'LKR ${totalEarnings.toStringAsFixed(0)}', Colors.white),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Subactions
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = 1; // Delivery tab
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.deepPurple,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.local_shipping),
+                      label: const Text('Find deliveries'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _currentIndex = 2; // My Transports
+                        });
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        side: const BorderSide(color: Colors.white70),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.list_alt),
+                      label: const Text('My transports'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(IconData icon, String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }
@@ -471,9 +695,20 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           .fold<double>(0, (sum, order) => sum + (order.deliveryFee ?? 0));
     });
     
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -481,58 +716,79 @@ class _TransporterDashboardState extends State<TransporterDashboard>
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
+                const Text(
                   'Earnings Summary',
-                  style: const TextStyle(
-                    fontSize: 16,
+                  style: TextStyle(
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    // Navigate to detailed earnings page
-                    _navigateToEarningsDetails();
-                  },
-                  icon: Icon(
-                    Icons.more_horiz,
-                    color: Colors.purple,
-                    size: 20,
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
+                  child: IconButton(
+                    onPressed: () {
+                      // Navigate to detailed earnings page
+                      _navigateToEarningsDetails();
+                    },
+                    icon: const Icon(
+                      Icons.analytics,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
             
-            // Today's and This Week's earnings row
-            Row(
-              children: [
-                Expanded(
-                  child: _buildEarningsSubCard(
-                    'Today\'s Earnings',
-                    '₹${todayEarnings.toStringAsFixed(0)}',
-                    Icons.today,
-                    Colors.green,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _buildEarningsSubCard(
-                    'This Week\'s Earnings',
-                    '₹${weekEarnings.toStringAsFixed(0)}',
-                    Icons.date_range,
-                    Colors.blue,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
+            // Chart only (no today/weekly sub-cards)
+            const SizedBox(height: 8),
             
             // 7-day earnings chart
-            _buildEarningsChart(last7DaysEarnings),
+            _buildModernEarningsChart(last7DaysEarnings),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildModernEarningsSubCard(String title, String amount, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            amount,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -564,6 +820,84 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               color: Colors.grey[600],
             ),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernEarningsChart(List<double> earnings) {
+    final maxEarnings = earnings.isEmpty ? 1.0 : earnings.reduce((a, b) => a > b ? a : b);
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    
+    // Generate day labels for the last 7 days
+    final dayLabels = List.generate(7, (index) {
+      final date = today.subtract(Duration(days: 6 - index));
+      final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+      return weekdays[date.weekday - 1];
+    });
+    
+    return Container(
+      height: 120,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Last 7 Days Earnings',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: earnings.asMap().entries.map((entry) {
+                final index = entry.key;
+                final value = entry.value;
+                final height = maxEarnings > 0 ? (value / maxEarnings) : 0.0;
+                final barHeight = (40 * height).clamp(4.0, 40.0);
+                
+                return Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Container(
+                        width: 20,
+                        height: barHeight,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Colors.white, Colors.white70],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        dayLabels[index],
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ],
       ),
@@ -1795,27 +2129,47 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               ),
               const SizedBox(height: 24),
               
-              // Statistics Cards
+              // Modern Statistics Cards
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard('Total Orders', allOrders.length.toString(), Icons.list_alt, Colors.blue),
+                    child: _buildModernAnalyticsCard(
+                      'Total Orders', 
+                      allOrders.length.toString(), 
+                      Icons.inventory_2_outlined, 
+                      const Color(0xFF1976D2),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard('Completed', completedOrders.length.toString(), Icons.check_circle, Colors.green),
+                    child: _buildModernAnalyticsCard(
+                      'Completed', 
+                      completedOrders.length.toString(), 
+                      Icons.check_circle_outline, 
+                      const Color(0xFF388E3C),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
-                    child: _buildStatCard('Total Earnings', '₹${totalEarnings.toStringAsFixed(0)}', Icons.trending_up, Colors.orange),
+                    child: _buildModernAnalyticsCard(
+                      'Total Earnings', 
+                      'LKR ${totalEarnings.toStringAsFixed(0)}', 
+                      Icons.trending_up_outlined, 
+                      const Color(0xFFF57C00),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
-                    child: _buildStatCard('Avg. Per Order', '₹${averageEarnings.toStringAsFixed(0)}', Icons.analytics, Colors.purple),
+                    child: _buildModernAnalyticsCard(
+                      'Avg. Per Order', 
+                      'LKR ${averageEarnings.toStringAsFixed(0)}', 
+                      Icons.analytics_outlined, 
+                      const Color(0xFF7B1FA2),
+                    ),
                   ),
                 ],
               ),
@@ -1831,33 +2185,102 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               const SizedBox(height: 16),
               
               if (allOrders.isEmpty)
-                const Center(
-                  child: Column(
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(32),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!),
+                  ),
+                  child: const Column(
                     children: [
-                      Icon(Icons.analytics, size: 64, color: Colors.grey),
+                      Icon(Icons.analytics_outlined, size: 64, color: Colors.grey),
                       SizedBox(height: 16),
                       Text(
                         'No activity yet',
-                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                        style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Start accepting deliveries to see analytics',
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
                     ],
                   ),
                 )
               else
-                ...allOrders.take(5).map((order) => Card(
-                  margin: const EdgeInsets.only(bottom: 8),
+                ...allOrders.take(5).map((order) => Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.grey[200]!),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
                   child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: _getStatusColor(order.status).withValues(alpha: 0.1),
-                      child: Icon(_getStatusIcon(order.status), color: _getStatusColor(order.status)),
+                    contentPadding: const EdgeInsets.all(16),
+                    leading: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        order.cropImageUrl ?? '',
+                        width: 48,
+                        height: 48,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[200],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.image, color: Colors.grey),
+                          );
+                        },
+                      ),
                     ),
-                    title: Text(order.cropName),
-                    subtitle: Text('${order.status} - ${order.createdAt.toString().split(' ')[0]}'),
-                    trailing: Text(
-                      '₹${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
-                      style: TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.bold,
+                    title: Text(
+                      order.cropName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 4),
+                        Text(
+                          '${order.status.replaceAll('_', ' ').toUpperCase()} • ${order.createdAt.toString().split(' ')[0]}',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.green[200]!),
+                      ),
+                      child: Text(
+                        'LKR ${(order.deliveryFee ?? 0).toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          color: Color(0xFF2E7D32),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                     ),
                   ),

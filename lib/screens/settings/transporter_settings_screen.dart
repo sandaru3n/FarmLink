@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import '../../services/storage_service.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_localizations.dart';
@@ -86,13 +91,62 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.purple.withOpacity(0.1),
-                            child: const Icon(
-                              Icons.local_shipping,
-                              size: 30,
-                              color: Colors.purple,
+                          GestureDetector(
+                            onTap: () async {
+                              try {
+                                final picker = ImagePicker();
+                                final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+                                if (picked == null) return;
+                                final file = File(picked.path);
+                                final storage = StorageService();
+                                // Upload
+                                final url = await storage.uploadProfileImage(file);
+                                // Save to Firestore and FirebaseAuth profile
+                                final uid = FirebaseAuth.instance.currentUser!.uid;
+                                await FirebaseFirestore.instance.collection('users').doc(uid).update({'photoUrl': url});
+                                await FirebaseAuth.instance.currentUser!.updatePhotoURL(url);
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Profile photo updated')),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to update photo: $e')),
+                                  );
+                                }
+                              }
+                            },
+                            child: Stack(
+                              children: [
+                                CircleAvatar(
+                                  radius: 30,
+                                  backgroundColor: Colors.purple.withOpacity(0.1),
+                                  backgroundImage: (userProfile?.photoUrl != null && userProfile!.photoUrl!.isNotEmpty)
+                                      ? NetworkImage(userProfile!.photoUrl!)
+                                      : null,
+                                  child: (userProfile?.photoUrl == null || userProfile!.photoUrl!.isEmpty)
+                                      ? const Icon(
+                                          Icons.person,
+                                          size: 30,
+                                          color: Colors.purple,
+                                        )
+                                      : null,
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.purple,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -105,13 +159,6 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  'Transporter',
-                                  style: TextStyle(
-                                    color: Colors.purple,
-                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                                 Text(

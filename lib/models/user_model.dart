@@ -48,6 +48,7 @@ class UserModel {
   final UserRole? secondaryRole;
   final UserRole currentActiveRole;
   final String? displayName;
+  final String? photoUrl;
   final DateTime createdAt;
   final DateTime lastLoginAt;
   final bool isActive;
@@ -59,6 +60,7 @@ class UserModel {
     this.secondaryRole,
     required this.currentActiveRole,
     this.displayName,
+    this.photoUrl,
     required this.createdAt,
     required this.lastLoginAt,
     this.isActive = true,
@@ -83,6 +85,7 @@ class UserModel {
         orElse: () => UserRole.consumer,
       ),
       displayName: map['displayName'],
+      photoUrl: map['photoUrl'],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
       lastLoginAt: (map['lastLoginAt'] as Timestamp).toDate(),
       isActive: map['isActive'] ?? true,
@@ -97,6 +100,7 @@ class UserModel {
       'secondaryRole': secondaryRole?.toString().split('.').last,
       'currentActiveRole': currentActiveRole.toString().split('.').last,
       'displayName': displayName,
+      'photoUrl': photoUrl,
       'createdAt': Timestamp.fromDate(createdAt),
       'lastLoginAt': Timestamp.fromDate(lastLoginAt),
       'isActive': isActive,
@@ -110,6 +114,7 @@ class UserModel {
     UserRole? secondaryRole,
     UserRole? currentActiveRole,
     String? displayName,
+    String? photoUrl,
     DateTime? createdAt,
     DateTime? lastLoginAt,
     bool? isActive,
@@ -121,6 +126,7 @@ class UserModel {
       secondaryRole: secondaryRole ?? this.secondaryRole,
       currentActiveRole: currentActiveRole ?? this.currentActiveRole,
       displayName: displayName ?? this.displayName,
+      photoUrl: photoUrl ?? this.photoUrl,
       createdAt: createdAt ?? this.createdAt,
       lastLoginAt: lastLoginAt ?? this.lastLoginAt,
       isActive: isActive ?? this.isActive,
