@@ -34,23 +34,117 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Orders'),
-        backgroundColor: Colors.blue,
-        foregroundColor: Colors.white,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(text: 'Pending'),
-            Tab(text: 'Completed'),
-            Tab(text: 'Reviewed'),
-          ],
-        ),
-      ),
-      body: Consumer<AuthProvider>(
+      body: Column(
+        children: [
+          // Modern Stylish Header with Tabs
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blue.shade700,
+                  Colors.blue.shade500,
+                  Colors.blue.shade400,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.receipt_long,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'My Orders',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      dividerColor: Colors.transparent,
+                      indicator: BoxDecoration(
+                        color: Colors.white.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      labelColor: Colors.white,
+                      unselectedLabelColor: Colors.white70,
+                      labelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      labelPadding: EdgeInsets.zero,
+                      tabs: const [
+                        Tab(
+                          height: 40,
+                          child: Center(child: Text('Pending')),
+                        ),
+                        Tab(
+                          height: 40,
+                          child: Center(child: Text('Completed')),
+                        ),
+                        Tab(
+                          height: 40,
+                          child: Center(child: Text('Reviewed')),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           if (authProvider.userProfile == null) {
             return const Center(
@@ -67,6 +161,9 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
             ],
           );
         },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -209,50 +306,69 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
 
   Widget _buildEmptyState(String status) {
     String message;
+    String subtitle;
     IconData icon;
+    Color iconColor;
     
     switch (status) {
       case 'pending':
-        message = 'No pending orders';
+        message = 'No Pending Orders';
+        subtitle = 'Place an order to see it here';
         icon = Icons.shopping_bag_outlined;
+        iconColor = Colors.orange;
         break;
       case 'completed':
-        message = 'No completed orders';
+        message = 'No Completed Orders';
+        subtitle = 'Completed orders will appear here';
         icon = Icons.check_circle_outline;
+        iconColor = Colors.green;
         break;
       case 'reviewed':
-        message = 'No reviewed orders';
+        message = 'No Reviewed Orders';
+        subtitle = 'Rate your completed orders';
         icon = Icons.star_outline;
+        iconColor = Colors.amber;
         break;
       default:
-        message = 'No orders found';
+        message = 'No Orders Found';
+        subtitle = 'Your orders will appear here';
         icon = Icons.receipt_long_outlined;
+        iconColor = Colors.blue;
     }
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            icon,
-            size: 64,
-            color: Colors.grey[400],
+          Container(
+            padding: const EdgeInsets.all(30),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              size: 80,
+              color: iconColor,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           Text(
             message,
             style: TextStyle(
-              fontSize: 18,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+              fontSize: 22,
+              color: Colors.grey[800],
+              fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Your orders will appear here',
+            subtitle,
             style: TextStyle(
-              color: Colors.grey[500],
+              fontSize: 15,
+              color: Colors.grey[600],
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -260,48 +376,86 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
   }
 
   Widget _buildOrderCard(ConsumerOrderModel order) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ConsumerOrderDetailsScreen(order: order),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Order #${order.id.substring(order.id.length - 6)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  _buildStatusChip(order.orderStatus, order.paymentStatus),
-                ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.shade100, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ConsumerOrderDetailsScreen(order: order),
               ),
-              const SizedBox(height: 12),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade600,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.receipt,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          '#${order.id.substring(order.id.length - 6)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: Colors.grey.shade900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    _buildStatusChip(order.orderStatus, order.paymentStatus),
+                  ],
+                ),
+                const SizedBox(height: 14),
               
               // Order items preview
-              ...order.items.take(2).map((item) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
+              ...order.items.take(2).map((item) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue.shade100),
+                ),
                 child: Row(
                   children: [
                     Container(
-                      width: 40,
-                      height: 40,
+                      width: 45,
+                      height: 45,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.grey.shade300),
+                        color: Colors.blue.shade100,
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(8),
@@ -310,9 +464,9 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                                 item.imageUrl,
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) => 
-                                    const Icon(Icons.image, color: Colors.grey),
+                                    Icon(Icons.image, color: Colors.blue.shade300, size: 20),
                               )
-                            : const Icon(Icons.image, color: Colors.grey),
+                            : Icon(Icons.image, color: Colors.blue.shade300, size: 20),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -322,28 +476,50 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                         children: [
                           Text(
                             item.productName,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w500,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
                               fontSize: 14,
+                              color: Colors.grey.shade900,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
+                          const SizedBox(height: 2),
                           Text(
-                            '${item.quantity.toStringAsFixed(1)} kg × ₹${item.pricePerKg.toStringAsFixed(2)}',
+                            '${item.quantity.toStringAsFixed(1)} kg × LKR ${item.pricePerKg.toStringAsFixed(2)}',
                             style: TextStyle(
-                              color: Colors.grey[600],
+                              color: Colors.grey.shade600,
                               fontSize: 12,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    Text(
-                      '₹${item.totalPrice.toStringAsFixed(2)}',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.green.shade600,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'LKR',
+                            style: TextStyle(
+                              fontSize: 8,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                          Text(
+                            item.totalPrice.toStringAsFixed(0),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -351,18 +527,31 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
               )),
               
               if (order.items.length > 2)
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
+                Container(
+                  margin: const EdgeInsets.only(top: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
                   child: Text(
                     '+${order.items.length - 2} more items',
                     style: TextStyle(
-                      color: Colors.grey[600],
+                      color: Colors.blue.shade700,
                       fontSize: 12,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
+              
+              Container(
+                height: 1,
+                color: Colors.grey.shade200,
+              ),
+              
+              const SizedBox(height: 14),
               
               // Order summary
               Row(
@@ -371,19 +560,36 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Order Date: ${_formatDate(order.createdAt)}',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
+                      Row(
+                        children: [
+                          Icon(Icons.calendar_today, size: 14, color: Colors.blue.shade600),
+                          const SizedBox(width: 6),
+                          Text(
+                            _formatDate(order.createdAt),
+                            style: TextStyle(
+                              color: Colors.grey.shade700,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                       if (order.deliveredAt != null)
-                        Text(
-                          'Delivered: ${_formatDate(order.deliveredAt!)}',
-                          style: TextStyle(
-                            color: Colors.green[600],
-                            fontSize: 12,
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Row(
+                            children: [
+                              Icon(Icons.check_circle, size: 14, color: Colors.green[600]),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Delivered ${_formatDate(order.deliveredAt!)}',
+                                style: TextStyle(
+                                  color: Colors.green[600],
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                     ],
@@ -391,32 +597,60 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text(
-                        'Total: ₹${order.totalAmount.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                      const Text(
+                        'Total',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Colors.grey,
                         ),
                       ),
+                      Row(
+                        children: [
+                          Text(
+                            'LKR ',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                          Text(
+                            order.totalAmount.toStringAsFixed(2),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
+                              color: Colors.blue.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
                       if (order.paymentStatus == 'completed')
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.check_circle,
-                              color: Colors.green[600],
-                              size: 16,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Paid',
-                              style: TextStyle(
+                        Container(
+                          margin: const EdgeInsets.only(top: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.check_circle,
                                 color: Colors.green[600],
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                                size: 12,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Text(
+                                'Paid',
+                                style: TextStyle(
+                                  color: Colors.green[600],
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                     ],
                   ),
@@ -426,54 +660,79 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
           ),
         ),
       ),
+      ),
     );
   }
 
   Widget _buildStatusChip(String orderStatus, String paymentStatus) {
     String status;
+    IconData icon;
     Color color;
     
     if (paymentStatus == 'completed') {
       switch (orderStatus) {
         case 'pending':
           status = 'Confirmed';
+          icon = Icons.check_circle;
           color = Colors.blue;
           break;
         case 'confirmed':
           status = 'Processing';
+          icon = Icons.hourglass_bottom;
           color = Colors.orange;
           break;
         case 'shipped':
           status = 'Shipped';
+          icon = Icons.local_shipping;
           color = Colors.purple;
           break;
         case 'delivered':
           status = 'Delivered';
+          icon = Icons.done_all;
           color = Colors.green;
           break;
         default:
           status = 'Unknown';
+          icon = Icons.help_outline;
           color = Colors.grey;
       }
     } else {
-      status = 'Pending Payment';
+      status = 'Pending';
+      icon = Icons.payment;
       color = Colors.red;
     }
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        color: color,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      child: Text(
-        status,
-        style: TextStyle(
-          color: color,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: Colors.white,
+            size: 13,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            status,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -483,158 +742,249 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
   }
 
   Widget _buildReviewedOrderCard(ConsumerRatingModel rating) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: InkWell(
-        onTap: () async {
-          // Get the original order details
-          final order = await _orderService.getOrderById(rating.consumerOrderId);
-          if (order != null && context.mounted) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ConsumerOrderDetailsScreen(order: order),
-              ),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Order #${rating.consumerOrderId.substring(rating.consumerOrderId.length - 6)}',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.green.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.green.withOpacity(0.3)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.shade100, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            // Get the original order details
+            final order = await _orderService.getOrderById(rating.consumerOrderId);
+            if (order != null && context.mounted) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ConsumerOrderDetailsScreen(order: order),
+                ),
+              );
+            }
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
-                        const Icon(
-                          Icons.star,
-                          color: Colors.green,
-                          size: 16,
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.shade600,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.star,
+                            color: Colors.white,
+                            size: 16,
+                          ),
                         ),
-                        const SizedBox(width: 4),
+                        const SizedBox(width: 10),
                         Text(
-                          'Reviewed',
+                          '#${rating.consumerOrderId.substring(rating.consumerOrderId.length - 6)}',
                           style: TextStyle(
-                            color: Colors.green,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            color: Colors.grey.shade900,
                           ),
                         ),
                       ],
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              
-              // Distributor info
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: Colors.blue,
-                    child: Text(
-                      rating.distributorName.isNotEmpty
-                          ? rating.distributorName[0].toUpperCase()
-                          : 'D',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.verified,
+                            color: Colors.white,
+                            size: 13,
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            'Reviewed',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          rating.distributorName,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+              
+              // Distributor info
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blue.shade100),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade600,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        rating.distributorName.isNotEmpty
+                            ? rating.distributorName[0].toUpperCase()
+                            : 'D',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
-                        Text(
-                          'Distributor',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            rating.distributorName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: Colors.grey.shade900,
+                            ),
+                          ),
+                          Text(
+                            'Distributor',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               
               // Rating display
-              Row(
-                children: [
-                  ...List.generate(5, (index) {
-                    return Icon(
-                      index < rating.rating.floor()
-                          ? Icons.star
-                          : index < rating.rating
-                              ? Icons.star_half
-                              : Icons.star_border,
-                      color: Colors.amber,
-                      size: 20,
-                    );
-                  }),
-                  const SizedBox(width: 8),
-                  Text(
-                    rating.rating.toStringAsFixed(1),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.amber.shade200),
+                ),
+                child: Row(
+                  children: [
+                    ...List.generate(5, (index) {
+                      return Icon(
+                        index < rating.rating.floor()
+                            ? Icons.star
+                            : index < rating.rating
+                                ? Icons.star_half
+                                : Icons.star_border,
+                        color: Colors.amber.shade700,
+                        size: 22,
+                      );
+                    }),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.shade600,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        rating.rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.white,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '(${rating.ratingText})',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
+                    const SizedBox(width: 8),
+                    Text(
+                      '(${rating.ratingText})',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               
               if (rating.comment != null && rating.comment!.isNotEmpty) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  child: Text(
-                    rating.comment!,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontStyle: FontStyle.italic,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.comment, size: 14, color: Colors.grey.shade600),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Comment',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        rating.comment!,
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.grey.shade800,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -642,21 +992,21 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
               if (rating.categories != null && rating.categories!.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: rating.categories!.map((category) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.blue.shade600,
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Text(
                         category,
-                        style: TextStyle(
-                          color: Colors.blue[700],
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     );
@@ -664,26 +1014,46 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                 ),
               ],
               
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
+              
+              Container(
+                height: 1,
+                color: Colors.grey.shade200,
+              ),
+              
+              const SizedBox(height: 10),
               
               // Review date
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Reviewed: ${_formatDate(rating.createdAt)}',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 12,
-                    ),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today, size: 13, color: Colors.grey.shade600),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Reviewed ${_formatDate(rating.createdAt)}',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
                   ),
                   if (rating.updatedAt != null)
-                    Text(
-                      'Updated: ${_formatDate(rating.updatedAt!)}',
-                      style: TextStyle(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
+                    Row(
+                      children: [
+                        Icon(Icons.update, size: 13, color: Colors.grey.shade600),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Updated ${_formatDate(rating.updatedAt!)}',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -691,6 +1061,8 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
           ),
         ),
       ),
+      ),
     );
   }
 }
+
