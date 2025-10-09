@@ -7,6 +7,40 @@ import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import 'consumer_payment_success_screen.dart';
 
+// Custom formatter for expiry date (MM/YY)
+class ExpiryDateFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    
+    // Remove any non-digit characters
+    String digitsOnly = text.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    // Limit to 4 digits
+    if (digitsOnly.length > 4) {
+      digitsOnly = digitsOnly.substring(0, 4);
+    }
+    
+    // Format as MM/YY
+    String formatted = '';
+    if (digitsOnly.isNotEmpty) {
+      if (digitsOnly.length <= 2) {
+        formatted = digitsOnly;
+      } else {
+        formatted = '${digitsOnly.substring(0, 2)}/${digitsOnly.substring(2)}';
+      }
+    }
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
 class ConsumerPaymentScreen extends StatefulWidget {
   final ConsumerOrderModel order;
 
@@ -137,35 +171,143 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Payment'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Order Summary
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Order Summary',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+      body: Column(
+        children: [
+          // Modern Gradient Header
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.green.shade700,
+                  Colors.green.shade600,
+                  Colors.green.shade500,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(30),
+                bottomRight: Radius.circular(30),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+              ],
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 25),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.payment_rounded,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Text(
+                        'Secure Payment',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
                         ),
-                        const SizedBox(height: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          
+          // Content
+          Expanded(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                // Order Summary
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.green.shade50,
+                        Colors.white,
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.green.shade100, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.green.withOpacity(0.1),
+                        blurRadius: 12,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Colors.green.shade600, Colors.green.shade700],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.receipt_long,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Order Summary',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
                         ...widget.order.items.map((item) => Padding(
                           padding: const EdgeInsets.only(bottom: 8),
                           child: Row(
@@ -185,142 +327,309 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
                               ),
                               Expanded(
                                 child: Text(
-                                  '₹${item.totalPrice.toStringAsFixed(2)}',
+                                  'LKR ${item.totalPrice.toStringAsFixed(2)}',
                                   textAlign: TextAlign.end,
-                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         )),
-                        const Divider(),
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text('Subtotal:'),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          child: Container(
+                            height: 1,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.green.shade200,
+                                  Colors.green.shade100,
+                                  Colors.green.shade200,
+                                ],
+                              ),
                             ),
-                            Text(
-                              '₹${widget.order.subtotal.toStringAsFixed(2)}',
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Expanded(
-                              child: Text('Tax (18% GST):'),
-                            ),
-                            Text(
-                              '₹${widget.order.tax.toStringAsFixed(2)}',
-                              style: const TextStyle(fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                        const Divider(),
-                        Row(
-                          children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Total:',
+                                'Subtotal:',
                                 style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                                  color: Colors.grey[700],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
                             Text(
-                              '₹${widget.order.totalAmount.toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontSize: 18,
+                              'LKR ${widget.order.subtotal.toStringAsFixed(2)}',
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                                color: Colors.grey[800],
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Tax (18% GST):',
+                                style: TextStyle(
+                                  color: Colors.grey[700],
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                            Text(
+                              'LKR ${widget.order.tax.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[800],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          child: Container(
+                            height: 1,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.green.shade200,
+                                  Colors.green.shade100,
+                                  Colors.green.shade200,
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.green.shade600, Colors.green.shade700],
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.green.withOpacity(0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'Total Amount:',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  const Text(
+                                    'LKR ',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    widget.order.totalAmount.toStringAsFixed(2),
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
-                ),
                 const SizedBox(height: 24),
 
                 // Delivery Location
-                const Text(
-                  'Delivery Location',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.blue.shade600, Colors.blue.shade700],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.local_shipping,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Delivery Location',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _consumerLocationController,
-                  decoration: const InputDecoration(
-                    labelText: 'Delivery Address',
-                    hintText: 'Enter your delivery address',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.location_on),
+                const SizedBox(height: 12),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter your delivery address';
-                    }
-                    return null;
-                  },
-                  maxLines: 3,
+                  child: TextFormField(
+                    controller: _consumerLocationController,
+                    decoration: InputDecoration(
+                      labelText: 'Delivery Address',
+                      hintText: 'Enter your complete delivery address',
+                      hintStyle: TextStyle(color: Colors.grey.shade500),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.location_on, color: Colors.blue.shade600),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter your delivery address';
+                      }
+                      return null;
+                    },
+                    maxLines: 3,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
                 // Payment Information
-                const Text(
-                  'Payment Information',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.purple.shade600, Colors.purple.shade700],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.credit_card,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Payment Information',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 16),
 
                 // Card Number
-                TextFormField(
-                  controller: _cardNumberController,
-                  decoration: const InputDecoration(
-                    labelText: 'Card Number',
-                    hintText: '1234 5678 9012 3456',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.credit_card),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.purple.shade100),
                   ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(16),
-                  ],
-                  validator: (value) {
-                    if (value == null || value.length < 16) {
-                      return 'Please enter a valid card number';
-                    }
-                    return null;
-                  },
+                  child: TextFormField(
+                    controller: _cardNumberController,
+                    decoration: InputDecoration(
+                      labelText: 'Card Number',
+                      hintText: '1234 5678 9012 3456',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.credit_card, color: Colors.purple.shade600),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(16),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.length < 16) {
+                        return 'Please enter a valid card number';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // Cardholder Name
-                TextFormField(
-                  controller: _cardholderNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Cardholder Name',
-                    hintText: 'John Doe',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  textCapitalization: TextCapitalization.words,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter cardholder name';
-                    }
-                    return null;
-                  },
+                  child: TextFormField(
+                    controller: _cardholderNameController,
+                    decoration: InputDecoration(
+                      labelText: 'Cardholder Name',
+                      hintText: 'John Doe',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.person, color: Colors.purple.shade600),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter cardholder name';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
 
@@ -328,48 +637,81 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
-                        controller: _expiryController,
-                        decoration: const InputDecoration(
-                          labelText: 'Expiry Date',
-                          hintText: 'MM/YY',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.calendar_today),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(4),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.length < 4) {
-                            return 'Please enter expiry date';
-                          }
-                          return null;
-                        },
+                        child: TextFormField(
+                          controller: _expiryController,
+                          decoration: InputDecoration(
+                            labelText: 'Expiry Date',
+                            hintText: 'MM/YY',
+                            hintStyle: TextStyle(color: Colors.grey.shade400),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                            ),
+                            prefixIcon: Icon(Icons.calendar_today, color: Colors.purple.shade600),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            ExpiryDateFormatter(),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.length < 5) {
+                              return 'Enter MM/YY';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
-                      child: TextFormField(
-                        controller: _cvvController,
-                        decoration: const InputDecoration(
-                          labelText: 'CVV',
-                          hintText: '123',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.security),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.grey.shade200),
                         ),
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(4),
-                        ],
-                        validator: (value) {
-                          if (value == null || value.length < 3) {
-                            return 'Please enter CVV';
-                          }
-                          return null;
-                        },
+                        child: TextFormField(
+                          controller: _cvvController,
+                          decoration: InputDecoration(
+                            labelText: 'CVV',
+                            hintText: '123',
+                            hintStyle: TextStyle(color: Colors.grey.shade400),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(14),
+                              borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                            ),
+                            prefixIcon: Icon(Icons.security, color: Colors.purple.shade600),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                          ),
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(4),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.length < 3) {
+                              return 'Enter CVV';
+                            }
+                            return null;
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -377,74 +719,143 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
                 const SizedBox(height: 16),
 
                 // Country Selection
-                DropdownButtonFormField<String>(
-                  value: _selectedCountry,
-                  decoration: const InputDecoration(
-                    labelText: 'Country',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.flag),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  items: _countries.map((String country) {
-                    return DropdownMenuItem<String>(
-                      value: country,
-                      child: Text(country),
-                    );
-                  }).toList(),
-                  onChanged: (String? newValue) {
-                    setState(() {
-                      _selectedCountry = newValue!;
-                    });
-                  },
+                  child: DropdownButtonFormField<String>(
+                    value: _selectedCountry,
+                    decoration: InputDecoration(
+                      labelText: 'Country',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.flag, color: Colors.purple.shade600),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                    ),
+                    items: _countries.map((String country) {
+                      return DropdownMenuItem<String>(
+                        value: country,
+                        child: Text(country),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedCountry = newValue!;
+                      });
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // ZIP Code
-                TextFormField(
-                  controller: _zipController,
-                  decoration: const InputDecoration(
-                    labelText: 'ZIP Code',
-                    hintText: '12345',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.location_city),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade50,
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.grey.shade200),
                   ),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
-                  ],
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Please enter ZIP code';
-                    }
-                    return null;
-                  },
+                  child: TextFormField(
+                    controller: _zipController,
+                    decoration: InputDecoration(
+                      labelText: 'ZIP Code',
+                      hintText: '12345',
+                      hintStyle: TextStyle(color: Colors.grey.shade400),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide(color: Colors.purple.shade600, width: 2),
+                      ),
+                      prefixIcon: Icon(Icons.location_city, color: Colors.purple.shade600),
+                      filled: true,
+                      fillColor: Colors.transparent,
+                    ),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(10),
+                    ],
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Please enter ZIP code';
+                      }
+                      return null;
+                    },
+                  ),
                 ),
                 const SizedBox(height: 16),
 
                 // Save Card Checkbox
-                CheckboxListTile(
-                  title: const Text('Save card for future payments'),
-                  value: _saveCard,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      _saveCard = value!;
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.purple.shade50.withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.purple.shade100),
+                  ),
+                  child: CheckboxListTile(
+                    title: const Text(
+                      'Save card for future payments',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
+                    ),
+                    value: _saveCard,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _saveCard = value!;
+                      });
+                    },
+                    controlAffinity: ListTileControlAffinity.leading,
+                    activeColor: Colors.purple.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
 
                 // Pay Button
-                SizedBox(
-                  width: double.infinity,
+                Container(
+                  height: 60,
+                  decoration: BoxDecoration(
+                    gradient: _isProcessing
+                        ? null
+                        : LinearGradient(
+                            colors: [Colors.green.shade600, Colors.green.shade700],
+                          ),
+                    color: _isProcessing ? Colors.grey.shade300 : null,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: !_isProcessing
+                        ? [
+                            BoxShadow(
+                              color: Colors.green.withOpacity(0.4),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            ),
+                          ]
+                        : null,
+                  ),
                   child: ElevatedButton(
                     onPressed: _isProcessing ? null : _processPayment,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
+                      backgroundColor: Colors.transparent,
                       foregroundColor: Colors.white,
+                      shadowColor: Colors.transparent,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                     child: _isProcessing
@@ -452,23 +863,37 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 22,
+                                height: 22,
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                  strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               ),
                               SizedBox(width: 12),
-                              Text('Processing Payment...'),
+                              Text(
+                                'Processing Payment...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ],
                           )
-                        : Text(
-                            'Pay ₹${widget.order.totalAmount.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.lock_rounded, size: 22),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Pay LKR ${widget.order.totalAmount.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
                           ),
                   ),
                 ),
@@ -476,36 +901,66 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
 
                 // Security Notice
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.blue.shade50,
+                        Colors.cyan.shade50.withOpacity(0.3),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.blue.shade100, width: 1.5),
                   ),
                   child: Row(
                     children: [
-                      const Icon(
-                        Icons.security,
-                        color: Colors.blue,
-                        size: 20,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade600,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.security,
+                          color: Colors.white,
+                          size: 20,
+                        ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Expanded(
-                        child: Text(
-                          'Your payment information is secure and encrypted',
-                          style: TextStyle(
-                            color: Colors.blue[700],
-                            fontSize: 12,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '256-bit SSL Encryption',
+                              style: TextStyle(
+                                color: Colors.blue.shade900,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Your payment information is secure and encrypted',
+                              style: TextStyle(
+                                color: Colors.blue.shade700,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],
                   ),
                 ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
         ),
+      ),
+      ),
+        ],
       ),
     );
   }
