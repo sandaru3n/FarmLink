@@ -90,8 +90,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: _currentIndex == 0 ? null : AppBar(
-            flexibleSpace: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+          appBar: (_currentIndex == 0 || _currentIndex == 1) ? null : AppBar(
+            flexibleSpace: (_currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
                 ? Container(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
@@ -106,10 +106,10 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     ),
                   )
                 : null,
-            backgroundColor: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+            backgroundColor: (_currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
                 ? Colors.transparent
                 : Colors.deepPurple[300],
-            shape: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+            shape: (_currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
                 ? const RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(
                       bottomLeft: Radius.circular(20),
@@ -117,7 +117,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     ),
                   )
                 : null,
-            clipBehavior: (_currentIndex == 1 || _currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
+            clipBehavior: (_currentIndex == 2 || _currentIndex == 3 || _currentIndex == 4)
                 ? Clip.antiAlias
                 : Clip.none,
             elevation: 0,
@@ -140,16 +140,6 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                 icon: const Icon(Icons.settings_outlined),
               ),
             ],
-            bottom: _currentIndex == 1 ? TabBar(
-              controller: _tabController,
-              indicatorColor: Colors.white,
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70,
-              tabs: const [
-                Tab(text: 'Available'),
-                Tab(text: 'Schedule'),
-              ],
-            ) : null,
           ),
           body: _currentIndex == 1
               ? const DeliveryOrdersScreen()
