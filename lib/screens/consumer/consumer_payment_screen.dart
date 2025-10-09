@@ -7,6 +7,40 @@ import '../../providers/auth_provider.dart';
 import '../../providers/cart_provider.dart';
 import 'consumer_payment_success_screen.dart';
 
+// Custom formatter for expiry date (MM/YY)
+class ExpiryDateFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    final text = newValue.text;
+    
+    // Remove any non-digit characters
+    String digitsOnly = text.replaceAll(RegExp(r'[^0-9]'), '');
+    
+    // Limit to 4 digits
+    if (digitsOnly.length > 4) {
+      digitsOnly = digitsOnly.substring(0, 4);
+    }
+    
+    // Format as MM/YY
+    String formatted = '';
+    if (digitsOnly.isNotEmpty) {
+      if (digitsOnly.length <= 2) {
+        formatted = digitsOnly;
+      } else {
+        formatted = '${digitsOnly.substring(0, 2)}/${digitsOnly.substring(2)}';
+      }
+    }
+    
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
 class ConsumerPaymentScreen extends StatefulWidget {
   final ConsumerOrderModel order;
 
@@ -629,12 +663,11 @@ class _ConsumerPaymentScreenState extends State<ConsumerPaymentScreen>
                           ),
                           keyboardType: TextInputType.number,
                           inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(4),
+                            ExpiryDateFormatter(),
                           ],
                           validator: (value) {
-                            if (value == null || value.length < 4) {
-                              return 'Enter expiry';
+                            if (value == null || value.length < 5) {
+                              return 'Enter MM/YY';
                             }
                             return null;
                           },
