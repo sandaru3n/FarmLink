@@ -377,16 +377,32 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
 
   Widget _buildOrderCard(ConsumerOrderModel order) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.shade100, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Colors.blue.shade50.withOpacity(0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: Colors.blue.shade100,
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            color: Colors.blue.withOpacity(0.1),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.blue.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -400,36 +416,49 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
               ),
             );
           },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            children: [
+              // Top section with gradient
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.blue.shade600,
+                      Colors.blue.shade500,
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.blue.shade600,
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(
                             Icons.receipt,
                             color: Colors.white,
-                            size: 16,
+                            size: 18,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Text(
                           '#${order.id.substring(order.id.length - 6)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            color: Colors.grey.shade900,
+                            fontSize: 18,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
@@ -437,7 +466,14 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                     _buildStatusChip(order.orderStatus, order.paymentStatus),
                   ],
                 ),
-                const SizedBox(height: 14),
+              ),
+              
+              // Content section
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
               
               // Order items preview
               ...order.items.take(2).map((item) => Container(
@@ -656,10 +692,12 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                   ),
                 ],
               ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-      ),
       ),
     );
   }
@@ -703,13 +741,13 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
     }
     
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: color.withOpacity(0.3),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 6,
             offset: const Offset(0, 3),
           ),
@@ -720,14 +758,14 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
         children: [
           Icon(
             icon,
-            color: Colors.white,
-            size: 13,
+            color: color,
+            size: 14,
           ),
           const SizedBox(width: 6),
           Text(
             status,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: color,
               fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
@@ -743,16 +781,32 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
 
   Widget _buildReviewedOrderCard(ConsumerRatingModel rating) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.amber.shade100, width: 1.5),
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Colors.amber.shade50.withOpacity(0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: Colors.amber.shade100,
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.amber.withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 5),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+            spreadRadius: 0,
+          ),
+          BoxShadow(
+            color: Colors.amber.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -770,66 +824,79 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
               );
             }
           },
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            children: [
+              // Top section with gradient
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.amber.shade600,
+                      Colors.amber.shade500,
+                    ],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
-                            color: Colors.amber.shade600,
-                            borderRadius: BorderRadius.circular(8),
+                            color: Colors.white.withOpacity(0.25),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Icon(
                             Icons.star,
                             color: Colors.white,
-                            size: 16,
+                            size: 18,
                           ),
                         ),
-                        const SizedBox(width: 10),
+                        const SizedBox(width: 12),
                         Text(
                           '#${rating.consumerOrderId.substring(rating.consumerOrderId.length - 6)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: 17,
-                            color: Colors.grey.shade900,
+                            fontSize: 18,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.green.withOpacity(0.3),
+                            color: Colors.black.withOpacity(0.1),
                             blurRadius: 6,
                             offset: const Offset(0, 3),
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
                             Icons.verified,
-                            color: Colors.white,
-                            size: 13,
+                            color: Colors.green.shade600,
+                            size: 14,
                           ),
-                          SizedBox(width: 6),
+                          const SizedBox(width: 6),
                           Text(
                             'Reviewed',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Colors.green.shade600,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),
@@ -839,7 +906,14 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+              ),
+              
+              // Content section
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
               
               // Distributor info
               Container(
@@ -1057,10 +1131,12 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                     ),
                 ],
               ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
-      ),
       ),
     );
   }
