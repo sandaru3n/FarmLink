@@ -2083,8 +2083,6 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.attach_money, size: 16, color: Colors.green[600]),
-                            const SizedBox(width: 4),
                             Text(
                               'LKR ${delivery.price.toStringAsFixed(2)}',
                               style: TextStyle(
