@@ -71,77 +71,80 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('AI Crop Advisory'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Header Section
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.green[400]!, Colors.green[600]!],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(
-                        Icons.psychology,
-                        color: Colors.white,
-                        size: 28,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'AI Crop Advisory',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Get expert farming advice powered by AI',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(120),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.green.shade600,
+                Colors.green.shade700,
               ],
             ),
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
           ),
-          
-          // Form Section
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.psychology,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'AI Crop Advisory',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 60),
+                    child: Text(
+                      'Get expert farming advice powered by AI',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 15,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+      body: Container(
+        color: Colors.grey.shade50,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -201,29 +204,55 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
                     const SizedBox(height: 24),
                     
                     // Get Advisory Button
-                    SizedBox(
+                    Container(
                       width: double.infinity,
-                      child: ElevatedButton.icon(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.green.shade500,
+                            Colors.green.shade700,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.shade300,
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
                         onPressed: _isLoading ? null : _getAdvisory,
-                        icon: _isLoading 
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: _isLoading 
                             ? const SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 24,
+                                height: 24,
                                 child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                                  strokeWidth: 3,
                                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                 ),
                               )
-                            : const Icon(Icons.psychology),
-                        label: Text(_isLoading ? 'Getting AI Advice...' : 'Get AI Advisory'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.green,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.psychology, size: 24),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Get AI Advisory',
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
                       ),
                     ),
                     
@@ -241,23 +270,22 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
                       const SizedBox(height: 12),
                       _buildErrorMessage(_errorMessage),
                     ],
+                    const SizedBox(height: 80),
                   ],
                 ),
               ),
             ),
           ),
-        ],
-      ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 18,
+      style: TextStyle(
+        fontSize: 20,
         fontWeight: FontWeight.bold,
-        color: Colors.green,
+        color: Colors.grey.shade900,
       ),
     );
   }
@@ -273,31 +301,27 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey,
-          ),
-        ),
-        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
           decoration: InputDecoration(
+            labelText: label,
             hintText: hint,
-            prefixIcon: Icon(icon, color: Colors.green),
+            filled: true,
+            fillColor: Colors.white,
+            prefixIcon: Icon(icon, color: Colors.green.shade600),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.grey),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Colors.green, width: 2),
+              borderSide: BorderSide(color: Colors.green.shade600, width: 2),
             ),
-            filled: true,
-            fillColor: Colors.grey[50],
           ),
           validator: (value) {
             if (value == null || value.trim().isEmpty) {
@@ -307,27 +331,32 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
           },
         ),
         if (suggestions != null) ...[
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Wrap(
             spacing: 8,
-            runSpacing: 4,
+            runSpacing: 8,
             children: suggestions.take(5).map((suggestion) => GestureDetector(
               onTap: () {
                 controller.text = suggestion;
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.green.shade100,
+                      Colors.green.shade200,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.green.shade300, width: 1),
                 ),
                 child: Text(
                   suggestion,
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+                  style: TextStyle(
+                    color: Colors.green.shade700,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -341,25 +370,44 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
   Widget _buildAdvisoryResult(String result) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.green.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.green.shade200, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.shade100,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.psychology, color: Colors.green, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.green.shade400,
+                      Colors.green.shade600,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.psychology, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Text(
                 'AI Advisory',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.green,
+                  color: Colors.green.shade700,
                 ),
               ),
               const Spacer(),
@@ -367,23 +415,30 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
                 onPressed: () {
                   // Copy to clipboard functionality
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Advisory copied to clipboard'),
-                      backgroundColor: Colors.green,
+                    SnackBar(
+                      content: const Text('Advisory copied to clipboard'),
+                      backgroundColor: Colors.green.shade600,
                     ),
                   );
                 },
-                icon: const Icon(Icons.copy, color: Colors.green),
+                icon: Icon(Icons.copy, color: Colors.green.shade600),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            result,
-            style: const TextStyle(
-              fontSize: 14,
-              height: 1.5,
-              color: Colors.black87,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              result,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.6,
+                color: Colors.grey.shade900,
+              ),
             ),
           ),
         ],
@@ -394,35 +449,62 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
   Widget _buildErrorMessage(String error) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.red.shade200, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.red.shade100,
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 24),
-              const SizedBox(width: 8),
-              const Text(
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.red.shade400,
+                      Colors.red.shade600,
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.error_outline, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Text(
                 'Error',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Colors.red,
+                  color: Colors.red.shade700,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            error,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.red,
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.red.shade50,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              error,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.6,
+                color: Colors.red.shade900,
+              ),
             ),
           ),
         ],
