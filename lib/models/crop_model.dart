@@ -10,6 +10,8 @@ class CropModel {
   final DateTime startDate;
   final DateTime endDate;
   final String pickupLocation;
+  final double? pickupLatitude;
+  final double? pickupLongitude;
   final String status; // 'pending', 'active', 'expired', 'sold'
   final DateTime createdAt;
   final List<BidModel> bids;
@@ -25,6 +27,8 @@ class CropModel {
     required this.startDate,
     required this.endDate,
     required this.pickupLocation,
+    this.pickupLatitude,
+    this.pickupLongitude,
     this.status = 'pending', // Default to pending
     required this.createdAt,
     this.bids = const [],
@@ -44,6 +48,8 @@ class CropModel {
       startDate: (data['startDate'] as Timestamp).toDate(),
       endDate: (data['endDate'] as Timestamp).toDate(),
       pickupLocation: data['pickupLocation'] ?? '',
+      pickupLatitude: data['pickupLatitude']?.toDouble(),
+      pickupLongitude: data['pickupLongitude']?.toDouble(),
       status: data['status'] ?? 'pending',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       bids: (data['bids'] as List<dynamic>? ?? [])
@@ -63,6 +69,8 @@ class CropModel {
       'startDate': Timestamp.fromDate(startDate),
       'endDate': Timestamp.fromDate(endDate),
       'pickupLocation': pickupLocation,
+      'pickupLatitude': pickupLatitude,
+      'pickupLongitude': pickupLongitude,
       'status': status,
       'createdAt': Timestamp.fromDate(createdAt),
       'bids': bids.map((bid) => bid.toMap()).toList(),
@@ -80,6 +88,8 @@ class CropModel {
     DateTime? startDate,
     DateTime? endDate,
     String? pickupLocation,
+    double? pickupLatitude,
+    double? pickupLongitude,
     String? status,
     DateTime? createdAt,
     List<BidModel>? bids,
@@ -95,6 +105,8 @@ class CropModel {
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       pickupLocation: pickupLocation ?? this.pickupLocation,
+      pickupLatitude: pickupLatitude ?? this.pickupLatitude,
+      pickupLongitude: pickupLongitude ?? this.pickupLongitude,
       status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
       bids: bids ?? this.bids,
@@ -206,6 +218,8 @@ class OrderModel {
   final String distributorEmail;
   final String distributorPhone;
   final String distributorLocation;
+  final double? distributorLatitude;
+  final double? distributorLongitude;
   final String farmerId;
   final String farmerName;
   final String farmerEmail;
@@ -215,6 +229,8 @@ class OrderModel {
   final double quantity;
   final double finalPrice;
   final String pickupLocation;
+  final double? pickupLatitude;
+  final double? pickupLongitude;
   final String paymentStatus; // 'pending', 'processing', 'completed', 'failed'
   final String orderStatus; // 'pending', 'confirmed', 'completed', 'cancelled'
   final String? stripePaymentIntentId;
@@ -233,6 +249,8 @@ class OrderModel {
     required this.distributorEmail,
     required this.distributorPhone,
     required this.distributorLocation,
+    this.distributorLatitude,
+    this.distributorLongitude,
     required this.farmerId,
     required this.farmerName,
     required this.farmerEmail,
@@ -242,6 +260,8 @@ class OrderModel {
     required this.quantity,
     required this.finalPrice,
     required this.pickupLocation,
+    this.pickupLatitude,
+    this.pickupLongitude,
     this.paymentStatus = 'pending',
     this.orderStatus = 'pending',
     this.stripePaymentIntentId,
@@ -262,6 +282,8 @@ class OrderModel {
       distributorEmail: map['distributorEmail'] ?? '',
       distributorPhone: map['distributorPhone'] ?? '',
       distributorLocation: map['distributorLocation'] ?? '',
+      distributorLatitude: map['distributorLatitude']?.toDouble(),
+      distributorLongitude: map['distributorLongitude']?.toDouble(),
       farmerId: map['farmerId'] ?? '',
       farmerName: map['farmerName'] ?? '',
       farmerEmail: map['farmerEmail'] ?? '',
@@ -271,6 +293,8 @@ class OrderModel {
       quantity: (map['quantity'] ?? 0).toDouble(),
       finalPrice: (map['finalPrice'] ?? 0).toDouble(),
       pickupLocation: map['pickupLocation'] ?? '',
+      pickupLatitude: map['pickupLatitude']?.toDouble(),
+      pickupLongitude: map['pickupLongitude']?.toDouble(),
       paymentStatus: map['paymentStatus'] ?? 'pending',
       orderStatus: map['orderStatus'] ?? 'pending',
       stripePaymentIntentId: map['stripePaymentIntentId'],
@@ -300,6 +324,8 @@ class OrderModel {
       'distributorEmail': distributorEmail,
       'distributorPhone': distributorPhone,
       'distributorLocation': distributorLocation,
+      'distributorLatitude': distributorLatitude,
+      'distributorLongitude': distributorLongitude,
       'farmerId': farmerId,
       'farmerName': farmerName,
       'farmerEmail': farmerEmail,
@@ -309,6 +335,8 @@ class OrderModel {
       'quantity': quantity,
       'finalPrice': finalPrice,
       'pickupLocation': pickupLocation,
+      'pickupLatitude': pickupLatitude,
+      'pickupLongitude': pickupLongitude,
       'paymentStatus': paymentStatus,
       'orderStatus': orderStatus,
       'stripePaymentIntentId': stripePaymentIntentId,
@@ -329,6 +357,8 @@ class OrderModel {
     String? distributorEmail,
     String? distributorPhone,
     String? distributorLocation,
+    double? distributorLatitude,
+    double? distributorLongitude,
     String? farmerId,
     String? farmerName,
     String? farmerEmail,
@@ -338,6 +368,8 @@ class OrderModel {
     double? quantity,
     double? finalPrice,
     String? pickupLocation,
+    double? pickupLatitude,
+    double? pickupLongitude,
     String? paymentStatus,
     String? orderStatus,
     String? stripePaymentIntentId,
@@ -356,6 +388,8 @@ class OrderModel {
       distributorEmail: distributorEmail ?? this.distributorEmail,
       distributorPhone: distributorPhone ?? this.distributorPhone,
       distributorLocation: distributorLocation ?? this.distributorLocation,
+      distributorLatitude: distributorLatitude ?? this.distributorLatitude,
+      distributorLongitude: distributorLongitude ?? this.distributorLongitude,
       farmerId: farmerId ?? this.farmerId,
       farmerName: farmerName ?? this.farmerName,
       farmerEmail: farmerEmail ?? this.farmerEmail,
@@ -365,6 +399,8 @@ class OrderModel {
       quantity: quantity ?? this.quantity,
       finalPrice: finalPrice ?? this.finalPrice,
       pickupLocation: pickupLocation ?? this.pickupLocation,
+      pickupLatitude: pickupLatitude ?? this.pickupLatitude,
+      pickupLongitude: pickupLongitude ?? this.pickupLongitude,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       orderStatus: orderStatus ?? this.orderStatus,
       stripePaymentIntentId: stripePaymentIntentId ?? this.stripePaymentIntentId,

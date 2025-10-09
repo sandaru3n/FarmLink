@@ -1,12 +1,29 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
 import '../../providers/delivery_order_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/delivery_order_model.dart';
+import '../../services/directions_service.dart';
 import 'delivery_order_detail_screen.dart';
 import '../dashboards/transporter/transporter_dashboard.dart';
+
+// Top-level container for resolved coordinates used by geocoding fallback
+class _ResolvedCoords {
+  final LatLng origin;
+  final LatLng destination;
+  const _ResolvedCoords({required this.origin, required this.destination});
+}
+
+class _CityPair {
+  final String startCity;
+  final String endCity;
+  const _CityPair(this.startCity, this.endCity);
+}
 
 class DeliveryOrdersScreen extends StatefulWidget {
   const DeliveryOrdersScreen({super.key});
@@ -30,6 +47,11 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
     'Sat': [],
     'Sun': [],
   };
+
+  // Cache computed road distances in kilometers per delivery order id
+  final Map<String, double> _distanceKmCache = {};
+  // Cache resolved city names to avoid repeated geocoding
+  final Map<String, String> _cityCache = {};
 
   @override
   void initState() {
@@ -57,6 +79,180 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
     
     // Clean up any accepted deliveries from the scheduled map
     _cleanupAcceptedDeliveries();
+  }
+
+  // Resolve coordinates if missing by geocoding the textual addresses.
+  Future<_ResolvedCoords?> _resolveCoordsIfMissing(DeliveryOrderModel order) async {
+    LatLng? origin;
+    LatLng? destination;
+
+    if (order.pickupLatitude != null && order.pickupLongitude != null) {
+      origin = LatLng(order.pickupLatitude!, order.pickupLongitude!);
+    } else if (order.pickupLocation.isNotEmpty) {
+      try {
+        final results = await geocoding.locationFromAddress(order.pickupLocation);
+        if (results.isNotEmpty) {
+          origin = LatLng(results.first.latitude, results.first.longitude);
+        }
+      } catch (_) {}
+    }
+
+    if (order.distributorLatitude != null && order.distributorLongitude != null) {
+      destination = LatLng(order.distributorLatitude!, order.distributorLongitude!);
+    } else if (order.distributorLocation.isNotEmpty) {
+      try {
+        final results = await geocoding.locationFromAddress(order.distributorLocation);
+        if (results.isNotEmpty) {
+          destination = LatLng(results.first.latitude, results.first.longitude);
+        }
+      } catch (_) {}
+    }
+
+    if (origin != null && destination != null) {
+      return _ResolvedCoords(origin: origin, destination: destination);
+    }
+    return null;
+  }
+
+  // Get or compute road distance in kilometers (cached) using Google Directions
+  Future<double?> _getDistanceKm(DeliveryOrderModel order) async {
+    // Use order.id as cache key; fallback to order.orderId if needed
+    final String cacheKey = order.id.isNotEmpty ? order.id : order.orderId;
+    if (_distanceKmCache.containsKey(cacheKey)) {
+      return _distanceKmCache[cacheKey];
+    }
+
+    LatLng? origin;
+    LatLng? destination;
+
+    // Prefer existing coordinates
+    if (order.pickupLatitude != null && order.pickupLongitude != null) {
+      origin = LatLng(order.pickupLatitude!, order.pickupLongitude!);
+    }
+    if (order.distributorLatitude != null && order.distributorLongitude != null) {
+      destination = LatLng(order.distributorLatitude!, order.distributorLongitude!);
+    }
+
+    // If any coordinate missing, try geocoding addresses
+    if (origin == null || destination == null) {
+      final resolved = await _resolveCoordsIfMissing(order);
+      if (resolved != null) {
+        origin = resolved.origin;
+        destination = resolved.destination;
+      }
+    }
+
+    if (origin == null || destination == null) {
+      return null;
+    }
+
+    final result = await DirectionsService().getDirections(
+      origin: origin,
+      destination: destination,
+    );
+
+    if (result == null) {
+      return null;
+    }
+
+    final double km = result.distanceInKm;
+    _distanceKmCache[cacheKey] = km;
+    return km;
+  }
+
+  // Resolve a human-friendly nearest city using reverse geocoding with caching
+  Future<String> _resolveCity({double? lat, double? lng, String? address, required String cacheKey}) async {
+    // Return from cache if available
+    final String? cached = _cityCache[cacheKey];
+    if (cached != null && cached.isNotEmpty) return cached;
+
+    try {
+      if (lat != null && lng != null) {
+        final placemarks = await geocoding.placemarkFromCoordinates(lat, lng);
+        if (placemarks.isNotEmpty) {
+          final p = placemarks.first;
+          final String city = (p.locality?.trim().isNotEmpty == true)
+              ? p.locality!.trim()
+              : (p.subAdministrativeArea?.trim().isNotEmpty == true)
+                  ? p.subAdministrativeArea!.trim()
+                  : (p.administrativeArea?.trim().isNotEmpty == true)
+                      ? p.administrativeArea!.trim()
+                      : (p.country?.trim().isNotEmpty == true)
+                          ? p.country!.trim()
+                          : 'Unknown';
+          _cityCache[cacheKey] = city;
+          return city;
+        }
+      }
+
+      // If we don't have coordinates, try geocoding address -> coords -> placemark
+      if (address != null && address.trim().isNotEmpty) {
+        final results = await geocoding.locationFromAddress(address);
+        if (results.isNotEmpty) {
+          final coords = results.first;
+          final placemarks = await geocoding.placemarkFromCoordinates(coords.latitude, coords.longitude);
+          if (placemarks.isNotEmpty) {
+            final p = placemarks.first;
+            final String city = (p.locality?.trim().isNotEmpty == true)
+                ? p.locality!.trim()
+                : (p.subAdministrativeArea?.trim().isNotEmpty == true)
+                    ? p.subAdministrativeArea!.trim()
+                    : (p.administrativeArea?.trim().isNotEmpty == true)
+                        ? p.administrativeArea!.trim()
+                        : (p.country?.trim().isNotEmpty == true)
+                            ? p.country!.trim()
+                            : _extractCity(address);
+            _cityCache[cacheKey] = city;
+            return city;
+          }
+        }
+      }
+    } catch (_) {
+      // Fall through to string-based extraction
+    }
+
+    final String fallback = _extractCity(address ?? '');
+    _cityCache[cacheKey] = fallback;
+    return fallback;
+  }
+
+  Future<_CityPair> _getStartEndCities(DeliveryOrderModel order) async {
+    final String idKey = order.id.isNotEmpty ? order.id : order.orderId;
+    final String pickupKey = 'pickup:$idKey:${order.pickupLocation}';
+    final String dropoffKey = 'dropoff:$idKey:${order.distributorLocation}';
+
+    final Future<String> startFuture = _resolveCity(
+      lat: order.pickupLatitude,
+      lng: order.pickupLongitude,
+      address: order.pickupLocation,
+      cacheKey: pickupKey,
+    );
+
+    final Future<String> endFuture = _resolveCity(
+      lat: order.distributorLatitude,
+      lng: order.distributorLongitude,
+      address: order.distributorLocation,
+      cacheKey: dropoffKey,
+    );
+
+    final results = await Future.wait([startFuture, endFuture]);
+    return _CityPair(results[0], results[1]);
+  }
+
+  String _extractCity(String address) {
+    if (address.isEmpty) return 'Unknown';
+    final parts = address.split(',');
+    final List<String> candidates = parts
+        .map((p) => p.trim())
+        .where((p) => p.isNotEmpty)
+        .toList();
+    if (candidates.isEmpty) return address.trim();
+    for (final p in candidates.reversed) {
+      if (!p.contains(RegExp(r'\d')) && p.length <= 30) {
+        return p;
+      }
+    }
+    return candidates.first;
   }
 
   void _cleanupAcceptedDeliveries() {
@@ -1284,10 +1480,17 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
   }
 
   Widget _buildDeliveryCard(DeliveryOrderModel deliveryOrder, {required bool isAvailable}) {
+    // Check if we have coordinates for map display
+    final hasCoordinates = deliveryOrder.pickupLatitude != null &&
+        deliveryOrder.pickupLongitude != null &&
+        deliveryOrder.distributorLatitude != null &&
+        deliveryOrder.distributorLongitude != null;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
           Navigator.of(context).push(
@@ -1296,179 +1499,46 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
             ),
           );
         },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Split: Left half map, right half compact crop details
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                height: 180,
+                child: Row(
+                  children: [
+                    // Left: Map preview
+                    Expanded(
+                      child: _buildMapSection(deliveryOrder),
+                    ),
+                    const SizedBox(width: 12),
+                    // Right: Compact crop details with image
+                    Expanded(
+                      child: _buildCompactDetails(deliveryOrder),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Details Section
+            Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with image and status
-              Row(
-                children: [
-                  // Crop image
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      deliveryOrder.cropImageUrl,
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            color: Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Icon(Icons.image, color: Colors.grey[600]),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Order details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          deliveryOrder.cropName,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${deliveryOrder.quantity} kg',
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '₹${deliveryOrder.price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Status indicator
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(deliveryOrder.status),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      _getStatusText(deliveryOrder.status),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              
-              // Route information
-              Row(
-                children: [
-                  // Pickup location
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, color: Colors.green, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Pickup',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          deliveryOrder.pickupLocation,
-                          style: const TextStyle(fontSize: 14),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          deliveryOrder.farmerName,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // Uber-Style Price Display
+                  _buildPriceDisplay(deliveryOrder, hasCoordinates),
                   
-                  // Arrow
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Icon(Icons.arrow_forward, color: Colors.grey[400]),
-                  ),
+                  const SizedBox(height: 12),
+                  const Divider(height: 1),
                   
-                  // Delivery location
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.location_on, color: Colors.red, size: 16),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Delivery',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          deliveryOrder.distributorLocation,
-                          style: const TextStyle(fontSize: 14),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          deliveryOrder.distributorName,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
               
               // Action buttons for available deliveries
               if (isAvailable) ...[
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
@@ -1507,8 +1577,8 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
               // Action buttons for active deliveries (accepted or in_transit)
               if (!isAvailable && (deliveryOrder.status == 'accepted' || deliveryOrder.status == 'in_transit')) ...[
                 const SizedBox(height: 16),
-                Row(
-                  children: [
+              Row(
+                children: [
                     if (deliveryOrder.status == 'accepted') ...[
                       Expanded(
                         child: ElevatedButton(
@@ -1541,10 +1611,657 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen>
                   ],
                 ),
               ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactDetails(DeliveryOrderModel deliveryOrder) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                deliveryOrder.cropImageUrl,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(Icons.image, color: Colors.grey[600], size: 24),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    deliveryOrder.cropName,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${deliveryOrder.quantity} kg',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // Start and End cities row (resolved via reverse geocoding)
+        FutureBuilder<_CityPair>(
+          future: _getStartEndCities(deliveryOrder),
+          builder: (context, snapshot) {
+            final bool loading = snapshot.connectionState == ConnectionState.waiting;
+            final String startCity = snapshot.hasData ? snapshot.data!.startCity : _extractCity(deliveryOrder.pickupLocation);
+            final String endCity = snapshot.hasData ? snapshot.data!.endCity : _extractCity(deliveryOrder.distributorLocation);
+            return Row(
+              children: [
+                Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '$startCity → $endCity',
+                    style: TextStyle(
+                      color: Colors.grey[700],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (loading) ...[
+                  const SizedBox(width: 6),
+                  SizedBox(width: 10, height: 10, child: CircularProgressIndicator(strokeWidth: 1.5)),
+                ],
+              ],
+            );
+          },
+        ),
+        const Spacer(),
+        Align(
+          alignment: Alignment.bottomLeft,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: _getStatusColor(deliveryOrder.status),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              _getStatusText(deliveryOrder.status),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMapPreview(DeliveryOrderModel deliveryOrder) {
+    final origin = LatLng(
+      deliveryOrder.pickupLatitude!,
+      deliveryOrder.pickupLongitude!,
+    );
+    final destination = LatLng(
+      deliveryOrder.distributorLatitude!,
+      deliveryOrder.distributorLongitude!,
+    );
+
+    return FutureBuilder<DirectionsResult?>(
+      future: DirectionsService().getDirections(
+        origin: origin,
+        destination: destination,
+      ),
+      builder: (context, snapshot) {
+        Set<Polyline> polylines = {};
+        
+        if (snapshot.hasData && snapshot.data != null) {
+          polylines.add(
+            Polyline(
+              polylineId: const PolylineId('route'),
+              points: snapshot.data!.polylinePoints,
+              color: Colors.blue,
+              width: 5,
+            ),
+          );
+        }
+
+        final bounds = LatLngBounds(
+          southwest: LatLng(
+            math.min(origin.latitude, destination.latitude),
+            math.min(origin.longitude, destination.longitude),
+          ),
+          northeast: LatLng(
+            math.max(origin.latitude, destination.latitude),
+            math.max(origin.longitude, destination.longitude),
+          ),
+        );
+
+        return Container(
+          height: 180,
+          child: Stack(
+            children: [
+              GoogleMap(
+                initialCameraPosition: CameraPosition(
+                  target: LatLng(
+                    (origin.latitude + destination.latitude) / 2,
+                    (origin.longitude + destination.longitude) / 2,
+                  ),
+                  zoom: 12,
+                ),
+                onMapCreated: (c) {
+                  c.animateCamera(
+                    CameraUpdate.newLatLngBounds(bounds, 40),
+                  );
+                },
+                markers: const {},
+                polylines: polylines,
+                myLocationButtonEnabled: false,
+                zoomControlsEnabled: false,
+                mapToolbarEnabled: false,
+                scrollGesturesEnabled: true,
+                zoomGesturesEnabled: true,
+                tiltGesturesEnabled: false,
+                rotateGesturesEnabled: false,
+              ),
+              
+              // Map overlay with pickup and delivery info
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.7),
+                      ],
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      // Pickup info
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                                  const Text(
+                              'Pickup',
+                              style: TextStyle(
+                                      color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                        Text(
+                                    deliveryOrder.farmerName,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                                ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                      // Arrow icon
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
+                      
+                      // Delivery info
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: const Icon(
+                                Icons.location_on,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                                  const Text(
+                              'Delivery',
+                              style: TextStyle(
+                                      color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                                  Text(
+                                    deliveryOrder.distributorName,
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Wrapper that either shows map (using known or resolved coords) or placeholder
+  Widget _buildMapSection(DeliveryOrderModel deliveryOrder) {
+    final hasCoords = deliveryOrder.pickupLatitude != null &&
+        deliveryOrder.pickupLongitude != null &&
+        deliveryOrder.distributorLatitude != null &&
+        deliveryOrder.distributorLongitude != null;
+
+    if (hasCoords) {
+      return _buildMapPreview(deliveryOrder);
+    }
+
+    // Try to resolve from addresses
+    return FutureBuilder<_ResolvedCoords?>(
+      future: _resolveCoordsIfMissing(deliveryOrder),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 200,
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                const SizedBox(width: 8),
+                        Text(
+                  'Loading map...',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          );
+        }
+
+        if (snapshot.hasData && snapshot.data != null) {
+          final resolved = snapshot.data!;
+          return FutureBuilder<DirectionsResult?>(
+            future: DirectionsService().getDirections(
+              origin: resolved.origin,
+              destination: resolved.destination,
+            ),
+            builder: (context, dirSnap) {
+              final Set<Marker> markers = {
+                Marker(
+                  markerId: const MarkerId('pickup'),
+                  position: resolved.origin,
+                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+                ),
+                Marker(
+                  markerId: const MarkerId('delivery'),
+                  position: resolved.destination,
+                  icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+                ),
+              };
+
+              final Set<Polyline> polylines = {};
+              if (dirSnap.hasData && dirSnap.data != null) {
+                polylines.add(Polyline(
+                  polylineId: const PolylineId('route'),
+                  points: dirSnap.data!.polylinePoints,
+                  color: Colors.blue,
+                  width: 5,
+                ));
+              }
+
+              final bounds = LatLngBounds(
+                southwest: LatLng(
+                  math.min(resolved.origin.latitude, resolved.destination.latitude),
+                  math.min(resolved.origin.longitude, resolved.destination.longitude),
+                ),
+                northeast: LatLng(
+                  math.max(resolved.origin.latitude, resolved.destination.latitude),
+                  math.max(resolved.origin.longitude, resolved.destination.longitude),
+                ),
+              );
+
+              return Container(
+                height: 180,
+                child: Stack(
+                  children: [
+                    GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: LatLng(
+                          (resolved.origin.latitude + resolved.destination.latitude) / 2,
+                          (resolved.origin.longitude + resolved.destination.longitude) / 2,
+                        ),
+                        zoom: 12,
+                      ),
+                      onMapCreated: (c) {
+                        c.animateCamera(CameraUpdate.newLatLngBounds(bounds, 40));
+                      },
+                      markers: const {},
+                      polylines: polylines,
+                      myLocationButtonEnabled: false,
+                      zoomControlsEnabled: false,
+                      mapToolbarEnabled: false,
+                      scrollGesturesEnabled: true,
+                      zoomGesturesEnabled: true,
+                      tiltGesturesEnabled: false,
+                      rotateGesturesEnabled: false,
+                    ),
+                    // Overlay removed
+                  ],
+                ),
+              );
+            },
+          );
+        }
+
+        // If we couldn't resolve, show placeholder with correct names
+        return _buildNoMapPlaceholder();
+      },
+    );
+  }
+
+  Widget _buildNoMapPlaceholder() {
+    return Container(
+      height: 200,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.grey[300]!, Colors.grey[100]!],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.map_outlined, size: 48, color: Colors.grey[600]),
+                const SizedBox(height: 8),
+                Text(
+                  'Map not available',
+                  style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Location coordinates needed',
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+          ),
+          
+          // Placeholder pickup and delivery info
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.9),
+              ),
+              child: Row(
+                  children: [
+                  // Pickup placeholder
+                    Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[400],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                        child: Text(
+                            'Pickup location not set',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                        ),
+                      ),
+                    ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Arrow
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    child: Icon(
+                      Icons.arrow_forward,
+                      color: Colors.grey[400],
+                      size: 16,
+                    ),
+                  ),
+                  
+                  // Delivery placeholder
+                    Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[400],
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.white,
+                            size: 16,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'Delivery location not set',
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 12,
+                            ),
+                      ),
+                    ),
+                  ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceDisplay(DeliveryOrderModel deliveryOrder, bool hasCoordinates) {
+    return FutureBuilder<double?>(
+      future: _getDistanceKm(deliveryOrder),
+      builder: (context, snapshot) {
+        final double? distanceKm = snapshot.data;
+        final double displayPrice = distanceKm != null
+            ? (distanceKm * 100) // price per km = 100
+            : deliveryOrder.price;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Uber-style price
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                Text(
+                  'LKR ${displayPrice.toStringAsFixed(0)}',
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Text(
+                    'Delivery Fee',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            if (distanceKm != null) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.green[50],
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.straighten, size: 14, color: Colors.green[700]),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${distanceKm.toStringAsFixed(1)} km • LKR 100/km',
+                      style: TextStyle(
+                        color: Colors.green[700],
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ],
           ),
         ),
-      ),
+            ] else if (snapshot.connectionState == ConnectionState.waiting) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Calculating distance...',
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 

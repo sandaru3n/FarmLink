@@ -82,6 +82,16 @@ dependencies:
   
   # Liquid pull to refresh
   liquid_pull_to_refresh: ^3.0.1
+  
+  # Google Maps for location picker
+  google_maps_flutter: ^2.5.0
+  
+  # Location and geocoding
+  geolocator: ^10.1.0
+  geocoding: ^2.1.1
+  
+  # Polyline points for directions
+  flutter_polyline_points: ^2.0.1
 
 dev_dependencies:
   flutter_test:

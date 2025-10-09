@@ -281,21 +281,23 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
       children: [
         Icon(icon, size: 16, color: Colors.grey.shade600),
         const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            '$label: ',
-            style: TextStyle(
-              color: Colors.grey.shade700,
-              fontSize: 14,
-            ),
+        Text(
+          '$label: ',
+          style: TextStyle(
+            color: Colors.grey.shade700,
+            fontSize: 14,
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            color: valueColor ?? Colors.grey.shade700,
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              color: valueColor ?? Colors.grey.shade700,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
       ],

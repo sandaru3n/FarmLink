@@ -6,6 +6,7 @@ import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/storage_service.dart';
+import 'map_location_picker_screen.dart';
 
 class AddCropScreen extends StatefulWidget {
   const AddCropScreen({super.key});
@@ -28,6 +29,10 @@ class _AddCropScreenState extends State<AddCropScreen> {
   File? _selectedImage;
   bool _isLoading = false;
   final StorageService _storageService = StorageService();
+  
+  // Location data
+  double? _pickupLatitude;
+  double? _pickupLongitude;
 
   @override
   void dispose() {
@@ -45,6 +50,29 @@ class _AddCropScreenState extends State<AddCropScreen> {
     if (image != null) {
       setState(() {
         _selectedImage = File(image.path);
+      });
+    }
+  }
+
+  Future<void> _openMapPicker() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapLocationPickerScreen(
+          initialLatitude: _pickupLatitude,
+          initialLongitude: _pickupLongitude,
+          initialAddress: _pickupLocationController.text.isNotEmpty 
+              ? _pickupLocationController.text 
+              : null,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      setState(() {
+        _pickupLatitude = result['latitude'];
+        _pickupLongitude = result['longitude'];
+        _pickupLocationController.text = result['address'];
       });
     }
   }
@@ -180,6 +208,8 @@ class _AddCropScreenState extends State<AddCropScreen> {
         startDate: startDateTime,
         endDate: endDateTime,
         pickupLocation: _pickupLocationController.text.trim(),
+        pickupLatitude: _pickupLatitude,
+        pickupLongitude: _pickupLongitude,
         createdAt: DateTime.now(),
       );
 
@@ -492,21 +522,71 @@ class _AddCropScreenState extends State<AddCropScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Pickup Location
-              TextFormField(
-                controller: _pickupLocationController,
-                maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Pickup Location (Address)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_on),
+              // Pickup Location with Map Picker
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Pickup Location',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: _openMapPicker,
+                            icon: const Icon(Icons.map, size: 18),
+                            label: const Text('Select on Map'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _pickupLocationController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: 'Tap "Select on Map" to choose location',
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.location_on),
+                          suffixIcon: _pickupLatitude != null && _pickupLongitude != null
+                              ? const Icon(Icons.check_circle, color: Colors.green)
+                              : null,
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please select pickup location using the map';
+                          }
+                          return null;
+                        },
+                      ),
+                      if (_pickupLatitude != null && _pickupLongitude != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            'Coordinates: ${_pickupLatitude!.toStringAsFixed(6)}, ${_pickupLongitude!.toStringAsFixed(6)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter pickup location';
-                  }
-                  return null;
-                },
               ),
               const SizedBox(height: 24),
 

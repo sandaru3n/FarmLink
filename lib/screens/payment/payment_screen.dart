@@ -6,6 +6,7 @@ import '../../services/payment_service.dart';
 import '../../services/order_service.dart';
 import '../../providers/auth_provider.dart';
 import 'payment_success_screen.dart';
+import '../farmer/map_location_picker_screen.dart';
 
 class PaymentScreen extends StatefulWidget {
   final OrderModel order;
@@ -31,6 +32,10 @@ class _PaymentScreenState extends State<PaymentScreen>
   String _selectedCountry = 'United States';
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+  
+  // Location data
+  double? _shippingLatitude;
+  double? _shippingLongitude;
 
   final List<String> _countries = [
     'United States',
@@ -145,11 +150,13 @@ class _PaymentScreenState extends State<PaymentScreen>
       // Get distributor location from the form
       final distributorLocation = _distributorLocationController.text.trim();
       
-      // Use simple payment processing
+      // Use simple payment processing with location coordinates
       final paymentService = PaymentService();
       final success = await paymentService.processSimplePayment(
         widget.order,
         distributorLocation: distributorLocation.isNotEmpty ? distributorLocation : null,
+        distributorLatitude: _shippingLatitude,
+        distributorLongitude: _shippingLongitude,
       );
       
       if (success) {
@@ -474,27 +481,111 @@ class _PaymentScreenState extends State<PaymentScreen>
     );
   }
 
-  Widget _buildDistributorLocationField() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+  Future<void> _openShippingMapPicker() async {
+    final result = await Navigator.push<Map<String, dynamic>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MapLocationPickerScreen(
+          initialLatitude: _shippingLatitude,
+          initialLongitude: _shippingLongitude,
+          initialAddress: _distributorLocationController.text.isNotEmpty 
+              ? _distributorLocationController.text 
+              : null,
+        ),
       ),
-      child: TextFormField(
-        controller: _distributorLocationController,
-        keyboardType: TextInputType.text,
-        maxLines: 2,
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return 'Please enter your shipping address';
-          }
-          return null;
-        },
-        decoration: const InputDecoration(
-          hintText: 'Enter your complete shipping address',
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    );
+
+    if (result != null) {
+      setState(() {
+        _shippingLatitude = result['latitude'];
+        _shippingLongitude = result['longitude'];
+        _distributorLocationController.text = result['address'];
+      });
+    }
+  }
+
+  Widget _buildDistributorLocationField() {
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey[300]!),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Delivery Address',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: _openShippingMapPicker,
+                  icon: const Icon(Icons.map, size: 18),
+                  label: const Text('Select on Map'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _distributorLocationController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                hintText: 'Tap "Select on Map" to choose your delivery location',
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.location_on),
+                suffixIcon: _shippingLatitude != null && _shippingLongitude != null
+                    ? const Icon(Icons.check_circle, color: Colors.green)
+                    : null,
+                filled: true,
+                fillColor: Colors.grey[50],
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return 'Please select your delivery location using the map';
+                }
+                return null;
+              },
+            ),
+            if (_shippingLatitude != null && _shippingLongitude != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, size: 16, color: Colors.green[700]),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        'Location confirmed • ${_shippingLatitude!.toStringAsFixed(6)}, ${_shippingLongitude!.toStringAsFixed(6)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.green[700],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         ),
       ),
     );
