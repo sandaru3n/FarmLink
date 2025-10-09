@@ -165,7 +165,7 @@ class _MainDashboardState extends State<MainDashboard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Welcome back!',
+                              'Welcome, ${authProvider.userProfile?.displayName ?? 'User'}!',
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
                               ),

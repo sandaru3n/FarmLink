@@ -12,7 +12,20 @@
           "package_name": "com.sliit.csseproject"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "643460073941-14br49tlbjs0iuhpfnq13ulaej173u8e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sliit.csseproject",
+            "certificate_hash": "5cb146182ed2ec30ce66b87cd125157b0e9d1506"
+          }
+        },
+        {
+          "client_id": "643460073941-5173hf5rssv35qng66jadpjm7gkuogv3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCgJf_xKj6dRocyJnuGjsvN5tEy0uTGnX4"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "643460073941-5173hf5rssv35qng66jadpjm7gkuogv3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

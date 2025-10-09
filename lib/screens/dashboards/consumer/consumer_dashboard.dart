@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../providers/cart_provider.dart';
 import '../../../providers/consumer_order_provider.dart';
@@ -65,68 +67,45 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
 
         return Scaffold(
           body: _buildDashboardContent(userProfile),
-          bottomNavigationBar: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-            },
-            type: BottomNavigationBarType.fixed,
-            selectedItemColor: Colors.blue,
-            unselectedItemColor: Colors.grey,
-            items: [
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.home),
-                label: 'Home',
+          bottomNavigationBar: Container(
+            color: Colors.white,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).padding.bottom,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 20),
+              child: GNav(
+                backgroundColor: Colors.white,
+                color: Colors.black,
+                activeColor: const Color(0xFF1976D2), // Deep blue for active
+                tabBackgroundColor: const Color(0xFFE3F2FD), // Light blue background
+                gap: 8,
+                onTabChange: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                },
+                padding: const EdgeInsets.all(16),
+                tabs: const [
+                  GButton(
+                    icon: LineAwesomeIcons.home,
+                    text: 'Home',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.shopping_cart,
+                    text: 'Cart',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.receipt,
+                    text: 'Orders',
+                  ),
+                  GButton(
+                    icon: LineAwesomeIcons.user,
+                    text: 'Profile',
+                  ),
+                ],
               ),
-              BottomNavigationBarItem(
-                icon: Consumer<CartProvider>(
-                  builder: (context, cartProvider, child) {
-                    return Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        const Icon(Icons.shopping_cart),
-                        if (cartProvider.itemCount > 0)
-                          Positioned(
-                            right: -6,
-                            top: -6,
-                            child: Container(
-                              padding: const EdgeInsets.all(2),
-                              decoration: BoxDecoration(
-                                color: Colors.red,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              constraints: const BoxConstraints(
-                                minWidth: 16,
-                                minHeight: 16,
-                              ),
-                              child: Text(
-                                '${cartProvider.itemCount}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-                label: 'Cart',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.receipt_long),
-                label: 'Orders',
-              ),
-              BottomNavigationBarItem(
-                icon: const Icon(Icons.person),
-                label: 'Profile',
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -142,7 +121,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
       case 2:
         return const ConsumerOrdersScreen();
       case 3:
-        return _buildProfileTab();
+        return _buildProfileTab(userProfile);
       default:
         return _buildHomeTab(userProfile);
     }
@@ -237,7 +216,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
     );
   }
 
-  Widget _buildProfileTab() {
+  Widget _buildProfileTab(UserModel? userProfile) {
     return Column(
       children: [
         // Profile Header
@@ -292,7 +271,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Welcome, Consumer!',
+                                    'Welcome, ${userProfile?.displayName ?? 'User'}!',
                                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                       fontWeight: FontWeight.bold,
                                     ),

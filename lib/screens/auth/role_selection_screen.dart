@@ -44,7 +44,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+          color: isSelected ? const Color(0xFF4CB050) : Colors.transparent,
           width: 2,
         ),
       ),
@@ -64,7 +64,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 height: 60,
                 decoration: BoxDecoration(
                   color: isSelected 
-                      ? Theme.of(context).primaryColor.withOpacity(0.1)
+                      ? const Color(0xFF4CB050).withOpacity(0.1)
                       : Colors.grey[100],
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -72,7 +72,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   icon,
                   size: 30,
                   color: isSelected 
-                      ? Theme.of(context).primaryColor
+                      ? const Color(0xFF4CB050)
                       : Colors.grey[600],
                 ),
               ),
@@ -87,7 +87,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: isSelected 
-                            ? Theme.of(context).primaryColor
+                            ? const Color(0xFF4CB050)
                             : Colors.black87,
                       ),
                     ),
@@ -105,7 +105,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               if (isSelected)
                 Icon(
                   Icons.check_circle,
-                  color: Theme.of(context).primaryColor,
+                  color: const Color(0xFF4CB050),
                   size: 24,
                 ),
             ],
@@ -120,6 +120,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     final l10n = AppLocalizations.of(context);
     
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -128,17 +129,17 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 children: [
-                  Icon(
-                    Icons.agriculture,
-                    size: 60,
-                    color: Theme.of(context).primaryColor,
+                  Image.asset(
+                    'assets/images/onboarding_images/fllogo.png',
+                    height: 60,
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     l10n.get('select_role'),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
+                      color: const Color(0xFF4CB050),
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -198,7 +199,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                         ? _continueWithRole 
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
+                      backgroundColor: const Color(0xFF4CB050),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
