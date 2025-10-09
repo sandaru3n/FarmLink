@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_localizations.dart';
 import '../auth/login_screen.dart';
 import '../dashboards/dashboard_router.dart';
 import '../../services/flexible_role_switching_service.dart';
-import 'real_time_settings_wrapper.dart';
 import '../distributor/update_location_screen.dart';
 
 class FoodDistributorSettingsScreen extends StatefulWidget {
@@ -18,6 +18,8 @@ class FoodDistributorSettingsScreen extends StatefulWidget {
 
 class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsScreen> {
   String _selectedLanguage = 'en';
+  bool _isDistributorSettingsExpanded = false;
+  bool _isLanguageExpanded = false;
 
   @override
   void initState() {
@@ -40,8 +42,203 @@ class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsS
   }
 
   Future<void> _switchRole() async {
-    await FlexibleRoleSwitchingService.showRoleSwitchingDialog(context);
-    // Real-time wrapper will handle updates automatically
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentRole = authProvider.userProfile?.currentActiveRole;
+    
+    if (currentRole == null) return;
+    
+    final availableRoles = FlexibleRoleSwitchingService.getAvailableRolesToSwitchForUser(context);
+    
+    if (availableRoles.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No other roles available')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.orange.shade600, Colors.orange.shade800],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.swap_horiz, color: Colors.white, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        const Expanded(
+                          child: Text(
+                            'Switch Role',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Current: ${_getRoleName(currentRole)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Available roles
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: availableRoles.map((role) => _buildRoleOptionCard(role)).toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleOptionCard(UserRole role) {
+    final color = _getRoleColor(role);
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.shade600, color.shade800],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            Navigator.of(context).pop();
+            await FlexibleRoleSwitchingService.switchToRole(context, role);
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(_getRoleIcon(role), color: Colors.white, size: 24),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    _getRoleName(role),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 18),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  MaterialColor _getRoleColor(UserRole role) {
+    switch (role) {
+      case UserRole.farmer:
+        return Colors.green;
+      case UserRole.foodDistributor:
+        return Colors.orange;
+      case UserRole.transporter:
+        return Colors.deepPurple;
+      case UserRole.consumer:
+        return Colors.blue;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getRoleIcon(UserRole role) {
+    switch (role) {
+      case UserRole.farmer:
+        return Icons.agriculture;
+      case UserRole.foodDistributor:
+        return Icons.store;
+      case UserRole.transporter:
+        return Icons.local_shipping;
+      case UserRole.consumer:
+        return Icons.shopping_cart;
+      default:
+        return Icons.person;
+    }
+  }
+
+  String _getRoleName(UserRole role) {
+    switch (role) {
+      case UserRole.farmer:
+        return 'Farmer';
+      case UserRole.foodDistributor:
+        return 'Food Distributor';
+      case UserRole.transporter:
+        return 'Transporter';
+      case UserRole.consumer:
+        return 'Consumer';
+      default:
+        return role.toString().split('.').last;
+    }
   }
 
   Future<void> _logout() async {
@@ -49,12 +246,11 @@ class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsS
     await authProvider.signOut();
     
     if (mounted) {
-      // Navigate to login screen and clear all previous routes
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
           builder: (context) => const LoginScreen(),
         ),
-        (route) => false, // Remove all previous routes
+        (route) => false,
       );
     }
   }
@@ -62,300 +258,159 @@ class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsS
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
-    return RealTimeSettingsWrapper(
-      title: 'Distributor Settings',
-      themeColor: Colors.orange,
-      settingsBuilder: (userProfile) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: authProvider.currentUser != null
+            ? FirebaseFirestore.instance
+                .collection('users')
+                .doc(authProvider.currentUser!.uid)
+                .snapshots()
+            : null,
+        builder: (context, snapshot) {
+          UserModel? userProfile;
+          
+          if (snapshot.hasData && snapshot.data?.data() != null) {
+            final data = snapshot.data!.data() as Map<String, dynamic>;
+            data['uid'] = snapshot.data!.id;
+            userProfile = UserModel.fromMap(data);
+          } else {
+            userProfile = authProvider.userProfile;
+          }
 
-          return ListView(
-            padding: const EdgeInsets.all(16),
+          return Column(
             children: [
-              // Profile Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Distributor Profile',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
+              // Modern Header
+              _buildModernHeader(),
+              
+              // Content
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 96),
+                  children: [
+                    // Profile Section
+                    _buildProfileSection(userProfile),
+                    const SizedBox(height: 16),
+
+                    // Role Management Section
+                    if (userProfile?.primaryRole != UserRole.consumer && 
+                        FlexibleRoleSwitchingService.getAvailableRolesToSwitchForUser(context).isNotEmpty)
+                      _buildRoleManagementSection(userProfile),
+                    const SizedBox(height: 16),
+
+                    // Distributor Settings Section
+                    _buildExpandableSection(
+                      title: 'Distributor Settings',
+                      icon: Icons.store,
+                      isExpanded: _isDistributorSettingsExpanded,
+                      onTap: () => setState(() => _isDistributorSettingsExpanded = !_isDistributorSettingsExpanded),
+                      child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Colors.orange.withOpacity(0.1),
-                            child: const Icon(
-                              Icons.store,
-                              size: 30,
-                              color: Colors.orange,
-                            ),
+                          _buildSettingTile(
+                            icon: Icons.location_on,
+                            title: 'My Location',
+                            subtitle: 'Update your default delivery location',
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const UpdateLocationScreen(),
+                                ),
+                              );
+                            },
                           ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userProfile?.displayName ?? userProfile?.email ?? 'Distributor',
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16,
-                                  ),
-                                ),
-                                Text(
-                                  'Food Distributor',
-                                  style: TextStyle(
-                                    color: Colors.orange,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                Text(
-                                  userProfile?.email ?? '',
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          _buildSettingTile(
+                            icon: Icons.business,
+                            title: 'Business Details',
+                            subtitle: 'Manage your business information',
+                            onTap: () {
+                              // TODO: Navigate to business details
+                            },
+                          ),
+                          _buildSettingTile(
+                            icon: Icons.people,
+                            title: 'Supplier Network',
+                            subtitle: 'Manage your farmer connections',
+                            onTap: () {
+                              // TODO: Navigate to supplier network
+                            },
+                          ),
+                          _buildSettingTile(
+                            icon: Icons.verified,
+                            title: 'Quality Standards',
+                            subtitle: 'Set quality control parameters',
+                            onTap: () {
+                              // TODO: Navigate to quality standards
+                            },
                           ),
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Role Management Section - Hide for primary Consumer users
-              if (userProfile?.primaryRole != UserRole.consumer && 
-                  FlexibleRoleSwitchingService.getAvailableRolesToSwitchForUser(context).isNotEmpty) ...[
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Role Management',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        
-                        // Current Role Display
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.orange.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.store,
-                                color: Colors.orange,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Current Role',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                    const Text(
-                                      'Food Distributor',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Role Switching Options
-                        const SizedBox(height: 16),
-                        ListTile(
-                          leading: const Icon(Icons.swap_horiz, color: Colors.green),
-                          title: const Text('Switch Role'),
-                          subtitle: Text(FlexibleRoleSwitchingService.getRoleSwitchingDescriptionForUser(context)),
-                          trailing: const Icon(Icons.arrow_forward_ios),
-                          onTap: _switchRole,
-                        ),
-                      ],
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                    const SizedBox(height: 16),
 
-              // Distributor Specific Settings
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Distributor Settings',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    // Language Section
+                    _buildExpandableSection(
+                      title: l10n.get('language'),
+                      icon: Icons.language,
+                      isExpanded: _isLanguageExpanded,
+                      onTap: () => setState(() => _isLanguageExpanded = !_isLanguageExpanded),
+                      child: Column(
+                        children: [
+                          _buildLanguageOption('English', 'en'),
+                          _buildLanguageOption('සිංහල', 'si'),
+                          _buildLanguageOption('தமிழ்', 'ta'),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      ListTile(
-                        leading: const Icon(Icons.location_on, color: Colors.orange),
-                        title: const Text('My Location'),
-                        subtitle: const Text('Update your default delivery location'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => const UpdateLocationScreen(),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Other Settings
+                    _buildOtherSettingsSection(l10n),
+                    const SizedBox(height: 24),
+
+                    // Logout Button
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.red.shade600, Colors.red.shade800],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _logout,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.logout, color: Colors.white),
+                            const SizedBox(width: 8),
+                            Text(
+                              l10n.get('logout'),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const Icon(Icons.store, color: Colors.orange),
-                        title: const Text('Business Details'),
-                        subtitle: const Text('Manage your business information'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          // TODO: Navigate to business details
-                        },
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const Icon(Icons.people, color: Colors.orange),
-                        title: const Text('Supplier Network'),
-                        subtitle: const Text('Manage your farmer connections'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          // TODO: Navigate to supplier network
-                        },
-                      ),
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const Icon(Icons.verified, color: Colors.orange),
-                        title: const Text('Quality Standards'),
-                        subtitle: const Text('Set quality control parameters'),
-                        trailing: const Icon(Icons.arrow_forward_ios),
-                        onTap: () {
-                          // TODO: Navigate to quality standards
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Language Section
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.get('language'),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      _buildLanguageOption('English', 'en', '🇺🇸'),
-                      _buildLanguageOption('සිංහල', 'si', '🇱🇰'),
-                      _buildLanguageOption('தமிழ்', 'ta', '🇮🇳'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Other Settings
-              Card(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.notifications),
-                      title: Text(l10n.get('notifications')),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        // TODO: Navigate to notifications settings
-                      },
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.privacy_tip),
-                      title: Text(l10n.get('privacy')),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        // TODO: Navigate to privacy settings
-                      },
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.help),
-                      title: Text(l10n.get('help')),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        // TODO: Navigate to help
-                      },
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.info),
-                      title: Text(l10n.get('about')),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        // TODO: Navigate to about
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Logout Button
-              ElevatedButton(
-                onPressed: _logout,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.logout),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.get('logout'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
@@ -364,30 +419,503 @@ class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsS
             ],
           );
         },
-      );
+      ),
+    );
   }
 
-  Widget _buildLanguageOption(String name, String code, String flag) {
-    final isSelected = _selectedLanguage == code;
-    
-    return ListTile(
-      leading: Text(
-        flag,
-        style: const TextStyle(fontSize: 24),
+  Widget _buildModernHeader() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.orange.shade700,
+            Colors.orange.shade500,
+            Colors.orange.shade400,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
-      title: Text(
-        name,
-        style: TextStyle(
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.settings,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Settings',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-      trailing: isSelected
-          ? Icon(
-              Icons.check_circle,
-              color: Colors.orange,
-            )
-          : null,
-      onTap: () => _changeLanguage(code),
+    );
+  }
+
+  Widget _buildProfileSection(UserModel? userProfile) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.orange.shade400, Colors.orange.shade600],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.store,
+              color: Colors.white,
+              size: 40,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userProfile?.displayName ?? userProfile?.email ?? 'Distributor',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.grey.shade900,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade50,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.shade300),
+                  ),
+                  child: Text(
+                    'Food Distributor',
+                    style: TextStyle(
+                      color: Colors.orange.shade700,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  userProfile?.email ?? '',
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoleManagementSection(UserModel? userProfile) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.blue.shade400, Colors.blue.shade600],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.swap_horiz, color: Colors.white, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Role Management',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _buildSettingTile(
+            icon: Icons.swap_horiz,
+            title: 'Switch Role',
+            subtitle: FlexibleRoleSwitchingService.getRoleSwitchingDescriptionForUser(context),
+            onTap: _switchRole,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExpandableSection({
+    required String title,
+    required IconData icon,
+    required bool isExpanded,
+    required VoidCallback onTap,
+    required Widget child,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          InkWell(
+            onTap: onTap,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.orange.shade400, Colors.orange.shade600],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.vertical(
+                  top: const Radius.circular(16),
+                  bottom: isExpanded ? Radius.zero : const Radius.circular(16),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  AnimatedRotation(
+                    turns: isExpanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 300),
+                    child: const Icon(
+                      Icons.keyboard_arrow_down,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            child: isExpanded
+                ? Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: child,
+                  )
+                : const SizedBox.shrink(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange.shade400, Colors.orange.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(icon, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey.shade900,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey.shade400),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOtherSettingsSection(AppLocalizations l10n) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.shade300,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.grey.shade400, Colors.grey.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.more_horiz, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Other Settings',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          _buildSettingTile(
+            icon: Icons.notifications,
+            title: l10n.get('notifications'),
+            subtitle: 'Manage notification preferences',
+            onTap: () {
+              // TODO: Navigate to notifications settings
+            },
+          ),
+          _buildSettingTile(
+            icon: Icons.privacy_tip,
+            title: l10n.get('privacy'),
+            subtitle: 'Privacy and data settings',
+            onTap: () {
+              // TODO: Navigate to privacy settings
+            },
+          ),
+          _buildSettingTile(
+            icon: Icons.help,
+            title: l10n.get('help'),
+            subtitle: 'Get help and support',
+            onTap: () {
+              // TODO: Navigate to help
+            },
+          ),
+          _buildSettingTile(
+            icon: Icons.info,
+            title: l10n.get('about'),
+            subtitle: 'App information',
+            onTap: () {
+              // TODO: Navigate to about
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String name, String code) {
+    final isSelected = _selectedLanguage == code;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: isSelected ? Colors.orange.shade50 : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? Colors.orange.shade300 : Colors.grey.shade200,
+          width: isSelected ? 2 : 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _changeLanguage(code),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isSelected
+                          ? [Colors.orange.shade400, Colors.orange.shade600]
+                          : [Colors.grey.shade400, Colors.grey.shade600],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.language, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    name,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      color: isSelected ? Colors.orange.shade700 : Colors.grey.shade700,
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Icon(
+                    Icons.check_circle,
+                    color: Colors.orange.shade600,
+                    size: 24,
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

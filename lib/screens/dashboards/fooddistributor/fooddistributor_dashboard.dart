@@ -73,7 +73,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: _currentIndex == 0 ? null : AppBar(
+          appBar: (_currentIndex == 0 || _currentIndex == 1) ? null : AppBar(
             flexibleSpace: Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
@@ -170,34 +170,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   }
 
   Widget _buildMarketplaceTab() {
-    return Column(
-      children: [
-        // Bold "Crop Marketplace" title
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.orange.shade50,
-            border: Border(
-              bottom: BorderSide(color: Colors.orange.shade200, width: 1),
-            ),
-          ),
-          child: const Text(
-            'Crop Marketplace',
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.orange,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-        // Crop Marketplace Screen
-        const Expanded(
-          child: CropMarketplaceScreen(),
-        ),
-      ],
-    );
+    return const CropMarketplaceScreen();
   }
 
   Widget _buildHomeTab(UserModel? userProfile) {
