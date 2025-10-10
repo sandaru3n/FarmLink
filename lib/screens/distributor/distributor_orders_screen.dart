@@ -23,6 +23,9 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
   final TransportOrderService _transportOrderService = TransportOrderService();
   final RatingService _ratingService = RatingService();
   String _selectedStatus = 'All';
+  
+  // Track expanded state for each order
+  final Map<String, bool> _expandedOrders = {};
 
   final List<String> _statusFilters = [
     'All',
@@ -220,17 +223,10 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
           // Order Header with Image and Status
           Container(
             height: 140,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.orange.shade100,
-                  Colors.orange.shade50,
-                ],
-              ),
-            ),
+             decoration: const BoxDecoration(
+               borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+               color: Colors.white,
+             ),
             child: Row(
               children: [
                 // Crop Image
@@ -422,79 +418,117 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
             ),
           ),
           
-          // Order Details
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Order Details Section Header
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.orange.shade400, Colors.orange.shade600],
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(Icons.receipt_long, color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Order Details',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                _buildModernDetailRow('Order ID', order.id, Icons.tag),
-                _buildModernDetailRow('Pickup Location', order.pickupLocation, Icons.location_on),
-                _buildModernDetailRow('Shipping Address', order.distributorLocation.isNotEmpty 
-                    ? order.distributorLocation 
-                    : 'Not specified', Icons.local_shipping),
-                _buildModernDetailRow('Payment Status', order.paymentStatus.toUpperCase(), Icons.payment),
-                
-                // Transporter information if available
-                FutureBuilder<Map<String, dynamic>?>(
-                  future: _getDeliveryOrderInfo(order.id),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData && snapshot.data != null) {
-                      final deliveryInfo = snapshot.data!;
-                      if (deliveryInfo['transporterId'] != null && deliveryInfo['transporterName'] != null) {
-                        return Column(
-                          children: [
-                            const SizedBox(height: 12),
-                            _buildTransporterInfoWithLiveUpdates(deliveryInfo),
-                          ],
-                        );
-                      }
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-                
-                // Status-specific dates
-                if (order.confirmedAt != null)
-                  _buildModernDetailRow('Confirmed Date', _formatDateTime(order.confirmedAt!), Icons.check_circle),
-                if (order.completedAt != null)
-                  _buildModernDetailRow('Completed Date', _formatDateTime(order.completedAt!), Icons.done_all),
-                if (order.paymentCompletedAt != null)
-                  _buildModernDetailRow('Payment Date', _formatDateTime(order.paymentCompletedAt!), Icons.payment),
-                
-                const SizedBox(height: 20),
-                
-                // Action Buttons
-                _buildActionButtons(order),
-              ],
-            ),
-          ),
+           // Order Details
+           Padding(
+             padding: const EdgeInsets.all(20),
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+                 // Order Details Section Header with Expand/Collapse
+                 InkWell(
+                   onTap: () {
+                     setState(() {
+                       _expandedOrders[order.id] = !(_expandedOrders[order.id] ?? false);
+                     });
+                   },
+                   borderRadius: BorderRadius.circular(12),
+                   child: Container(
+                     padding: const EdgeInsets.all(12),
+                     decoration: BoxDecoration(
+                       color: Colors.orange.shade50,
+                       borderRadius: BorderRadius.circular(12),
+                       border: Border.all(color: Colors.orange.shade200),
+                     ),
+                     child: Row(
+                       children: [
+                         Container(
+                           padding: const EdgeInsets.all(8),
+                           decoration: BoxDecoration(
+                             gradient: LinearGradient(
+                               colors: [Colors.orange.shade400, Colors.orange.shade600],
+                             ),
+                             borderRadius: BorderRadius.circular(8),
+                           ),
+                           child: const Icon(Icons.receipt_long, color: Colors.white, size: 20),
+                         ),
+                         const SizedBox(width: 12),
+                         const Expanded(
+                           child: Text(
+                             'Order Details',
+                             style: TextStyle(
+                               fontSize: 18,
+                               fontWeight: FontWeight.bold,
+                               color: Colors.black87,
+                             ),
+                           ),
+                         ),
+                         Icon(
+                           _expandedOrders[order.id] == true 
+                               ? Icons.expand_less 
+                               : Icons.expand_more,
+                           color: Colors.orange.shade700,
+                           size: 24,
+                         ),
+                       ],
+                     ),
+                   ),
+                 ),
+                 
+                 // Expandable Order Details Content
+                 ClipRect(
+                   child: AnimatedSize(
+                     duration: const Duration(milliseconds: 300),
+                     curve: Curves.easeInOut,
+                     child: (_expandedOrders[order.id] ?? false)
+                         ? Column(
+                             children: [
+                               const SizedBox(height: 16),
+                               _buildModernDetailRow('Order ID', order.id, Icons.tag),
+                               _buildModernDetailRow('Pickup Location', order.pickupLocation, Icons.location_on),
+                               _buildModernDetailRow('Shipping Address', order.distributorLocation.isNotEmpty 
+                                   ? order.distributorLocation 
+                                   : 'Not specified', Icons.local_shipping),
+                               _buildModernDetailRow('Payment Status', order.paymentStatus.toUpperCase(), Icons.payment),
+                               
+                               // Transporter information if available
+                               FutureBuilder<Map<String, dynamic>?>(
+                                 future: _getDeliveryOrderInfo(order.id),
+                                 builder: (context, snapshot) {
+                                   if (snapshot.hasData && snapshot.data != null) {
+                                     final deliveryInfo = snapshot.data!;
+                                     if (deliveryInfo['transporterId'] != null && deliveryInfo['transporterName'] != null) {
+                                       return Column(
+                                         children: [
+                                           const SizedBox(height: 12),
+                                           _buildTransporterInfoWithLiveUpdates(deliveryInfo),
+                                         ],
+                                       );
+                                     }
+                                   }
+                                   return const SizedBox.shrink();
+                                 },
+                               ),
+                               
+                               // Status-specific dates
+                               if (order.confirmedAt != null)
+                                 _buildModernDetailRow('Confirmed Date', _formatDateTime(order.confirmedAt!), Icons.check_circle),
+                               if (order.completedAt != null)
+                                 _buildModernDetailRow('Completed Date', _formatDateTime(order.completedAt!), Icons.done_all),
+                               if (order.paymentCompletedAt != null)
+                                 _buildModernDetailRow('Payment Date', _formatDateTime(order.paymentCompletedAt!), Icons.payment),
+                               
+                               const SizedBox(height: 20),
+                               
+                               // Action Buttons
+                               _buildActionButtons(order),
+                             ],
+                           )
+                         : const SizedBox.shrink(),
+                   ),
+                 ),
+               ],
+             ),
+           ),
         ],
       ),
     );
@@ -671,38 +705,6 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Colors.purple.shade500, Colors.purple.shade700],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.purple.withOpacity(0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: () => _viewOrderDetails(order),
-                  icon: const Icon(Icons.visibility, size: 18),
-                  label: const Text('View Details', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-            ),
           ],
         );
       case 'confirmed':
@@ -765,67 +767,9 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
           ],
         );
       case 'completed':
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.grey.shade500, Colors.grey.shade700],
-            ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton.icon(
-            onPressed: () => _viewOrderDetails(order),
-            icon: const Icon(Icons.visibility, size: 18),
-            label: const Text('View Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        );
+        return const SizedBox.shrink(); // No buttons for completed orders
       default:
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple.shade500, Colors.purple.shade700],
-            ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.purple.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton.icon(
-            onPressed: () => _viewOrderDetails(order),
-            icon: const Icon(Icons.visibility, size: 18),
-            label: const Text('View Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.transparent,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        );
+        return const SizedBox.shrink(); // No buttons for other statuses
     }
   }
 
