@@ -147,4 +147,26 @@ class UserService {
       }).toList();
     });
   }
+
+  // Update user profile photo URL
+  Future<void> updateUserPhotoUrl(String userId, String photoUrl) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'photoUrl': photoUrl,
+      });
+    } catch (e) {
+      throw Exception('Failed to update profile photo: $e');
+    }
+  }
+
+  // Update user display name
+  Future<void> updateUserDisplayName(String userId, String displayName) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'displayName': displayName,
+      });
+    } catch (e) {
+      throw Exception('Failed to update display name: $e');
+    }
+  }
 }

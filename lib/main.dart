@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 // import 'package:flutter_stripe/flutter_stripe.dart';
 import 'providers/auth_provider.dart';
 import 'providers/crop_provider.dart';
@@ -21,6 +22,12 @@ void main() async {
   
   // Initialize Firebase
   await Firebase.initializeApp();
+
+  // Activate Firebase App Check (use debug providers for local dev; switch to Play Integrity/DeviceCheck in prod)
+  await FirebaseAppCheck.instance.activate(
+    androidProvider: AndroidProvider.debug,
+    appleProvider: AppleProvider.debug,
+  );
   
   // Add sample charities for testing
   await SampleCharities.addSampleCharities();
