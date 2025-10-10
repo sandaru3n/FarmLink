@@ -262,16 +262,41 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     final userBid = crop.getUserBid(currentUserId);
     final isUserHighestBidder = crop.isUserHighestBidder(currentUserId);
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [
+            Colors.white,
+            Colors.orange.shade50.withOpacity(0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        border: Border.all(
+          color: Colors.orange.shade100,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.05),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Crop Image
           ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             child: Image.network(
               crop.imageUrl,
               height: 200,
@@ -321,7 +346,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
           ),
           
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -332,23 +357,24 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                       child: Text(
                         crop.cropName,
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
                       ),
                     ),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(crop.status),
+                        color: Colors.green.shade100,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         _getStatusText(crop.status, timeLeft),
-                        style: const TextStyle(
-                          color: Colors.white,
+                        style: TextStyle(
+                          color: Colors.green.shade700,
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -361,7 +387,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   children: [
                     Expanded(
                       child: _buildInfoRow(
-                        Icons.scale,
+                        Icons.inventory_2,
                         'Quantity',
                         '${crop.quantity} kg',
                       ),
@@ -370,7 +396,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                       child: _buildInfoRow(
                         Icons.attach_money,
                         'Min Bid',
-                        '₹${crop.minBidPrice}',
+                        'LKR ${crop.minBidPrice}',
                       ),
                     ),
                   ],
@@ -390,7 +416,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   _buildInfoRow(
                     Icons.trending_up,
                     'Current Highest',
-                    '₹${highestBid.amount}',
+                    'LKR ${highestBid.amount}',
                     valueColor: Colors.green,
                   ),
                 const SizedBox(height: 8),
@@ -400,7 +426,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   _buildInfoRow(
                     Icons.person,
                     'Your Bid',
-                    '₹${userBid.amount}',
+                    'LKR ${userBid.amount}',
                     valueColor: isUserHighestBidder ? Colors.green : Colors.blue,
                   ),
                 const SizedBox(height: 16),
@@ -411,7 +437,18 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                 const SizedBox(height: 16),
 
                 // Action Buttons
-                _buildActionButtons(crop, hasUserBid, isUserHighestBidder),
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange.shade400, Colors.orange.shade600],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: _buildActionButtons(crop, hasUserBid, isUserHighestBidder),
+                ),
               ],
             ),
           ),
@@ -420,31 +457,95 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     );
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor}) {
-    return Row(
+  Widget _buildInfoRow(IconData icon, String label, String value, {Color? valueColor, Color? iconColor}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 16, color: Colors.grey.shade600),
-        const SizedBox(width: 4),
-        Text(
-          '$label: ',
-          style: TextStyle(
-            color: Colors.grey.shade700,
-            fontSize: 14,
-          ),
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: Colors.white),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
-        Expanded(
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.only(left: 44), // Align with text after icon
           child: Text(
             value,
             style: TextStyle(
-              color: valueColor ?? Colors.grey.shade700,
+              color: Colors.black87,
               fontSize: 14,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
             ),
             overflow: TextOverflow.ellipsis,
             maxLines: 2,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildInfoCard(IconData icon, String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.grey.shade600,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -487,8 +588,8 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                 bid.distributorName,
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
-              subtitle: Text(
-                '₹${bid.amount} • ${_formatDateTime(bid.createdAt)}',
+               subtitle: Text(
+                 'LKR ${bid.amount} • ${_formatDateTime(bid.createdAt)}',
                 style: TextStyle(
                   color: isHighest ? Colors.green : Colors.grey.shade600,
                   fontWeight: isHighest ? FontWeight.bold : FontWeight.normal,
@@ -528,7 +629,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'You won this auction! Final price: ₹${crop.order?.finalPrice ?? crop.highestBid?.amount ?? 0}',
+                   'You won this auction! Final price: LKR ${crop.order?.finalPrice ?? crop.highestBid?.amount ?? 0}',
                   style: const TextStyle(
                     color: Colors.purple,
                     fontWeight: FontWeight.bold,
@@ -634,44 +735,53 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
 
     // Active auction buttons
     if (hasUserBid) {
-      return Row(
-        children: [
-          Expanded(
-            child: ElevatedButton.icon(
-              onPressed: () => _showUpdateBidDialog(crop, userBid!),
-              icon: const Icon(Icons.edit),
-              label: const Text('Update Bid'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
+      return Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.orange.shade500, Colors.orange.shade700],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.orange.withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: ElevatedButton.icon(
+          onPressed: () => _showUpdateBidDialog(crop, userBid!),
+          icon: const Icon(Icons.edit, size: 18),
+          label: const Text('Update Bid', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () => _showBiddingHistoryDialog(crop),
-              icon: const Icon(Icons.history),
-              label: const Text('History'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-        ],
+        ),
       );
     } else {
       return SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
           onPressed: () => _showBidDialog(crop),
-          icon: const Icon(Icons.gavel),
-          label: const Text('Place Bid'),
+          icon: const Icon(Icons.gavel, size: 20),
+          label: const Text('Place Bid', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange.shade600,
+            backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       );
@@ -733,86 +843,267 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Bid on ${crop.cropName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Quantity: ${crop.quantity} kg'),
-            Text('Minimum bid: ₹${crop.minBidPrice}'),
-            if (highestBid != null)
-              Text('Current highest: ₹${highestBid.amount}'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: bidController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Your Bid Amount (₹)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-                     ElevatedButton(
-             onPressed: () async {
-               // Store ScaffoldMessenger reference early
-               final scaffoldMessenger = ScaffoldMessenger.of(context);
-               
-               final bidAmount = double.tryParse(bidController.text);
-               if (bidAmount == null || bidAmount < minBid) {
-                 scaffoldMessenger.showSnackBar(
-                   SnackBar(
-                     content: Text('Bid must be at least ₹${minBid}'),
-                   ),
-                 );
-                 return;
-               }
-
-               final cropProvider = Provider.of<CropProvider>(context, listen: false);
-               final authProvider = Provider.of<AuthProvider>(context, listen: false);
-               
-               final bid = BidModel(
-                 id: DateTime.now().millisecondsSinceEpoch.toString(),
-                 distributorId: authProvider.userProfile?.uid ?? '',
-                 distributorName: authProvider.userProfile?.displayName ?? 'Distributor',
-                 amount: bidAmount,
-                 createdAt: DateTime.now(),
-               );
-
-               final success = await cropProvider.addBid(crop.id, bid);
-               
-               if (success) {
-                 if (mounted) {
-                   Navigator.of(context).pop();
-                   scaffoldMessenger.showSnackBar(
-                     const SnackBar(
-                       content: Text('Bid placed successfully!'),
-                     ),
-                   );
-                 }
-               } else {
-                 if (mounted) {
-                   scaffoldMessenger.showSnackBar(
-                     SnackBar(
-                       content: Text(cropProvider.error ?? 'Failed to place bid'),
-                     ),
-                   );
-                 }
-               }
-             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange.shade600,
-              foregroundColor: Colors.white,
+        elevation: 20,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                Colors.orange.shade50,
+              ],
             ),
-            child: const Text('Place Bid'),
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.orange.shade400, Colors.orange.shade600],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.gavel, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Place Your Bid',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        Text(
+                          crop.cropName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Crop Info Cards
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoCard(
+                      Icons.inventory_2,
+                      'Quantity',
+                      '${crop.quantity} kg',
+                      Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildInfoCard(
+                      Icons.attach_money,
+                      'Min Bid',
+                      'LKR ${crop.minBidPrice}',
+                      Colors.green,
+                    ),
+                  ),
+                ],
+              ),
+              
+              if (highestBid != null) ...[
+                const SizedBox(height: 12),
+                _buildInfoCard(
+                  Icons.trending_up,
+                  'Current Highest',
+                  'LKR ${highestBid.amount}',
+                  Colors.purple,
+                ),
+              ],
+              
+              const SizedBox(height: 24),
+              
+              // Bid Input
+              Text(
+                'Your Bid Amount',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.shade300, width: 2),
+                  color: Colors.white,
+                ),
+                child: TextField(
+                  controller: bidController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                    hintText: 'Enter amount in LKR',
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    prefixIcon: Container(
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'LKR',
+                        style: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade500, Colors.orange.shade700],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          // Store ScaffoldMessenger reference early
+                          final scaffoldMessenger = ScaffoldMessenger.of(context);
+                          
+                          final bidAmount = double.tryParse(bidController.text);
+                          if (bidAmount == null || bidAmount < minBid) {
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text('Bid must be at least LKR ${minBid}'),
+                                backgroundColor: Colors.red.shade600,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final cropProvider = Provider.of<CropProvider>(context, listen: false);
+                          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                          
+                          final bid = BidModel(
+                            id: DateTime.now().millisecondsSinceEpoch.toString(),
+                            distributorId: authProvider.userProfile?.uid ?? '',
+                            distributorName: authProvider.userProfile?.displayName ?? 'Distributor',
+                            amount: bidAmount,
+                            createdAt: DateTime.now(),
+                          );
+
+                          final success = await cropProvider.addBid(crop.id, bid);
+                          
+                          if (success) {
+                            if (mounted) {
+                              Navigator.of(context).pop();
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: const Text('Bid placed successfully!'),
+                                  backgroundColor: Colors.green.shade600,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              );
+                            }
+                          } else {
+                            if (mounted) {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(cropProvider.error ?? 'Failed to place bid'),
+                                  backgroundColor: Colors.red.shade600,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Place Bid',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -828,81 +1119,295 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Update Bid on ${crop.cropName}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Your current bid: ₹${currentBid.amount}'),
-            if (highestBid != null && highestBid.distributorId != currentBid.distributorId)
-              Text('Current highest: ₹${highestBid.amount}'),
-            const SizedBox(height: 16),
-            TextField(
-              controller: bidController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'New Bid Amount (₹)',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-                     ElevatedButton(
-             onPressed: () async {
-               // Store ScaffoldMessenger reference early
-               final scaffoldMessenger = ScaffoldMessenger.of(context);
-               
-               final bidAmount = double.tryParse(bidController.text);
-               if (bidAmount == null || bidAmount <= currentBid.amount) {
-                 scaffoldMessenger.showSnackBar(
-                   SnackBar(
-                     content: Text('New bid must be higher than ₹${currentBid.amount}'),
-                   ),
-                 );
-                 return;
-               }
-
-               final cropProvider = Provider.of<CropProvider>(context, listen: false);
-               final authProvider = Provider.of<AuthProvider>(context, listen: false);
-               
-               final success = await cropProvider.updateBid(
-                 crop.id, 
-                 authProvider.userProfile?.uid ?? '', 
-                 bidAmount
-               );
-               
-               if (success) {
-                 if (mounted) {
-                   Navigator.of(context).pop();
-                   scaffoldMessenger.showSnackBar(
-                     const SnackBar(
-                       content: Text('Bid updated successfully!'),
-                     ),
-                   );
-                 }
-               } else {
-                 if (mounted) {
-                   scaffoldMessenger.showSnackBar(
-                     SnackBar(
-                       content: Text(cropProvider.error ?? 'Failed to update bid'),
-                     ),
-                   );
-                 }
-               }
-             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.orange,
-              foregroundColor: Colors.white,
+        elevation: 20,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                Colors.orange.shade50,
+              ],
             ),
-            child: const Text('Update Bid'),
           ),
-        ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.orange.shade400, Colors.orange.shade600],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.edit, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Update Your Bid',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        Text(
+                          crop.cropName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              
+              // Current Bid Info Card - Wide Rectangle
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.withOpacity(0.2), width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(Icons.person, color: Colors.blue, size: 24),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Your Current Bid',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'LKR ${currentBid.amount}',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              if (highestBid != null && highestBid.distributorId != currentBid.distributorId) ...[
+                const SizedBox(height: 12),
+                _buildInfoCard(
+                  Icons.trending_up,
+                  'Current Highest',
+                  'LKR ${highestBid.amount}',
+                  Colors.purple,
+                ),
+              ],
+              
+              const SizedBox(height: 24),
+              
+              // New Bid Input
+              Text(
+                'New Bid Amount',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.orange.shade300, width: 2),
+                  color: Colors.white,
+                ),
+                child: TextField(
+                  controller: bidController,
+                  keyboardType: TextInputType.number,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  decoration: InputDecoration(
+                    hintText: 'Enter new amount in LKR',
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    prefixIcon: Container(
+                      margin: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade100,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        'LKR',
+                        style: TextStyle(
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        side: BorderSide(color: Colors.grey.shade400),
+                      ),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade500, Colors.orange.shade700],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.orange.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          // Store ScaffoldMessenger reference early
+                          final scaffoldMessenger = ScaffoldMessenger.of(context);
+                          
+                          final bidAmount = double.tryParse(bidController.text);
+                          if (bidAmount == null || bidAmount <= currentBid.amount) {
+                            scaffoldMessenger.showSnackBar(
+                              SnackBar(
+                                content: Text('New bid must be higher than LKR ${currentBid.amount}'),
+                                backgroundColor: Colors.red.shade600,
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final cropProvider = Provider.of<CropProvider>(context, listen: false);
+                          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                          
+                          final success = await cropProvider.updateBid(
+                            crop.id, 
+                            authProvider.userProfile?.uid ?? '', 
+                            bidAmount
+                          );
+                          
+                          if (success) {
+                            if (mounted) {
+                              Navigator.of(context).pop();
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: const Text('Bid updated successfully!'),
+                                  backgroundColor: Colors.green.shade600,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              );
+                            }
+                          } else {
+                            if (mounted) {
+                              scaffoldMessenger.showSnackBar(
+                                SnackBar(
+                                  content: Text(cropProvider.error ?? 'Failed to update bid'),
+                                  backgroundColor: Colors.red.shade600,
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text(
+                          'Update Bid',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -933,7 +1438,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   bid.distributorName,
                   style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
-                subtitle: Text('₹${bid.amount} • ${_formatDateTime(bid.createdAt)}'),
+                 subtitle: Text('LKR ${bid.amount} • ${_formatDateTime(bid.createdAt)}'),
                 trailing: isHighest 
                   ? const Icon(Icons.emoji_events, color: Colors.amber)
                   : null,
