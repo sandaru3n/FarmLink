@@ -73,40 +73,6 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
         final userProfile = authProvider.userProfile;
 
         return Scaffold(
-          appBar: (_currentIndex == 0 || _currentIndex == 1) ? null : AppBar(
-            flexibleSpace: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.orange.shade700,
-                    Colors.orange.shade500,
-                    Colors.orange.shade400,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-              ),
-            ),
-            backgroundColor: Colors.transparent,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            title: Text(
-              _getAppBarTitle(),
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const FoodDistributorSettingsScreen(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
           body: _buildDashboardContent(userProfile),
           bottomNavigationBar: Container(
             color: Colors.white,
@@ -235,11 +201,15 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          gradient: LinearGradient(
+                            colors: [Colors.amber.shade400, Colors.amber.shade600],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          Icons.store,
+                          Icons.business,
                           color: Colors.white,
                           size: 26,
                         ),
@@ -295,14 +265,10 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                     Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Colors.amber.shade400, Colors.amber.shade600],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                        color: Colors.white.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: const Icon(Icons.business, color: Colors.white, size: 36),
+                      child: const Icon(Icons.store, color: Colors.white, size: 36),
                     ),
                     const SizedBox(width: 16),
                     Expanded(

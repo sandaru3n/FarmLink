@@ -69,31 +69,93 @@ class _ProductListScreenState extends State<ProductListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Products'),
-        backgroundColor: Colors.orange,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () async {
-              await Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AddProductScreen(),
+      backgroundColor: Colors.grey[50],
+      body: Column(
+        children: [
+          // Modern Header
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.orange.shade700,
+                  Colors.orange.shade500,
+                  Colors.orange.shade400,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
                 ),
-              );
-              // Refresh the list after adding a product
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              final productProvider = Provider.of<ProductProvider>(context, listen: false);
-              if (authProvider.userProfile != null) {
-                productProvider.loadDistributorProducts(authProvider.userProfile!.uid);
-              }
-            },
+              ],
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [Colors.amber.shade400, Colors.amber.shade600],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.inventory_2,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        const Text(
+                          'My Products',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle, color: Colors.white, size: 32),
+                      onPressed: () async {
+                        await Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AddProductScreen(),
+                          ),
+                        );
+                        // Refresh the list after adding a product
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        final productProvider = Provider.of<ProductProvider>(context, listen: false);
+                        if (authProvider.userProfile != null) {
+                          productProvider.loadDistributorProducts(authProvider.userProfile!.uid);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ],
-      ),
-      body: Consumer<ProductProvider>(
-        builder: (context, productProvider, child) {
+          Expanded(
+            child: Consumer<ProductProvider>(
+              builder: (context, productProvider, child) {
           if (productProvider.isLoading) {
             return const Center(
               child: CircularProgressIndicator(),
@@ -463,7 +525,10 @@ class _ProductListScreenState extends State<ProductListScreen> {
               ),
             ],
           );
-        },
+                },
+              ),
+            ),
+        ],
       ),
     );
   }
