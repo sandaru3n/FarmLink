@@ -241,6 +241,30 @@ class RatingService {
       return snapshot.docs.map((doc) => 
         RatingModel.fromMap(doc.data() as Map<String, dynamic>)
       ).toList();
+    }).handleError((error) {
+      print('Error in getRecentTransporterRatings: $error');
+      // Return empty list if there's an error (e.g., index not ready)
+      return <RatingModel>[];
     });
+  }
+
+  // Fallback method that doesn't require composite index
+  Future<List<RatingModel>> getRecentTransporterRatingsFallback(String transporterId) async {
+    try {
+      final querySnapshot = await _ratingsCollection
+          .where('transporterId', isEqualTo: transporterId)
+          .get();
+
+      final ratings = querySnapshot.docs.map((doc) => 
+        RatingModel.fromMap(doc.data() as Map<String, dynamic>)
+      ).toList();
+
+      // Sort manually by createdAt descending and limit to 10
+      ratings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      return ratings.take(10).toList();
+    } catch (e) {
+      print('Error in fallback method: $e');
+      return [];
+    }
   }
 }

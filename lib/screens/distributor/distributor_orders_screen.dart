@@ -189,102 +189,145 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
   }
 
   Widget _buildOrderCard(OrderModel order) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white,
+            Colors.orange.shade50,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.orange.withOpacity(0.1),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Order Header with Image and Status
           Container(
-            height: 120,
+            height: 140,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              color: Colors.grey.shade100,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.orange.shade100,
+                  Colors.orange.shade50,
+                ],
+              ),
             ),
             child: Row(
               children: [
                 // Crop Image
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                  ),
-                  child: SizedBox(
-                    width: 120,
-                    height: 120,
-                    child: order.cropImageUrl.isNotEmpty
-                        ? Image.network(
-                            order.cropImageUrl,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, loadingProgress) {
-                              if (loadingProgress == null) return child;
-                              return Container(
-                                color: Colors.grey.shade200,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded / 
-                                          loadingProgress.expectedTotalBytes!
-                                        : null,
-                                    color: Colors.blue,
-                                  ),
-                                ),
-                              );
-                            },
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                color: Colors.grey.shade300,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.image_not_supported,
-                                      size: 32,
-                                      color: Colors.grey,
+                Container(
+                  margin: const EdgeInsets.all(12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: SizedBox(
+                      width: 100,
+                      height: 116,
+                      child: order.cropImageUrl.isNotEmpty
+                          ? Image.network(
+                              order.cropImageUrl,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.grey.shade200, Colors.grey.shade100],
                                     ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'No Image',
-                                      style: TextStyle(
-                                        color: Colors.grey.shade600,
-                                        fontSize: 10,
+                                  ),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded / 
+                                            loadingProgress.expectedTotalBytes!
+                                          : null,
+                                      color: Colors.orange,
+                                      strokeWidth: 3,
+                                    ),
+                                  ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [Colors.grey.shade300, Colors.grey.shade200],
+                                    ),
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.image_not_supported,
+                                        size: 32,
+                                        color: Colors.grey.shade500,
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            color: Colors.grey.shade300,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.image_not_supported,
-                                  size: 32,
-                                  color: Colors.grey,
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'No Image',
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 10,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'No Image',
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
                                   ),
+                                );
+                              },
+                            )
+                          : Container(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Colors.grey.shade300, Colors.grey.shade200],
                                 ),
-                              ],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.image_not_supported,
+                                    size: 32,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'No Image',
+                                    style: TextStyle(
+                                      color: Colors.grey.shade600,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
+                    ),
                   ),
                 ),
                 
                 // Order Info
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -296,8 +339,9 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                               child: Text(
                                 order.cropName,
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -307,37 +351,68 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                           ],
                         ),
                         
+                        const SizedBox(height: 8),
+                        
                         // Quantity and Price
                         Row(
                           children: [
-                            Expanded(
-                              child: Text(
-                                '${order.quantity} kg',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade600,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.scale, size: 14, color: Colors.purple.shade700),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${order.quantity} kg',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.purple.shade700,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            Text(
-                              '₹${order.finalPrice}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
+                            const Spacer(),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.green.shade100,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'LKR ${order.finalPrice}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
                               ),
                             ),
                           ],
                         ),
                         
+                        const SizedBox(height: 8),
+                        
                         // Order Date
-                        Text(
-                          'Ordered: ${_formatDate(order.createdAt)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade500,
-                          ),
+                        Row(
+                          children: [
+                            Icon(Icons.calendar_today, size: 14, color: Colors.grey.shade600),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Ordered: ${_formatDate(order.createdAt)}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -349,26 +424,42 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
           
           // Order Details
           Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Order Details Section
-                const Text(
-                  'Order Details',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                // Order Details Section Header
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.orange.shade400, Colors.orange.shade600],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(Icons.receipt_long, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Order Details',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 
-                _buildDetailRow('Order ID', order.id),
-                _buildDetailRow('Pickup Location', order.pickupLocation),
-                _buildDetailRow('Shipping Address', order.distributorLocation.isNotEmpty 
+                _buildModernDetailRow('Order ID', order.id, Icons.tag),
+                _buildModernDetailRow('Pickup Location', order.pickupLocation, Icons.location_on),
+                _buildModernDetailRow('Shipping Address', order.distributorLocation.isNotEmpty 
                     ? order.distributorLocation 
-                    : 'Not specified'),
-                _buildDetailRow('Payment Status', order.paymentStatus.toUpperCase()),
+                    : 'Not specified', Icons.local_shipping),
+                _buildModernDetailRow('Payment Status', order.paymentStatus.toUpperCase(), Icons.payment),
                 
                 // Transporter information if available
                 FutureBuilder<Map<String, dynamic>?>(
@@ -379,7 +470,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                       if (deliveryInfo['transporterId'] != null && deliveryInfo['transporterName'] != null) {
                         return Column(
                           children: [
-                            const SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             _buildTransporterInfoWithLiveUpdates(deliveryInfo),
                           ],
                         );
@@ -391,13 +482,13 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                 
                 // Status-specific dates
                 if (order.confirmedAt != null)
-                  _buildDetailRow('Confirmed Date', _formatDateTime(order.confirmedAt!)),
+                  _buildModernDetailRow('Confirmed Date', _formatDateTime(order.confirmedAt!), Icons.check_circle),
                 if (order.completedAt != null)
-                  _buildDetailRow('Completed Date', _formatDateTime(order.completedAt!)),
+                  _buildModernDetailRow('Completed Date', _formatDateTime(order.completedAt!), Icons.done_all),
                 if (order.paymentCompletedAt != null)
-                  _buildDetailRow('Payment Date', _formatDateTime(order.paymentCompletedAt!)),
+                  _buildModernDetailRow('Payment Date', _formatDateTime(order.paymentCompletedAt!), Icons.payment),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
                 
                 // Action Buttons
                 _buildActionButtons(order),
@@ -440,6 +531,62 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
     );
   }
 
+  Widget _buildModernDetailRow(String label, String value, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.orange.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 16, color: Colors.orange.shade700),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: Colors.grey.shade600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatusChip(String status) {
     Color chipColor;
     IconData chipIcon;
@@ -452,7 +599,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
         chipText = 'Pending';
         break;
       case 'confirmed':
-        chipColor = Colors.blue;
+        chipColor = Colors.purple;
         chipIcon = Icons.check_circle;
         chipText = 'Confirmed';
         break;
@@ -503,30 +650,55 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
         return Row(
           children: [
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _contactFarmer(order),
-                icon: const Icon(Icons.message, size: 18),
-                label: const Text('Contact Farmer'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.orange.shade400, width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.orange.shade50,
+                ),
+                child: OutlinedButton.icon(
+                  onPressed: () => _contactFarmer(order),
+                  icon: Icon(Icons.message, size: 18, color: Colors.orange.shade700),
+                  label: Text('Contact Farmer', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.orange.shade700)),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _viewOrderDetails(order),
-                icon: const Icon(Icons.visibility, size: 18),
-                label: const Text('View Details'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple.shade500, Colors.purple.shade700],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.purple.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () => _viewOrderDetails(order),
+                  icon: const Icon(Icons.visibility, size: 18),
+                  label: const Text('View Details', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -537,30 +709,55 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
         return Row(
           children: [
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () => _contactFarmer(order),
-                icon: const Icon(Icons.message, size: 18),
-                label: const Text('Contact Farmer'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.orange.shade400, width: 2),
+                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.orange.shade50,
+                ),
+                child: OutlinedButton.icon(
+                  onPressed: () => _contactFarmer(order),
+                  icon: Icon(Icons.message, size: 18, color: Colors.orange.shade700),
+                  label: Text('Contact Farmer', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.orange.shade700)),
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    side: BorderSide.none,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _markAsCompleted(order),
-                icon: const Icon(Icons.check_circle, size: 18),
-                label: const Text('Mark Complete'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.green.shade500, Colors.green.shade700],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.green.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: () => _markAsCompleted(order),
+                  icon: const Icon(Icons.check_circle, size: 18),
+                  label: const Text('Mark Complete', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ),
@@ -568,35 +765,63 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
           ],
         );
       case 'completed':
-        return SizedBox(
+        return Container(
           width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.grey.shade500, Colors.grey.shade700],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: () => _viewOrderDetails(order),
             icon: const Icon(Icons.visibility, size: 18),
-            label: const Text('View Details'),
+            label: const Text('View Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey,
+              backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
         );
       default:
-        return SizedBox(
+        return Container(
           width: double.infinity,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.purple.shade500, Colors.purple.shade700],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.purple.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: ElevatedButton.icon(
             onPressed: () => _viewOrderDetails(order),
             icon: const Icon(Icons.visibility, size: 18),
-            label: const Text('View Details'),
+            label: const Text('View Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue,
+              backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 12),
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
           ),
@@ -644,39 +869,223 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
   void _viewOrderDetails(OrderModel order) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Order Details - ${order.cropName}'),
-        content: SingleChildScrollView(
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 20,
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white,
+                Colors.orange.shade50,
+              ],
+            ),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow('Order ID', order.id),
-              _buildDetailRow('Crop Name', order.cropName),
-              _buildDetailRow('Quantity', '${order.quantity} kg'),
-              _buildDetailRow('Final Price', '₹${order.finalPrice}'),
-              _buildDetailRow('Pickup Location', order.pickupLocation),
-              _buildDetailRow('Shipping Address', order.distributorLocation.isNotEmpty 
-                  ? order.distributorLocation 
-                  : 'Not specified'),
-              _buildDetailRow('Order Status', order.orderStatus.toUpperCase()),
-              _buildDetailRow('Payment Status', order.paymentStatus.toUpperCase()),
-              _buildDetailRow('Order Date', _formatDateTime(order.createdAt)),
-              if (order.confirmedAt != null)
-                _buildDetailRow('Confirmed Date', _formatDateTime(order.confirmedAt!)),
-              if (order.completedAt != null)
-                _buildDetailRow('Completed Date', _formatDateTime(order.completedAt!)),
-              if (order.paymentCompletedAt != null)
-                _buildDetailRow('Payment Date', _formatDateTime(order.paymentCompletedAt!)),
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.orange.shade400, Colors.orange.shade600],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.receipt_long, color: Colors.white, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Order Details',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey.shade800,
+                          ),
+                        ),
+                        Text(
+                          order.cropName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.orange.shade700,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Order Image and Key Info
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.orange.shade200, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withOpacity(0.1),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    // Crop Image
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: order.cropImageUrl.isNotEmpty
+                            ? Image.network(
+                                order.cropImageUrl,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [Colors.grey.shade300, Colors.grey.shade200],
+                                      ),
+                                    ),
+                                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                  );
+                                },
+                              )
+                            : Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Colors.grey.shade300, Colors.grey.shade200],
+                                  ),
+                                ),
+                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${order.quantity} kg',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.purple.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'LKR ${order.finalPrice}',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green.shade700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          _buildStatusChip(order.orderStatus),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Order Details Section
+              Text(
+                'Order Information',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade700,
+                ),
+              ),
+              const SizedBox(height: 12),
+              
+              // Scrollable Details
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _buildModernDetailRow('Order ID', order.id, Icons.tag),
+                      _buildModernDetailRow('Pickup Location', order.pickupLocation, Icons.location_on),
+                      _buildModernDetailRow('Shipping Address', order.distributorLocation.isNotEmpty 
+                          ? order.distributorLocation 
+                          : 'Not specified', Icons.local_shipping),
+                      _buildModernDetailRow('Payment Status', order.paymentStatus.toUpperCase(), Icons.payment),
+                      _buildModernDetailRow('Order Date', _formatDateTime(order.createdAt), Icons.calendar_today),
+                      if (order.confirmedAt != null)
+                        _buildModernDetailRow('Confirmed Date', _formatDateTime(order.confirmedAt!), Icons.check_circle),
+                      if (order.completedAt != null)
+                        _buildModernDetailRow('Completed Date', _formatDateTime(order.completedAt!), Icons.done_all),
+                      if (order.paymentCompletedAt != null)
+                        _buildModernDetailRow('Payment Date', _formatDateTime(order.paymentCompletedAt!), Icons.payment),
+                    ],
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Close Button
+              SizedBox(
+                width: double.infinity,
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange.shade500, Colors.orange.shade700],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
@@ -760,22 +1169,44 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.purple.shade50,
+            Colors.purple.shade100,
+          ],
+        ),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: Colors.purple.shade300, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.local_shipping, color: Colors.blue, size: 20),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.purple.shade100,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(Icons.local_shipping, color: Colors.purple.shade700, size: 18),
+              ),
               const SizedBox(width: 8),
               const Text(
                 'Assigned Transporter',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+                  color: Colors.purple,
+                  fontSize: 16,
                 ),
               ),
             ],
@@ -812,12 +1243,14 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
               icon: const Icon(Icons.person, size: 16),
               label: const Text('View Transporter Details'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blue,
+                backgroundColor: Colors.purple,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 8),
+                padding: const EdgeInsets.symmetric(vertical: 10),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
+                elevation: 2,
+                shadowColor: Colors.purple.withOpacity(0.3),
               ),
             ),
           ),
@@ -876,7 +1309,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
             ],
           ),
           const SizedBox(height: 4),
-          if (statusData['acceptedAt'] != null)
+          if (statusData['acceptedAt'] != null) ...[
             Text(
               'Accepted: ${_formatDateTime(statusData['acceptedAt'])}',
               style: TextStyle(
@@ -884,6 +1317,32 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
                 color: Colors.grey[600],
               ),
             ),
+            const SizedBox(height: 4),
+            // ETA shows only after accepted status
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.purple.shade50,
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: Colors.purple.shade200),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.access_time, color: Colors.purple.shade600, size: 14),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Delivery Within 2-3 days',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.purple.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           if (statusData['inTransitAt'] != null)
             Text(
               'In Transit: ${_formatDateTime(statusData['inTransitAt'])}',
@@ -895,14 +1354,6 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
           if (statusData['deliveredAt'] != null)
             Text(
               'Delivered: ${_formatDateTime(statusData['deliveredAt'])}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
-            ),
-          if (statusData['estimatedDeliveryTime'] != null)
-            Text(
-              'ETA: ${statusData['estimatedDeliveryTime']}',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey[600],
@@ -949,7 +1400,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
       case 'pending':
         return Colors.orange;
       case 'accepted':
-        return Colors.blue;
+        return Colors.purple;
       case 'in_transit':
         return Colors.purple;
       case 'delivered':

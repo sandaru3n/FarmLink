@@ -109,6 +109,38 @@
                  "order": "DESCENDING"
                }
              ]
+           },
+           {
+             "collectionGroup": "ratings",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "transporterId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               },
+               {
+                 "fieldPath": "__name__",
+                 "order": "DESCENDING"
+               }
+             ]
+           },
+           {
+             "collectionGroup": "ratings",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "distributorId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "createdAt",
+                 "order": "DESCENDING"
+               }
+             ]
            }
          ],
          "fieldOverrides": []
