@@ -310,7 +310,7 @@ class _DistributorConsumerOrdersScreenState extends State<DistributorConsumerOrd
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                '${item.quantity.toStringAsFixed(1)} kg × ₹${item.pricePerKg.toStringAsFixed(2)}',
+                                '${item.quantity.toStringAsFixed(1)} kg × LKR ${item.pricePerKg.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 12,
@@ -320,7 +320,7 @@ class _DistributorConsumerOrdersScreenState extends State<DistributorConsumerOrd
                           ),
                         ),
                         Text(
-                          '₹${item.totalPrice.toStringAsFixed(2)}',
+                          'LKR ${item.totalPrice.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 14,
@@ -378,7 +378,7 @@ class _DistributorConsumerOrdersScreenState extends State<DistributorConsumerOrd
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Total: ₹${order.totalAmount.toStringAsFixed(2)}',
+                              'Total: LKR ${order.totalAmount.toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 16,

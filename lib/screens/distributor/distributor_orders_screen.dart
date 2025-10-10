@@ -1045,7 +1045,7 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
           children: [
             Text('Crop: ${order.cropName}'),
             Text('Quantity: ${order.quantity} kg'),
-            Text('Final Price: ₹${order.finalPrice}'),
+            Text('Final Price: LKR ${order.finalPrice}'),
             const SizedBox(height: 16),
             const Text(
               'Are you sure you want to mark this order as completed?',
