@@ -339,9 +339,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
               final bool isLowStock = product.quantity <= product.reorderLevel && product.reorderLevel > 0;
                     return Card(
                 margin: const EdgeInsets.only(bottom: 16),
-                elevation: 1,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                child: Padding(
+                elevation: 4,
+                shadowColor: Colors.orange.withOpacity(0.2),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: Colors.orange.shade100, width: 1),
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.white, Colors.orange.shade50.withOpacity(0.3)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                   padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
@@ -413,7 +425,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ],
                             const SizedBox(height: 4),
                             Text(
-                              'Price: ₹${product.pricePerKg.toStringAsFixed(2)}/kg',
+                              'Price: LKR ${product.pricePerKg.toStringAsFixed(2)}/kg',
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey[600],
@@ -421,7 +433,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Total Value: ₹${(product.quantity * product.pricePerKg).toStringAsFixed(2)}',
+                              'Total Value: LKR ${(product.quantity * product.pricePerKg).toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -580,29 +592,62 @@ class _ProductListScreenState extends State<ProductListScreen> {
 Widget _metric(String title, String value, Color color, IconData icon) {
   return Expanded(
     child: Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
+        gradient: LinearGradient(
+          colors: [Colors.white, color.withOpacity(0.05)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
+              gradient: LinearGradient(
+                colors: [color.withOpacity(0.2), color.withOpacity(0.1)],
+              ),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color)),
-              Text(title, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey[700],
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -621,38 +666,63 @@ class _StatsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-      decoration: const BoxDecoration(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFFF3E0), Color(0xFFFFFBF2)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [Colors.orange.shade50, Colors.white],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.orange.shade100, Colors.orange.shade50],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.orange.shade200),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orange,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.inventory_2, color: Colors.white, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Inventory Overview',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange.shade800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(Icons.inventory_2, color: Colors.orange),
-              const SizedBox(width: 8),
-              Text('Inventory Overview', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold, color: Colors.orange[800])),
+              _metric('Total', '$total', Colors.orange.shade700, Icons.dashboard),
+              const SizedBox(width: 10),
+              _metric('Available', '$available', Colors.green.shade600, Icons.check_circle),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Row(
             children: [
-              _metric('Total', '$total', Colors.orange, Icons.list_alt),
-              const SizedBox(width: 8),
-              _metric('Available', '$available', Colors.green, Icons.check_circle),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              _metric('Low stock', '$lowStock', Colors.orange, Icons.error_outline),
-              const SizedBox(width: 8),
-              _metric('Out of stock', '$outOfStock', Colors.red, Icons.remove_shopping_cart),
+              _metric('Low Stock', '$lowStock', Colors.amber.shade700, Icons.warning_amber),
+              const SizedBox(width: 10),
+              _metric('Out of Stock', '$outOfStock', Colors.red.shade600, Icons.remove_circle),
             ],
           ),
         ],
@@ -691,10 +761,16 @@ class _StockBar extends StatelessWidget {
               visualDensity: VisualDensity.compact,
             ),
             const SizedBox(width: 8),
-            Chip(
-              label: Text('${product.quantity.toStringAsFixed(1)} / ${baseline.toStringAsFixed(1)} kg${hasBaseline ? '' : ' (set baseline)'}'),
-              backgroundColor: Colors.grey.shade100,
-              visualDensity: VisualDensity.compact,
+            Expanded(
+              child: Chip(
+                label: Text(
+                  '${product.quantity.toStringAsFixed(1)} / ${baseline.toStringAsFixed(1)} kg${hasBaseline ? '' : ' (set baseline)'}',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                backgroundColor: Colors.grey.shade100,
+                visualDensity: VisualDensity.compact,
+              ),
             ),
           ],
         ),
