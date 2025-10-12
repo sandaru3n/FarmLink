@@ -3,10 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/transport_order_model.dart';
+import '../../utils/app_localizations.dart';
 import 'transport_order_detail_screen.dart';
 import 'distributor_feedback_dialog.dart';
-import '../../providers/delivery_order_provider.dart'
-    ;
+import '../../providers/delivery_order_provider.dart';
 
 class TransportOrdersScreen extends StatefulWidget {
   const TransportOrdersScreen({super.key});
@@ -111,9 +111,9 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text(
-                          'My Transports',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).get('my_transports'),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
@@ -139,11 +139,11 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                     ),
                     dividerColor: Colors.transparent,
                     dividerHeight: 0,
-                    tabs: const [
-                      Tab(text: 'Accepted'),
-                      Tab(text: 'In Transit'),
-                      Tab(text: 'Delivered'),
-                      Tab(text: 'Cancelled'),
+                    tabs: [
+                      Tab(text: AppLocalizations.of(context).get('accepted')),
+                      Tab(text: AppLocalizations.of(context).get('in_transit')),
+                      Tab(text: AppLocalizations.of(context).get('delivered')),
+                      Tab(text: AppLocalizations.of(context).get('cancelled')),
                     ],
                   ),
                 ],
@@ -210,7 +210,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'No accepted transports',
+                  AppLocalizations.of(context).get('no_accepted_transports'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -219,7 +219,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Accepted transport orders will appear here',
+                  AppLocalizations.of(context).get('accepted_transports_appear'),
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey.shade600,
@@ -282,7 +282,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'No in-transit transports',
+                  AppLocalizations.of(context).get('no_in_transit_transports'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -291,7 +291,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'In-transit transport orders will appear here',
+                  AppLocalizations.of(context).get('in_transit_transports_appear'),
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey.shade600,
@@ -354,7 +354,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'No delivered transports',
+                  AppLocalizations.of(context).get('no_delivered_transports'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -363,7 +363,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Delivered transport orders will appear here',
+                  AppLocalizations.of(context).get('delivered_transports_appear'),
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey.shade600,
@@ -426,7 +426,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'No cancelled transports',
+                  AppLocalizations.of(context).get('no_cancelled_transports'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -435,7 +435,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'Cancelled transport orders will appear here',
+                  AppLocalizations.of(context).get('cancelled_transports_appear'),
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey.shade600,
@@ -500,7 +500,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
               children: [
                 Expanded(
                   child: Text(
-                    'Transport Order ${transportOrder.transportOrderKey}',
+                    '${AppLocalizations.of(context).get('transport_order')} ${transportOrder.transportOrderKey}',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.grey[600],
@@ -600,7 +600,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                             if (transportOrder.deliveryFee != null) ...[
                               const SizedBox(width: 6),
                               Text(
-                                '+ LKR ${transportOrder.deliveryFee!.toStringAsFixed(2)} delivery fee',
+                                '+ LKR ${transportOrder.deliveryFee!.toStringAsFixed(2)} ${AppLocalizations.of(context).get('delivery_fee')}',
                                 style: TextStyle(
                                   color: Colors.blue[600],
                                   fontWeight: FontWeight.bold,
@@ -648,7 +648,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Pickup Location',
+                                AppLocalizations.of(context).get('pickup_location'),
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.grey[600],
@@ -733,7 +733,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Delivery Location',
+                                AppLocalizations.of(context).get('delivery_location'),
                                 style: TextStyle(
                                   fontSize: 10,
                                   color: Colors.grey[600],
@@ -827,7 +827,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                           ),
                           const SizedBox(width: 8),
                           Text(
-                            'Scheduled Delivery',
+                            AppLocalizations.of(context).get('scheduled_delivery'),
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.bold,
@@ -842,7 +842,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
-                              'PLANNED',
+                              AppLocalizations.of(context).get('planned'),
                               style: TextStyle(
                                 fontSize: 8,
                                 fontWeight: FontWeight.bold,
@@ -908,7 +908,7 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Specific Delivery Location:',
+                                      AppLocalizations.of(context).get('specific_delivery_location'),
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,

@@ -170,26 +170,26 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                   });
                 },
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                tabs: const [
+                tabs: [
                   GButton(
                     icon: LineAwesomeIcons.home,
-                    text: 'Home',
+                    text: l10n.get('home'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.truck,
-                    text: 'Delivery',
+                    text: l10n.get('delivery'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.map_marker,
-                    text: 'My Transports',
+                    text: l10n.get('my_transports'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.history,
-                    text: 'History',
+                    text: l10n.get('history'),
                   ),
                   GButton(
                     icon: Icons.analytics,
-                    text: 'Analytics',
+                    text: l10n.get('analytics'),
                   ),
                 ],
               ),
@@ -201,19 +201,20 @@ class _TransporterDashboardState extends State<TransporterDashboard>
   }
 
   String _getAppBarTitle() {
+    final l10n = AppLocalizations.of(context);
     switch (_currentIndex) {
       case 0:
-        return 'Home';
+        return l10n.get('home');
       case 1:
-        return 'Delivery';
+        return l10n.get('delivery');
       case 2:
-        return 'My Transports';
+        return l10n.get('my_transports');
       case 3:
-        return 'History';
+        return l10n.get('history');
       case 4:
-        return 'Analytics';
+        return l10n.get('analytics');
       default:
-        return 'Transporter Dashboard';
+        return l10n.get('transporter_dashboard');
     }
   }
 
@@ -608,7 +609,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hi, ${userProfile?.displayName ?? 'User'}',
+                          '${AppLocalizations.of(context).get('hi')}, ${userProfile?.displayName ?? 'User'}',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
@@ -617,7 +618,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                           overflow: TextOverflow.ellipsis,
                         ),
                         Text(
-                          'Let\'s deliver with care today',
+                          AppLocalizations.of(context).get('deliver_with_care'),
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.85),
                             fontSize: 12,
@@ -646,9 +647,9 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               // Quick glance chips
               Row(
                 children: [
-                  _buildInfoChip(Icons.inventory_2_outlined, '$availableDeliveries available', Colors.white),
+                  _buildInfoChip(Icons.inventory_2_outlined, '$availableDeliveries ${AppLocalizations.of(context).get('available_status')}', Colors.white),
                   const SizedBox(width: 8),
-                  _buildInfoChip(Icons.directions_car_filled_outlined, '$activeDeliveries active', Colors.white),
+                  _buildInfoChip(Icons.directions_car_filled_outlined, '$activeDeliveries ${AppLocalizations.of(context).get('active')}', Colors.white),
                   const SizedBox(width: 8),
                   _buildInfoChip(Icons.trending_up, 'LKR ${totalEarnings.toStringAsFixed(0)}', Colors.white),
                 ],
@@ -671,7 +672,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.local_shipping),
-                      label: const Text('Find deliveries'),
+                      label: Text(AppLocalizations.of(context).get('available_deliveries')),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -689,7 +690,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.list_alt),
-                      label: const Text('My transports'),
+                      label: Text(AppLocalizations.of(context).get('my_transports')),
                     ),
                   ),
                 ],
@@ -941,6 +942,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                 return Expanded(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.end,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         width: 20,
@@ -954,7 +956,6 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      const SizedBox(height: 8),
                       Text(
                         dayLabels[index],
                         style: TextStyle(
@@ -1749,19 +1750,19 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
-                              Icons.filter_list,
+                              Icons.history,
                               color: Colors.white,
-                              size: 20,
+                              size: 24,
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Text(
-                            'Filter by Date',
-                            style: TextStyle(
-                              fontSize: 18,
+                          Text(
+                            AppLocalizations.of(context).get('history'),
+                            style: const TextStyle(
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
@@ -1839,8 +1840,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                           const SizedBox(height: 24),
                           Text(
                             _selectedDateFilter == 'All Time' 
-                                ? 'No delivery history'
-                                : 'No deliveries found',
+                                ? AppLocalizations.of(context).get('no_delivery_history')
+                                : AppLocalizations.of(context).get('no_deliveries_found'),
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -1850,8 +1851,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                           const SizedBox(height: 12),
                           Text(
                             _selectedDateFilter == 'All Time'
-                                ? 'Completed deliveries will appear here'
-                                : 'Try selecting a different time period',
+                                ? AppLocalizations.of(context).get('completed_deliveries_appear')
+                                : AppLocalizations.of(context).get('try_different_period'),
                             style: TextStyle(
                               fontSize: 15,
                               color: Colors.grey.shade600,
@@ -2160,7 +2161,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Pickup Location',
+                                AppLocalizations.of(context).get('pickup_location'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],
@@ -2180,7 +2181,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Farmer: ${delivery.farmerName}',
+                                '${AppLocalizations.of(context).get('farmer')}: ${delivery.farmerName}',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 12,
@@ -2225,7 +2226,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Delivery Location',
+                                AppLocalizations.of(context).get('delivery_location'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.grey[600],
@@ -2245,7 +2246,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Distributor: ${delivery.distributorName}',
+                                '${AppLocalizations.of(context).get('distributor')}: ${delivery.distributorName}',
                                 style: TextStyle(
                                   color: Colors.grey[600],
                                   fontSize: 12,
@@ -2324,9 +2325,9 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        'Analytics',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).get('analytics'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -2368,7 +2369,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     children: [
                       Expanded(
                         child: _buildScreenshotStyleCard(
-                          'Total Orders',
+                          AppLocalizations.of(context).get('total_orders'),
                           allOrders.length.toString(),
                           Icons.local_shipping,
                           Colors.blue,
@@ -2377,7 +2378,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildScreenshotStyleCard(
-                          'Completed',
+                          AppLocalizations.of(context).get('completed_deliveries'),
                           completedOrders.length.toString(),
                           Icons.check_circle,
                           Colors.green,
@@ -2391,7 +2392,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     children: [
                       Expanded(
                         child: _buildScreenshotStyleCard(
-                          'Total Earnings',
+                          AppLocalizations.of(context).get('total_earnings'),
                           'LKR ${totalEarnings.toStringAsFixed(0)}',
                           Icons.account_balance_wallet,
                           Colors.orange,
@@ -2400,7 +2401,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       const SizedBox(width: 16),
                       Expanded(
                         child: _buildScreenshotStyleCard(
-                          'Avg Per Order',
+                          AppLocalizations.of(context).get('avg_order_earnings'),
                           'LKR ${averageEarnings.toStringAsFixed(0)}',
                           Icons.trending_up,
                           Colors.deepPurple,
@@ -2414,7 +2415,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     
                     // Recent Activity
                     Text(
-                      'Recent Activity',
+                      AppLocalizations.of(context).get('recent_activity'),
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -2454,7 +2455,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              'No activity yet',
+                              AppLocalizations.of(context).get('no_activity_yet'),
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
@@ -2463,7 +2464,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Start accepting deliveries to see analytics',
+                              AppLocalizations.of(context).get('start_accepting_deliveries'),
                               style: TextStyle(
                                 fontSize: 14,
                                 color: Colors.grey.shade600,

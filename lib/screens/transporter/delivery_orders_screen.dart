@@ -9,6 +9,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/delivery_order_model.dart';
 import '../../services/directions_service.dart';
+import '../../utils/app_localizations.dart';
 import 'delivery_order_detail_screen.dart';
 import '../dashboards/transporter/transporter_dashboard.dart';
 
@@ -320,9 +321,9 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text(
-                          'Delivery',
-                          style: TextStyle(
+                        Text(
+                          AppLocalizations.of(context).get('delivery'),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
@@ -359,7 +360,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  'Available',
+                                  AppLocalizations.of(context).get('available'),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: _currentTabIndex == 0 
@@ -388,7 +389,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Text(
-                                  'Schedule',
+                                  AppLocalizations.of(context).get('schedule'),
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     color: _currentTabIndex == 1 
@@ -568,7 +569,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'No available deliveries',
+                  AppLocalizations.of(context).get('no_available_deliveries'),
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
@@ -577,7 +578,7 @@ class _DeliveryOrdersScreenState extends State<DeliveryOrdersScreen> {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'New delivery orders will appear here',
+                  AppLocalizations.of(context).get('new_delivery_orders_appear'),
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.grey.shade600,

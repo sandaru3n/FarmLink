@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import '../../services/storage_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/language_provider.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_localizations.dart';
 import '../auth/login_screen.dart';
@@ -30,17 +31,30 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
   }
 
   Future<void> _loadCurrentLanguage() async {
-    // TODO: Load current language from preferences
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     setState(() {
-      _selectedLanguage = 'en';
+      _selectedLanguage = languageProvider.locale.languageCode;
     });
   }
 
   Future<void> _changeLanguage(String languageCode) async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    await languageProvider.changeLocale(Locale(languageCode, ''));
+    
     setState(() {
       _selectedLanguage = languageCode;
     });
-    // TODO: Save language preference and update app locale
+    
+    if (mounted) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.get('language_changed')),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _switchRole() async {
@@ -50,8 +64,8 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
     
     if (currentRole == null || userProfile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No active role found'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).get('no_active_role_found')),
           backgroundColor: Colors.red,
         ),
       );
@@ -112,9 +126,9 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Switch Role',
-                              style: TextStyle(
+                            Text(
+                              AppLocalizations.of(context).get('switch_role'),
+                              style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -145,7 +159,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Select a role to switch to:',
+                        AppLocalizations.of(context).get('select_role_to_switch'),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -226,7 +240,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Switch to ${role.displayName} role',
+                        '${AppLocalizations.of(context).get('switch_to_role')} ${role.displayName}',
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
@@ -349,13 +363,13 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                                 await FirebaseAuth.instance.currentUser!.updatePhotoURL(url);
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Profile photo updated')),
+                                    SnackBar(content: Text(AppLocalizations.of(context).get('profile_photo_updated'))),
                                   );
                                 }
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Failed to update photo: $e')),
+                                    SnackBar(content: Text('${AppLocalizations.of(context).get('failed_update_photo')}: $e')),
                                   );
                                 }
                               }
@@ -441,9 +455,9 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'Transporter',
-                                style: TextStyle(
+                              child: Text(
+                                l10n.get('transporter'),
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -508,7 +522,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                             ),
                             const SizedBox(width: 14),
                             Text(
-                              'Role Management',
+                              l10n.get('role_management'),
                                       style: TextStyle(
                                 fontSize: 18,
                                         fontWeight: FontWeight.bold,
@@ -521,7 +535,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                         
                         _buildSettingTile(
                           icon: Icons.local_shipping,
-                          title: 'Current: Transporter',
+                          title: l10n.get('current_transporter'),
                           subtitle: FlexibleRoleSwitchingService.getRoleSwitchingDescriptionForUser(context),
                           onTap: _switchRole,
                         ),
@@ -534,7 +548,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
 
               // Transporter Specific Settings
               _buildExpandableSection(
-                title: 'Transporter Settings',
+                title: l10n.get('transporter_settings'),
                 icon: Icons.local_shipping,
                 isExpanded: _isTransporterSettingsExpanded,
                 onToggle: () {
@@ -546,8 +560,8 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                     children: [
                     _buildSettingTile(
                       icon: Icons.local_shipping,
-                      title: 'Vehicle Details',
-                      subtitle: 'Manage your vehicle information',
+                      title: l10n.get('vehicle_details'),
+                      subtitle: l10n.get('manage_vehicle_info'),
                         onTap: () {
                           // TODO: Navigate to vehicle details
                         },
@@ -555,8 +569,8 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                     const SizedBox(height: 10),
                     _buildSettingTile(
                       icon: Icons.map,
-                      title: 'Service Areas',
-                      subtitle: 'Set your delivery service areas',
+                      title: l10n.get('service_areas'),
+                      subtitle: l10n.get('set_service_areas'),
                         onTap: () {
                           // TODO: Navigate to service areas
                         },
@@ -564,8 +578,8 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                     const SizedBox(height: 10),
                     _buildSettingTile(
                       icon: Icons.build,
-                      title: 'Maintenance Schedule',
-                      subtitle: 'Manage vehicle maintenance',
+                      title: l10n.get('maintenance_schedule'),
+                      subtitle: l10n.get('manage_maintenance'),
                         onTap: () {
                           // TODO: Navigate to maintenance schedule
                         },
@@ -615,7 +629,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                       _buildSettingTile(
                         icon: Icons.notifications,
                         title: l10n.get('notifications'),
-                        subtitle: 'Manage notification preferences',
+                        subtitle: l10n.get('manage_notification_prefs'),
                         onTap: () {
                           // TODO: Navigate to notifications settings
                         },
@@ -624,7 +638,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                       _buildSettingTile(
                         icon: Icons.privacy_tip,
                         title: l10n.get('privacy'),
-                        subtitle: 'Privacy and security settings',
+                        subtitle: l10n.get('privacy_security_settings'),
                         onTap: () {
                           // TODO: Navigate to privacy settings
                         },
@@ -633,7 +647,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                       _buildSettingTile(
                         icon: Icons.help,
                         title: l10n.get('help'),
-                        subtitle: 'Get help and support',
+                        subtitle: l10n.get('get_help_support'),
                         onTap: () {
                           // TODO: Navigate to help
                         },
@@ -642,7 +656,7 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                       _buildSettingTile(
                         icon: Icons.info,
                         title: l10n.get('about'),
-                        subtitle: 'App information and version',
+                        subtitle: l10n.get('app_info_version'),
                         onTap: () {
                           // TODO: Navigate to about
                         },
@@ -758,9 +772,9 @@ class _TransporterSettingsScreenState extends State<TransporterSettingsScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              const Text(
-                'Settings',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).get('settings'),
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
