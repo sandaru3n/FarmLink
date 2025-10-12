@@ -4,6 +4,7 @@ import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/order_service.dart';
+import '../../utils/app_localizations.dart';
 import 'add_crop_screen.dart';
 import 'edit_crop_screen.dart';
 
@@ -78,9 +79,9 @@ class _CropListingScreenState extends State<CropListingScreen>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        'My Crops',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).get('my_crops'),
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -155,10 +156,10 @@ class _CropListingScreenState extends State<CropListingScreen>
           return TabBarView(
             controller: _tabController,
             children: [
-              _buildCropList(cropProvider.pendingFarmerCrops, 'No pending crops'),
-              _buildCropList(cropProvider.activeFarmerCrops, 'No active crops'),
-              _buildCropList(cropProvider.expiredFarmerCrops, 'No expired crops'),
-              _buildCropList(cropProvider.farmerCrops, 'No crops found'),
+              _buildCropList(cropProvider.pendingFarmerCrops, AppLocalizations.of(context).get('no_pending_crops')),
+              _buildCropList(cropProvider.activeFarmerCrops, AppLocalizations.of(context).get('no_active_crops')),
+              _buildCropList(cropProvider.expiredFarmerCrops, AppLocalizations.of(context).get('no_expired_crops')),
+              _buildCropList(cropProvider.farmerCrops, AppLocalizations.of(context).get('no_crops_found')),
             ],
           );
         },

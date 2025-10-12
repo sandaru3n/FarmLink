@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../providers/auth_provider.dart';
+import '../providers/language_provider.dart';
 import '../screens/auth/login_screen.dart';
 import 'onboarding_content.dart';
 
@@ -56,6 +57,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _completeOnboarding() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    
+    // Save the selected language
+    await languageProvider.changeLanguage(_selectedLanguage);
+    
+    // Mark onboarding as completed
     await authProvider.markOnboardingCompleted();
 
     if (mounted) {

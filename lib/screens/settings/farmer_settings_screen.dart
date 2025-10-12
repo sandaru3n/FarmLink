@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/language_provider.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_localizations.dart';
 import '../auth/login_screen.dart';
@@ -26,17 +27,33 @@ class _FarmerSettingsScreenState extends State<FarmerSettingsScreen> {
   }
 
   Future<void> _loadCurrentLanguage() async {
-    // TODO: Load current language from preferences
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     setState(() {
-      _selectedLanguage = 'en';
+      _selectedLanguage = languageProvider.locale.languageCode;
     });
   }
 
   Future<void> _changeLanguage(String languageCode) async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    
     setState(() {
       _selectedLanguage = languageCode;
     });
-    // TODO: Save language preference and update app locale
+    
+    // Save language preference and update app locale
+    await languageProvider.changeLocale(Locale(languageCode, ''));
+    
+    // Show confirmation
+    if (mounted) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.get('language_changed')),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _switchRole() async {
@@ -695,9 +712,9 @@ class _FarmerSettingsScreenState extends State<FarmerSettingsScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              const Text(
-                'Settings',
-                style: TextStyle(
+              Text(
+                AppLocalizations.of(context).get('settings'),
+                style: const TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,

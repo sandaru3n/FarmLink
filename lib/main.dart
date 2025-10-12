@@ -14,6 +14,7 @@ import 'providers/transport_order_provider.dart';
 import 'providers/consumer_order_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'providers/notification_provider.dart';
+import 'providers/language_provider.dart';
 import 'utils/app_localizations.dart';
 import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
@@ -78,6 +79,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => LanguageProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => CropProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
@@ -88,33 +90,40 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
-      child: MaterialApp(
-        title: 'FarmLink',
-        debugShowCheckedModeBanner: false,
-        
-        // Localization
-        localizationsDelegates: const [
-          AppLocalizationsDelegate(),
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-                            supportedLocales: const [
-                      Locale('en', ''),
-                      Locale('si', ''),
-                      Locale('ta', ''),
-                    ],
-        
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF4CB050),
-            brightness: Brightness.light,
-          ),
-          useMaterial3: true,
-          fontFamily: 'Roboto',
-        ),
-        
-        home: const SplashScreen(),
+      child: Consumer<LanguageProvider>(
+        builder: (context, languageProvider, child) {
+          return MaterialApp(
+            title: 'FarmLink',
+            debugShowCheckedModeBanner: false,
+            
+            // Set locale from language provider
+            locale: languageProvider.locale,
+            
+            // Localization
+            localizationsDelegates: const [
+              AppLocalizationsDelegate(),
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('en', ''),
+              Locale('si', ''),
+              Locale('ta', ''),
+            ],
+            
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: const Color(0xFF4CB050),
+                brightness: Brightness.light,
+              ),
+              useMaterial3: true,
+              fontFamily: 'Roboto',
+            ),
+            
+            home: const SplashScreen(),
+          );
+        },
       ),
     );
   }

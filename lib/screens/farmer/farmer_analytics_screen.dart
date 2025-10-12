@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/farmer_analytics_service.dart';
+import '../../utils/app_localizations.dart';
 
 class FarmerAnalyticsScreen extends StatefulWidget {
   const FarmerAnalyticsScreen({super.key});
@@ -71,6 +72,8 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(160),
@@ -110,9 +113,9 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        'Analytics & Earnings',
-                        style: TextStyle(
+                      Text(
+                        l10n.get('analytics_earnings'),
+                        style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -143,9 +146,9 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
                     ),
                     dividerColor: Colors.transparent,
                     dividerHeight: 0,
-                    tabs: const [
-                      Tab(text: 'Overview', icon: Icon(Icons.dashboard, size: 20)),
-                      Tab(text: 'Earnings', icon: Icon(Icons.trending_up, size: 20)),
+                    tabs: [
+                      Tab(text: l10n.get('overview'), icon: const Icon(Icons.dashboard, size: 20)),
+                      Tab(text: l10n.get('earnings'), icon: const Icon(Icons.trending_up, size: 20)),
                     ],
                   ),
                 ),
@@ -160,6 +163,8 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
   }
 
   Widget _buildBody() {
+    final l10n = AppLocalizations.of(context);
+    
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -175,7 +180,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: _loadAnalytics,
-              child: const Text('Retry'),
+              child: Text(l10n.get('retry')),
             ),
           ],
         ),
@@ -183,8 +188,8 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
     }
 
     if (_analytics == null) {
-      return const Center(
-        child: Text('No analytics data available'),
+      return Center(
+        child: Text(l10n.get('no_analytics_data')),
       );
     }
 
@@ -241,11 +246,13 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
 
 
   Widget _buildKeyMetrics() {
+    final l10n = AppLocalizations.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Key Metrics',
+          l10n.get('key_metrics'),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -257,7 +264,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Total Earnings',
+                l10n.get('total_earnings'),
                 'LKR ${_analytics!.totalEarnings.toStringAsFixed(0)}',
                 Icons.attach_money,
                 Colors.green,
@@ -266,7 +273,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Completed Orders',
+                l10n.get('completed_orders'),
                 '${_analytics!.completedOrders}',
                 Icons.check_circle,
                 Colors.blue,
@@ -279,7 +286,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
           children: [
             Expanded(
               child: _buildMetricCard(
-                'Success Rate',
+                l10n.get('success_rate'),
                 '${_analytics!.successRate.toStringAsFixed(1)}%',
                 Icons.trending_up,
                 Colors.purple,
@@ -288,7 +295,7 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                'Avg Order Value',
+                l10n.get('avg_order_value'),
                 'LKR ${_analytics!.averageOrderValue.toStringAsFixed(0)}',
                 Icons.shopping_bag,
                 Colors.orange,
@@ -301,11 +308,13 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
   }
 
   Widget _buildQuickStats() {
+    final l10n = AppLocalizations.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Farm Statistics',
+          l10n.get('farm_statistics'),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -313,23 +322,25 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
           ),
         ),
         const SizedBox(height: 16),
-        _buildStatRow('Total Crops Listed', '${_analytics!.totalCrops}'),
-        _buildStatRow('Crops Sold', '${_analytics!.soldCrops}'),
-        _buildStatRow('Active Listings', '${_analytics!.activeCrops}'),
-        _buildStatRow('Total Quantity', '${_analytics!.totalQuantity.toStringAsFixed(1)} kg'),
-        _buildStatRow('Pending Orders', '${_analytics!.pendingOrders}'),
-        _buildStatRow('Deliveries Completed', '${_analytics!.deliveredCount}'),
-        _buildStatRow('In Transit', '${_analytics!.inTransitCount}'),
+        _buildStatRow(l10n.get('total_crops_listed'), '${_analytics!.totalCrops}'),
+        _buildStatRow(l10n.get('crops_sold'), '${_analytics!.soldCrops}'),
+        _buildStatRow(l10n.get('active_listings'), '${_analytics!.activeCrops}'),
+        _buildStatRow(l10n.get('total_quantity_label'), '${_analytics!.totalQuantity.toStringAsFixed(1)} kg'),
+        _buildStatRow(l10n.get('pending_orders'), '${_analytics!.pendingOrders}'),
+        _buildStatRow(l10n.get('deliveries_completed'), '${_analytics!.deliveredCount}'),
+        _buildStatRow(l10n.get('in_transit'), '${_analytics!.inTransitCount}'),
       ],
     );
   }
 
   Widget _buildRecentActivity() {
+    final l10n = AppLocalizations.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Recent Activity',
+          l10n.get('recent_activity'),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -348,11 +359,13 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
       return const SizedBox.shrink();
     }
 
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Monthly Breakdown',
+          l10n.get('monthly_breakdown'),
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
@@ -685,9 +698,12 @@ class _FarmerAnalyticsScreenState extends State<FarmerAnalyticsScreen>
 
 
   String _getMonthName(int month) {
-    const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    final l10n = AppLocalizations.of(context);
+    final months = [
+      l10n.get('month_jan'), l10n.get('month_feb'), l10n.get('month_mar'),
+      l10n.get('month_apr'), l10n.get('month_may'), l10n.get('month_jun'),
+      l10n.get('month_jul'), l10n.get('month_aug'), l10n.get('month_sep'),
+      l10n.get('month_oct'), l10n.get('month_nov'), l10n.get('month_dec'),
     ];
     return months[month - 1];
   }

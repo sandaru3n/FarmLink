@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../../../providers/auth_provider.dart';
-import '../../../providers/crop_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../models/weather_model.dart';
 import '../../../utils/app_localizations.dart';
@@ -66,10 +65,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
+        final l10n = AppLocalizations.of(context);
         if (authProvider.isLoading) {
           return const Scaffold(
             body: Center(
@@ -116,22 +114,22 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   });
                 },
                 padding: const EdgeInsets.all(16),
-                tabs: const [
+                tabs: [
                   GButton(
                     icon: LineAwesomeIcons.home,
-                    text: 'Home',
+                    text: l10n.get('home'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.seedling,
-                    text: 'Crops',
+                    text: l10n.get('crops'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.truck,
-                    text: 'Delivery',
+                    text: l10n.get('delivery'),
                   ),
                   GButton(
                     icon: Icons.analytics,
-                    text: 'Analytics',
+                    text: l10n.get('analytics'),
                   ),
                 ],
               ),
@@ -171,6 +169,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
   }
 
   Widget _buildHomeTab(UserModel? userProfile) {
+    final l10n = AppLocalizations.of(context);
+    
     return Column(
       children: [
         // Static Modern Header with gradient
@@ -204,7 +204,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                      Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(8),
@@ -219,9 +219,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        'Home',
-                        style: TextStyle(
+                      Text(
+                        l10n.get('home'),
+                        style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -249,7 +249,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Hello, ${userProfile?.displayName ?? 'User'}! 👋',
+                '${l10n.get('hello')}, ${userProfile?.displayName ?? 'User'}! 👋',
                 style: const TextStyle(
                   fontSize: 17,
                   color: Colors.white70,
@@ -340,9 +340,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                                 ),
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                'Farmer',
-                                style: TextStyle(
+                              child: Text(
+                                l10n.get('farmer'),
+                                style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -368,9 +368,9 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Farm Statistics',
-                      style: TextStyle(
+                    Text(
+                      l10n.get('farm_statistics'),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
@@ -397,7 +397,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                               ),
                             )
                           : const Icon(Icons.refresh, color: Colors.white),
-                        tooltip: 'Refresh Statistics',
+                        tooltip: l10n.get('refresh_statistics'),
                       ),
                     ),
                   ],
@@ -409,7 +409,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   children: [
                     Expanded(
                       child: _buildStatCard(
-                        'Active Crops', 
+                        l10n.get('active_crops'), 
                         '${_dashboardStats?.activeCrops ?? 0}', 
                         Icons.agriculture, 
                         Colors.green
@@ -418,7 +418,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
-                        'Sold Crops', 
+                        l10n.get('sold_crops'), 
                         '${_dashboardStats?.soldCrops ?? 0}', 
                         Icons.check_circle, 
                         Colors.blue
@@ -431,7 +431,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   children: [
                     Expanded(
                       child: _buildStatCard(
-                        'Pending Crops', 
+                        l10n.get('pending_crops'), 
                         '${_dashboardStats?.pendingOrders ?? 0}', 
                         Icons.pending_actions, 
                         Colors.orange
@@ -440,7 +440,7 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatCard(
-                        'This Month', 
+                        l10n.get('this_month'), 
                         'LKR ${_dashboardStats?.thisMonthSales.toStringAsFixed(0) ?? '0'}', 
                         Icons.trending_up, 
                         Colors.purple
@@ -451,11 +451,11 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                 const SizedBox(height: 24),
 
                 // Quick Actions
-                const Align(
+                Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Quick Actions',
-                    style: TextStyle(
+                    l10n.get('quick_actions'),
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -466,8 +466,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   ),
                 ),
                 _buildQuickActionCard(
-                  'Add New Crop',
-                  'List your fresh produce for bidding',
+                  l10n.get('add_new_crop'),
+                  l10n.get('add_new_crop_desc'),
                   Icons.add_circle,
                   () async {
                     final result = await Navigator.of(context).push(
@@ -482,8 +482,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   },
                 ),
                 _buildQuickActionCard(
-                  'AI Crop Advisory',
-                  'Get AI-powered farming advice and insights',
+                  l10n.get('ai_crop_advisory'),
+                  l10n.get('ai_crop_advisory_desc'),
                   Icons.psychology,
                   () {
                     Navigator.of(context).push(
@@ -494,8 +494,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                   },
                 ),
                 _buildQuickActionCard(
-                  'Weather Forecast',
-                  'Check weather conditions for farming decisions',
+                  l10n.get('weather_forecast'),
+                  l10n.get('weather_forecast_desc'),
                   Icons.wb_sunny,
                   () {
                     _showWeatherForecast(context);
@@ -858,9 +858,9 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Select City',
-              style: TextStyle(
+            Text(
+              AppLocalizations.of(context).get('select_city'),
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -939,15 +939,15 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Weather Forecast',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).get('weather_forecast_title'),
+                        style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        'Real-time weather data',
+                        AppLocalizations.of(context).get('real_time_weather'),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -967,13 +967,13 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
           // Content
           Expanded(
             child: _isLoading
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(),
-                        SizedBox(height: 16),
-                        Text('Loading weather data...'),
+                        const CircularProgressIndicator(),
+                        const SizedBox(height: 16),
+                        Text(AppLocalizations.of(context).get('loading_weather')),
                       ],
                     ),
                   )
@@ -1099,9 +1099,9 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
                       size: 20,
                     ),
                     const SizedBox(width: 8),
-                    const Text(
-                      'Current Location',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context).get('current_location'),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -1132,9 +1132,9 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
           const SizedBox(height: 20),
           
           // Current Weather
-          const Text(
-            'Current Weather',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).get('current_weather'),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -1206,11 +1206,11 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    _buildWeatherDetail('Humidity', _weatherData!.getHumidityPercentage()),
+                    _buildWeatherDetail(AppLocalizations.of(context).get('humidity'), _weatherData!.getHumidityPercentage()),
                     const SizedBox(height: 8),
-                    _buildWeatherDetail('Wind', _weatherData!.getWindSpeedKmh()),
+                    _buildWeatherDetail(AppLocalizations.of(context).get('wind'), _weatherData!.getWindSpeedKmh()),
                     const SizedBox(height: 8),
-                    _buildWeatherDetail('Pressure', _weatherData!.getPressureHpa()),
+                    _buildWeatherDetail(AppLocalizations.of(context).get('pressure'), _weatherData!.getPressureHpa()),
                   ],
                 ),
               ],
@@ -1219,9 +1219,9 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
           const SizedBox(height: 24),
           
           // Farming Recommendations
-          const Text(
-            'Farming Recommendations',
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context).get('farming_recommendations'),
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -1230,19 +1230,19 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
           
           _buildRecommendationCard(
             Icons.water_drop,
-            'Irrigation',
+            AppLocalizations.of(context).get('irrigation'),
             _getIrrigationRecommendation(),
             Colors.blue,
           ),
           _buildRecommendationCard(
             Icons.agriculture,
-            'Planting',
+            AppLocalizations.of(context).get('planting'),
             _getPlantingRecommendation(),
             Colors.green,
           ),
           _buildRecommendationCard(
             Icons.pest_control,
-            'Pest Control',
+            AppLocalizations.of(context).get('pest_control'),
             _getPestControlRecommendation(),
             Colors.orange,
           ),
@@ -1255,7 +1255,7 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
             child: ElevatedButton.icon(
               onPressed: _loadWeatherData,
               icon: const Icon(Icons.refresh),
-              label: const Text('Refresh Weather Data'),
+              label: Text(AppLocalizations.of(context).get('refresh_weather')),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
                 foregroundColor: Colors.white,

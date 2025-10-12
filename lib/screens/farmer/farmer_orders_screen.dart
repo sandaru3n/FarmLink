@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/delivery_order_model.dart';
 import '../../services/delivery_order_service.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/app_localizations.dart';
 
 class FarmerOrdersScreen extends StatefulWidget {
   const FarmerOrdersScreen({super.key});
@@ -66,9 +67,9 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Text(
-                    'Delivery Tracking',
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context).get('delivery_tracking'),
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
@@ -86,10 +87,12 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
 
 
   Widget _buildDeliveryTrackingTab() {
+    final l10n = AppLocalizations.of(context);
+    
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         if (authProvider.userProfile?.uid == null) {
-          return const Center(child: Text('Please log in'));
+          return Center(child: Text(l10n.get('please_log_in')));
         }
 
         return StreamBuilder<List<DeliveryOrderModel>>(
@@ -186,6 +189,8 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
 
 
   Widget _buildDeliveryTrackingCard(DeliveryOrderModel deliveryOrder) {
+    final l10n = AppLocalizations.of(context);
+    
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
@@ -280,7 +285,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                     Expanded(
                       child: _buildInfoRow(
                         Icons.person,
-                        'Buyer',
+                        l10n.get('buyer'),
                         deliveryOrder.distributorName,
                       ),
                     ),
@@ -288,7 +293,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                     Expanded(
                       child: _buildInfoRow(
                         Icons.attach_money,
-                        'Amount',
+                        l10n.get('amount'),
                         'LKR ${deliveryOrder.price.toStringAsFixed(0)}',
                       ),
                     ),
@@ -300,7 +305,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                     Expanded(
                       child: _buildInfoRow(
                         Icons.scale,
-                        'Quantity',
+                        l10n.get('quantity'),
                         '${deliveryOrder.quantity} kg',
                       ),
                     ),
@@ -309,7 +314,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                       Expanded(
                         child: _buildInfoRow(
                           Icons.local_shipping,
-                          'Transporter',
+                          l10n.get('transporter'),
                           deliveryOrder.transporterName!,
                         ),
                       ),
@@ -318,7 +323,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                 const SizedBox(height: 10),
                 _buildInfoRow(
                   Icons.location_on,
-                  'Pickup',
+                  l10n.get('pickup'),
                   deliveryOrder.pickupLocation,
                 ),
                 const SizedBox(height: 10),
@@ -343,7 +348,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                     child: ElevatedButton.icon(
                       onPressed: () => _showDeliveryDetails(deliveryOrder),
                       icon: const Icon(Icons.info_outline),
-                      label: const Text('Waiting for Transporter'),
+                      label: Text(l10n.get('waiting_transporter')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         foregroundColor: Colors.white,
@@ -357,7 +362,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                         child: OutlinedButton.icon(
                           onPressed: () => _showDeliveryDetails(deliveryOrder),
                           icon: const Icon(Icons.info_outline),
-                          label: const Text('Track Delivery'),
+                          label: Text(l10n.get('track_delivery')),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.green,
                             side: const BorderSide(color: Colors.green),
@@ -371,7 +376,7 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
                           child: ElevatedButton.icon(
                             onPressed: () => _confirmDelivery(deliveryOrder),
                             icon: const Icon(Icons.check_circle),
-                            label: const Text('Confirm Received'),
+                            label: Text(l10n.get('confirm_received')),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,
@@ -389,6 +394,8 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
   }
 
   Widget _buildDeliveryTimeline(DeliveryOrderModel deliveryOrder) {
+    final l10n = AppLocalizations.of(context);
+    
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -399,44 +406,44 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Delivery Timeline',
-            style: TextStyle(
+          Text(
+            l10n.get('delivery_timeline'),
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
             ),
           ),
           const SizedBox(height: 8),
           _buildTimelineItem(
-            'Order Created',
+            l10n.get('order_created'),
             deliveryOrder.createdAt,
             true,
             Icons.shopping_bag,
           ),
           if (deliveryOrder.acceptedAt != null)
             _buildTimelineItem(
-              'Transporter Accepted',
+              l10n.get('transporter_accepted'),
               deliveryOrder.acceptedAt!,
               true,
               Icons.check_circle,
             ),
           if (deliveryOrder.inTransitAt != null)
             _buildTimelineItem(
-              'In Transit',
+              l10n.get('in_transit'),
               deliveryOrder.inTransitAt!,
               true,
               Icons.local_shipping,
             ),
           if (deliveryOrder.deliveredAt != null)
             _buildTimelineItem(
-              'Delivered',
+              l10n.get('delivered'),
               deliveryOrder.deliveredAt!,
               true,
               Icons.home,
             ),
           if (deliveryOrder.estimatedDeliveryTime != null)
             _buildTimelineItem(
-              'Estimated Delivery',
+              l10n.get('estimated_delivery'),
               null,
               false,
               Icons.schedule,
@@ -595,19 +602,20 @@ class _FarmerOrdersScreenState extends State<FarmerOrdersScreen>
   }
 
   String _getDeliveryStatusText(String status) {
+    final l10n = AppLocalizations.of(context);
     switch (status) {
       case 'pending':
-        return 'Waiting';
+        return l10n.get('waiting');
       case 'accepted':
-        return 'Accepted';
+        return l10n.get('accepted');
       case 'in_transit':
-        return 'In Transit';
+        return l10n.get('in_transit');
       case 'delivered':
-        return 'Delivered';
+        return l10n.get('delivered');
       case 'rejected':
-        return 'Rejected';
+        return 'Rejected'; // TODO: Add translation
       default:
-        return 'Unknown';
+        return l10n.get('unknown');
     }
   }
 
