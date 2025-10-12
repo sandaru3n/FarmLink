@@ -265,31 +265,41 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
     final hasUserBid = crop.hasUserBid(currentUserId);
     final userBid = crop.getUserBid(currentUserId);
     final isUserHighestBidder = crop.isUserHighestBidder(currentUserId);
+    final isExpired = crop.isExpired || crop.status == 'expired';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
-          colors: [
-            Colors.white,
-            Colors.orange.shade50.withOpacity(0.3),
-          ],
+          colors: isExpired
+              ? [
+                  Colors.grey.shade100,
+                  Colors.grey.shade200.withOpacity(0.5),
+                ]
+              : [
+                  Colors.white,
+                  Colors.orange.shade50.withOpacity(0.3),
+                ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         border: Border.all(
-          color: Colors.orange.shade100,
-          width: 1.5,
+          color: isExpired ? Colors.red.shade300 : Colors.orange.shade100,
+          width: isExpired ? 2 : 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.orange.withOpacity(0.08),
+            color: isExpired 
+                ? Colors.red.withOpacity(0.15)
+                : Colors.orange.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
           BoxShadow(
-            color: Colors.orange.withOpacity(0.05),
+            color: isExpired
+                ? Colors.red.withOpacity(0.08)
+                : Colors.orange.withOpacity(0.05),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -298,55 +308,105 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Crop Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.network(
-              crop.imageUrl,
-              height: 200,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Container(
-                  height: 200,
-                  color: Colors.grey.shade200,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded / 
-                            loadingProgress.expectedTotalBytes!
-                          : null,
-                      color: Colors.blue,
+          // Crop Image with Expired Overlay
+          Stack(
+            children: [
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                child: Stack(
+                  children: [
+                    Image.network(
+                      crop.imageUrl,
+                      height: 200,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          height: 200,
+                          color: Colors.grey.shade200,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / 
+                                    loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: Colors.blue,
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          height: 200,
+                          color: Colors.grey.shade300,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(
+                                Icons.image_not_supported,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                l10n.get('image_not_available'),
+                                style: TextStyle(
+                                  color: Colors.grey.shade600,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              // Top Right Badge
+              if (isExpired)
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Colors.red.shade600, Colors.red.shade800],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red.withOpacity(0.5),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.cancel_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'AUCTION ENDED',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  height: 200,
-                  color: Colors.grey.shade300,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.image_not_supported,
-                        size: 48,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        l10n.get('image_not_available'),
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                ),
+            ],
           ),
           
           Padding(
@@ -360,26 +420,50 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                     Expanded(
                       child: Text(
                         crop.cropName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: isExpired ? Colors.grey.shade600 : Colors.black87,
                         ),
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade100,
+                        gradient: isExpired
+                            ? LinearGradient(
+                                colors: [Colors.red.shade600, Colors.red.shade700],
+                              )
+                            : null,
+                        color: isExpired ? null : Colors.green.shade100,
                         borderRadius: BorderRadius.circular(12),
+                        boxShadow: isExpired ? [
+                          BoxShadow(
+                            color: Colors.red.withOpacity(0.3),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ] : [],
                       ),
-                      child: Text(
-                        _getStatusText(crop.status, timeLeft),
-                        style: TextStyle(
-                          color: Colors.green.shade700,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isExpired)
+                            Icon(
+                              Icons.event_busy,
+                              color: Colors.white,
+                              size: 14,
+                            ),
+                          if (isExpired) const SizedBox(width: 4),
+                          Text(
+                            _getStatusText(crop.status, timeLeft),
+                            style: TextStyle(
+                              color: isExpired ? Colors.white : Colors.green.shade700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

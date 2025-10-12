@@ -1395,10 +1395,18 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
       future: _ratingService.hasBeenRated(statusData['deliveryOrderId']),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          return Container(
+            padding: const EdgeInsets.all(12),
+            child: const Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.amber),
+                ),
+              ),
+            ),
           );
         }
 
@@ -1406,16 +1414,43 @@ class _DistributorOrdersScreenState extends State<DistributorOrdersScreen> {
         
         return SizedBox(
           width: double.infinity,
-          child: ElevatedButton.icon(
-            onPressed: () => _showRatingDialog(statusData, hasBeenRated),
-            icon: Icon(hasBeenRated ? Icons.edit : Icons.star, size: 16),
-            label: Text(hasBeenRated ? 'Update Rating' : 'Rate Transporter'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: hasBeenRated ? Colors.orange : Colors.amber,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(6),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: hasBeenRated
+                    ? [Colors.orange.shade500, Colors.orange.shade700]
+                    : [Colors.amber.shade500, Colors.amber.shade700],
+              ),
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: (hasBeenRated ? Colors.orange : Colors.amber).withOpacity(0.4),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ElevatedButton.icon(
+              onPressed: () => _showRatingDialog(statusData, hasBeenRated),
+              icon: Icon(
+                hasBeenRated ? Icons.edit_rounded : Icons.star_rounded,
+                size: 20,
+              ),
+              label: Text(
+                hasBeenRated ? 'Update Rating' : 'Rate Transporter',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),

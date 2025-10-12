@@ -200,25 +200,45 @@ class _PaymentScreenState extends State<PaymentScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF6F9FC),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text(
-          'Pay \$${widget.order.finalPrice.toStringAsFixed(2)} using',
-          style: const TextStyle(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.blue.shade600, Colors.blue.shade700],
+                ),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.lock, size: 16, color: Colors.white),
+                  const SizedBox(width: 6),
+                  Text(
+                    'LKR ${widget.order.finalPrice.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.black),
+            icon: const Icon(Icons.close, color: Colors.black87),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -232,9 +252,56 @@ class _PaymentScreenState extends State<PaymentScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Stripe-like Payment Info Banner
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.blue.shade50, Colors.white],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.blue.shade100),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(Icons.payment, color: Colors.blue.shade700, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Secure Payment',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              'Your payment information is encrypted and secure',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                
                 // Card Information Section
                 _buildSectionTitle('Card Information'),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 
                                  // Card Number Field
                  _buildCardNumberField(),
@@ -290,13 +357,29 @@ class _PaymentScreenState extends State<PaymentScreen>
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(
-      title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        color: Colors.black87,
-      ),
+    return Row(
+      children: [
+        Container(
+          width: 4,
+          height: 20,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue.shade600, Colors.blue.shade400],
+            ),
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ],
     );
   }
 
@@ -304,12 +387,24 @@ class _PaymentScreenState extends State<PaymentScreen>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE3E8EE), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: _cardNumberController,
         keyboardType: TextInputType.number,
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          letterSpacing: 1.2,
+        ),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(19),
@@ -317,26 +412,30 @@ class _PaymentScreenState extends State<PaymentScreen>
         onChanged: _formatCardNumber,
         validator: (value) {
           if (!_validateCardNumber(value)) {
-            return 'Please enter a valid card number';
+            return 'Please enter a valid 16-digit card number';
           }
           return null;
         },
         decoration: InputDecoration(
-          hintText: 'Card number',
+          hintText: '1234 5678 9012 3456',
+          hintStyle: TextStyle(
+            color: Colors.grey.shade400,
+            fontSize: 16,
+            letterSpacing: 1.2,
+          ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          prefixIcon: Icon(Icons.credit_card, color: Colors.blue.shade600, size: 22),
           suffixIcon: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _buildCardIcon('visa'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _buildCardIcon('mastercard'),
-                const SizedBox(width: 8),
+                const SizedBox(width: 6),
                 _buildCardIcon('amex'),
-                const SizedBox(width: 8),
-                _buildCardIcon('discover'),
               ],
             ),
           ),
@@ -378,12 +477,20 @@ class _PaymentScreenState extends State<PaymentScreen>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE3E8EE), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: _expiryController,
         keyboardType: TextInputType.number,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(5),
@@ -391,14 +498,15 @@ class _PaymentScreenState extends State<PaymentScreen>
         onChanged: _formatExpiryDate,
         validator: (value) {
           if (!_validateExpiry(value)) {
-            return 'Invalid expiry date';
+            return 'Invalid';
           }
           return null;
         },
-        decoration: const InputDecoration(
-          hintText: 'MM/YY',
+        decoration: InputDecoration(
+          hintText: 'MM / YY',
+          hintStyle: TextStyle(color: Colors.grey.shade400),
           border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
         ),
       ),
     );
@@ -408,46 +516,37 @@ class _PaymentScreenState extends State<PaymentScreen>
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE3E8EE), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TextFormField(
         controller: _cvvController,
         keyboardType: TextInputType.number,
+        obscureText: true,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, letterSpacing: 2),
         inputFormatters: [
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(4),
         ],
         validator: (value) {
           if (!_validateCvv(value)) {
-            return 'Invalid CVV';
+            return 'Invalid';
           }
           return null;
         },
         decoration: InputDecoration(
-          hintText: 'CVC',
+          hintText: 'CVV',
+          hintStyle: TextStyle(color: Colors.grey.shade400),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          suffixIcon: IconButton(
-            icon: const Icon(Icons.info_outline, size: 20),
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('CVC/CVV'),
-                  content: const Text(
-                    'The 3 or 4 digit security code on the back of your card.',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('OK'),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+          suffixIcon: Icon(Icons.credit_card, color: Colors.grey.shade400, size: 20),
         ),
       ),
     );
@@ -633,14 +732,32 @@ class _PaymentScreenState extends State<PaymentScreen>
   }
 
   Widget _buildPaymentButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 56,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: _isProcessing
+              ? [Colors.grey.shade400, Colors.grey.shade500]
+              : [Colors.blue.shade600, Colors.blue.shade700],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: _isProcessing
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.blue.withOpacity(0.4),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+      ),
       child: ElevatedButton(
         onPressed: _isProcessing ? null : _processPayment,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue[600],
+          backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
+          shadowColor: Colors.transparent,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -648,19 +765,27 @@ class _PaymentScreenState extends State<PaymentScreen>
         ),
         child: _isProcessing
             ? const SizedBox(
-                height: 20,
-                width: 20,
+                height: 22,
+                width: 22,
                 child: CircularProgressIndicator(
-                  strokeWidth: 2,
+                  strokeWidth: 2.5,
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 ),
               )
-            : Text(
-                'Pay \$${widget.order.finalPrice.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.lock, size: 20),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Pay LKR ${widget.order.finalPrice.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
       ),
     );

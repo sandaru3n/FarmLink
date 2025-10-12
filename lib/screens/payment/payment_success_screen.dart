@@ -56,11 +56,12 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
     return Scaffold(
       backgroundColor: Colors.green.shade50,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 40),
               // Success Icon
               Container(
                 width: 120,
@@ -107,7 +108,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
               Text(
                 _isUpdatingStatus
                     ? 'Updating payment status...'
-                    : 'Your payment of ₹${widget.order.finalPrice} has been completed successfully.',
+                    : 'Your payment of LKR ${widget.order.finalPrice.toStringAsFixed(2)} has been completed successfully.',
                 style: const TextStyle(
                   fontSize: 16,
                   color: Colors.grey,
@@ -146,7 +147,7 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                                          _buildDetailRow('Order ID', widget.order.id),
                      _buildDetailRow('Crop', widget.order.cropName),
                      _buildDetailRow('Quantity', '${widget.order.quantity} kg'),
-                     _buildDetailRow('Amount', '₹${widget.order.finalPrice}'),
+                     _buildDetailRow('Amount', 'LKR ${widget.order.finalPrice.toStringAsFixed(2)}'),
                      _buildDetailRow('Shipping Address', widget.order.distributorLocation != 'To be updated after payment' 
                          ? widget.order.distributorLocation 
                          : 'Address updated during payment'),
@@ -232,6 +233,8 @@ class _PaymentSuccessScreenState extends State<PaymentSuccessScreen> {
                   ),
                 ),
               ),
+              
+              const SizedBox(height: 40),
             ],
           ),
         ),
