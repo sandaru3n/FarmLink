@@ -44,17 +44,18 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   }
 
   String _getAppBarTitle() {
+    final l10n = AppLocalizations.of(context);
     switch (_currentIndex) {
       case 0:
-        return 'Home';
+        return l10n.get('home');
       case 1:
-        return 'Marketplace';
+        return l10n.get('marketplace');
       case 2:
-        return 'My Orders';
+        return l10n.get('my_orders');
       case 3:
-        return 'Products';
+        return l10n.get('products');
       default:
-        return 'Distributor Dashboard';
+        return l10n.get('distributor_dashboard');
     }
   }
 
@@ -73,9 +74,9 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
         }
 
         if (!authProvider.isLoggedIn) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
-              child: Text('Please log in'),
+              child: Text(l10n.get('please_log_in')),
             ),
           );
         }
@@ -104,22 +105,22 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                   });
                 },
                 padding: const EdgeInsets.all(16),
-                tabs: const [
+                tabs: [
                   GButton(
                     icon: LineAwesomeIcons.home,
-                    text: 'Home',
+                    text: l10n.get('home'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.store,
-                    text: 'Marketplace',
+                    text: l10n.get('marketplace'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.shopping_bag,
-                    text: 'My Orders',
+                    text: l10n.get('my_orders'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.box,
-                    text: 'Products',
+                    text: l10n.get('products'),
                   ),
                 ],
               ),
@@ -225,9 +226,9 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Text(
-                        'Home',
-                        style: TextStyle(
+                      Text(
+                        AppLocalizations.of(context).get('home'),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -325,7 +326,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Hi, ${userProfile?.displayName ?? 'User'}! ',
+                            '${AppLocalizations.of(context).get('hello')}, ${userProfile?.displayName ?? 'User'}! ',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 17,
@@ -350,9 +351,9 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                               color: Colors.orange.shade700,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Text(
-                              'Distributor',
-                              style: TextStyle(
+                            child: Text(
+                              AppLocalizations.of(context).get('distributor'),
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -373,6 +374,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   }
 
   Widget _buildBidAnalyticsSection(UserModel userProfile) {
+    final l10n = AppLocalizations.of(context);
     final cropService = CropService();
     final orderService = OrderService();
 
@@ -380,7 +382,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Bid Analytics',
+          l10n.get('bid_analytics'),
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -440,25 +442,25 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                       children: [
                         Row(
                           children: [
-                            _analyticsMetric('Active auctions', '${activeCrops.length}', Colors.orange, Icons.gavel),
+                            _analyticsMetric(l10n.get('active_auctions'), '${activeCrops.length}', Colors.orange, Icons.gavel),
                             const SizedBox(width: 12),
-                            _analyticsMetric('My bids', '$bidsPlaced', Colors.blue, Icons.trending_up),
+                            _analyticsMetric(l10n.get('my_bids'), '$bidsPlaced', Colors.blue, Icons.trending_up),
                           ],
                         ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            _analyticsMetric('Won auctions', '$wonAuctions', Colors.green, Icons.emoji_events),
+                            _analyticsMetric(l10n.get('won_auctions'), '$wonAuctions', Colors.green, Icons.emoji_events),
                             const SizedBox(width: 12),
-                            _analyticsMetric('Total spent', 'LKR ${totalSpent.toStringAsFixed(0)}', Colors.purple, Icons.account_balance_wallet),
+                            _analyticsMetric(l10n.get('total_spent'), 'LKR ${totalSpent.toStringAsFixed(0)}', Colors.purple, Icons.account_balance_wallet),
                           ],
                         ),
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            _analyticsMetric('Leading now', '$leadingNow', Colors.teal, Icons.leaderboard),
+                            _analyticsMetric(l10n.get('leading_now'), '$leadingNow', Colors.teal, Icons.leaderboard),
                             const SizedBox(width: 12),
-                            _analyticsMetric('Ending ≤24h', '$endingSoon', Colors.red, Icons.timer),
+                            _analyticsMetric(l10n.get('ending_soon'), '$endingSoon', Colors.red, Icons.timer),
                           ],
                         ),
                         const SizedBox(height: 12),
@@ -544,6 +546,8 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   }
 
   Widget _bidTrendCard(List<BidModel> myBids, double avgBid, double winRate) {
+    final l10n = AppLocalizations.of(context);
+    
     // Prepare 7-day bins
     final now = DateTime.now();
     List<double> bins = List.filled(7, 0.0);
@@ -592,7 +596,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Last 7 days bid trend',
+                      l10n.get('last_7_days_trend'),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
@@ -614,7 +618,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                     border: Border.all(color: Colors.blue.shade200),
                   ),
                   child: Text(
-                    'Avg: LKR ${avgBid.toStringAsFixed(0)}',
+                    '${l10n.get('avg')}: LKR ${avgBid.toStringAsFixed(0)}',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.blue.shade700,
@@ -631,7 +635,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                     border: Border.all(color: Colors.green.shade200),
                   ),
                   child: Text(
-                    'Win: ${(winRate * 100).round()}%',
+                    '${l10n.get('win')}: ${(winRate * 100).round()}%',
                     style: TextStyle(
                       fontSize: 11,
                       color: Colors.green.shade700,
@@ -668,9 +672,9 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                Text('Day -6', style: TextStyle(fontSize: 10, color: Colors.grey)),
-                Text('Day 0', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              children: [
+                Text('${l10n.get('day')} -6', style: const TextStyle(fontSize: 10, color: Colors.grey)),
+                Text('${l10n.get('day')} 0', style: const TextStyle(fontSize: 10, color: Colors.grey)),
               ],
             ),
           ],
@@ -689,13 +693,17 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
       ),
       child: Text(
         text,
-        style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w600),
+        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.w600),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
       ),
     );
   }
 
   Widget _endingSoonCard(List<CropModel> items, String distributorId) {
     if (items.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -730,7 +738,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Ending soon',
+                  l10n.get('ending_soon_label'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -776,9 +784,13 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                           Text(c.cropName, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
                           Row(
                             children: [
-                              _smallPill('Ends in $tl', Colors.red),
+                              Flexible(
+                                child: _smallPill('${l10n.get('ends_in')} $tl', Colors.red),
+                              ),
                               const SizedBox(width: 6),
-                              _smallPill(leading ? 'You are leading' : 'Not leading', leading ? Colors.green : Colors.grey),
+                              Flexible(
+                                child: _smallPill(leading ? l10n.get('you_are_leading') : l10n.get('not_leading'), leading ? Colors.green : Colors.grey),
+                              ),
                             ],
                           ),
                         ],
@@ -798,7 +810,9 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
 
   Widget _topSpendCard(List<MapEntry<String, double>> top3Spend) {
     if (top3Spend.isEmpty) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context);
     final double maxVal = top3Spend.map((e) => e.value).fold<double>(0.0, (m, v) => v > m ? v : m);
+    
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -840,7 +854,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  'Top spend by crop',
+                  l10n.get('top_spend_by_crop'),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -887,11 +901,13 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
   }
 
   Widget _rangeSelector() {
+    final l10n = AppLocalizations.of(context);
+    
     return Wrap(
       spacing: 8,
       children: [
         ChoiceChip(
-          label: const Text('Last 7 days'),
+          label: Text(l10n.get('last_7_days')),
           selected: _analyticsDays == 7,
           onSelected: (s) {
             if (s) setState(() => _analyticsDays = 7);
@@ -904,7 +920,7 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
           ),
         ),
         ChoiceChip(
-          label: const Text('Last 30 days'),
+          label: Text(l10n.get('last_30_days')),
           selected: _analyticsDays == 30,
           onSelected: (s) {
             if (s) setState(() => _analyticsDays = 30);

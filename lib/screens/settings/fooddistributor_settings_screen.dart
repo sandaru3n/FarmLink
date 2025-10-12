@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/language_provider.dart';
 import '../../models/user_model.dart';
 import '../../utils/app_localizations.dart';
 import '../auth/login_screen.dart';
@@ -36,17 +37,33 @@ class _FoodDistributorSettingsScreenState extends State<FoodDistributorSettingsS
   }
 
   Future<void> _loadCurrentLanguage() async {
-    // TODO: Load current language from preferences
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
     setState(() {
-      _selectedLanguage = 'en';
+      _selectedLanguage = languageProvider.locale.languageCode;
     });
   }
 
   Future<void> _changeLanguage(String languageCode) async {
+    final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+    
     setState(() {
       _selectedLanguage = languageCode;
     });
-    // TODO: Save language preference and update app locale
+    
+    // Save language preference and update app locale
+    await languageProvider.changeLocale(Locale(languageCode, ''));
+    
+    // Show confirmation
+    if (mounted) {
+      final l10n = AppLocalizations.of(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.get('language_changed')),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   Future<void> _switchRole() async {

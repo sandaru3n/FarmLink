@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/app_localizations.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
 
@@ -31,20 +32,21 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Future<void> _deleteProduct(ProductModel product) async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: Text('Are you sure you want to delete "${product.productName}"?'),
+        title: Text(l10n.get('delete_product')),
+        content: Text('${l10n.get('delete_product_confirm')} "${product.productName}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.get('cancel')),
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(l10n.get('delete')),
           ),
         ],
       ),
@@ -55,8 +57,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
       final success = await productProvider.deleteProduct(product.id);
       
       if (success && mounted) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Product deleted successfully!')),
+          SnackBar(content: Text(l10n.get('product_deleted_success'))),
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -68,6 +71,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
@@ -122,8 +127,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text(
-                          'My Products',
+                        Text(
+                          l10n.get('my_products'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 26,
@@ -187,7 +192,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         productProvider.loadDistributorProducts(authProvider.userProfile!.uid);
                       }
                     },
-                    child: const Text('Retry'),
+                    child: Text(l10n.get('retry')),
                   ),
                 ],
               ),
@@ -205,16 +210,16 @@ class _ProductListScreenState extends State<ProductListScreen> {
                     color: Colors.grey,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'No products yet',
+                  Text(
+                    l10n.get('no_products_yet'),
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  const Text(
-                    'Add your first product to start selling',
+                  Text(
+                    l10n.get('add_first_product'),
                     style: TextStyle(
                       fontSize: 16,
                       color: Colors.grey,
@@ -236,7 +241,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       }
                     },
                     icon: const Icon(Icons.add),
-                    label: const Text('Add Product'),
+                    label: Text(l10n.get('add_product')),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.orange,
                       foregroundColor: Colors.white,
@@ -277,7 +282,15 @@ class _ProductListScreenState extends State<ProductListScreen> {
 
           return Column(
             children: [
-              _buildStatsHeader(total, available, lowStock, outOfStock),
+              _StatsHeader(
+                total: total, 
+                available: available, 
+                lowStock: lowStock, 
+                outOfStock: outOfStock,
+                inventoryOverviewLabel: l10n.get('inventory_overview'),
+                lowStockLabel: l10n.get('low_stock'),
+                outOfStockLabel: l10n.get('out_of_stock'),
+              ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: Row(
@@ -295,8 +308,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               Expanded(
                                 child: TextField(
                                   controller: _searchController,
-                                  decoration: const InputDecoration(
-                                    hintText: 'Search products...',
+                                  decoration: InputDecoration(
+                                    hintText: l10n.get('search_products'),
                                     border: InputBorder.none,
                                   ),
                                 ),
@@ -315,11 +328,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
                         child: DropdownButtonHideUnderline(
                           child: DropdownButton<String>(
                             value: _selectedFilter,
-                            items: const [
-                              DropdownMenuItem(value: 'All', child: Text('All')),
-                              DropdownMenuItem(value: 'Available', child: Text('Available')),
-                              DropdownMenuItem(value: 'Low stock', child: Text('Low stock')),
-                              DropdownMenuItem(value: 'Out of stock', child: Text('Out of stock')),
+                            items: [
+                              DropdownMenuItem(value: 'All', child: Text(l10n.get('all'))),
+                              DropdownMenuItem(value: 'Available', child: Text(l10n.get('available'))),
+                              DropdownMenuItem(value: 'Low stock', child: Text(l10n.get('low_stock'))),
+                              DropdownMenuItem(value: 'Out of stock', child: Text(l10n.get('out_of_stock'))),
                             ],
                             onChanged: (v) => setState(() => _selectedFilter = v ?? 'All'),
                           ),
@@ -414,8 +427,8 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                             if (isLowStock) ...[
                               const SizedBox(height: 2),
-                              const Text(
-                                'Low stock',
+                              Text(
+                                l10n.get('low_stock'),
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: Colors.red,
@@ -433,7 +446,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Total Value: LKR ${(product.quantity * product.pricePerKg).toStringAsFixed(2)}',
+                              '${l10n.get('total_value')}: LKR ${(product.quantity * product.pricePerKg).toStringAsFixed(2)}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
@@ -450,7 +463,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('Available', style: TextStyle(fontSize: 12)),
+                                    Text(l10n.get('available'), style: const TextStyle(fontSize: 12)),
                                     const SizedBox(width: 6),
                                     Switch(
                                       value: product.isAvailable,
@@ -486,7 +499,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     final ok = await provider.setBaselineToCurrent(product.id);
                                     if (ok && context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Baseline set to current quantity')),
+                                        SnackBar(content: Text(l10n.get('baseline_set'))),
                                       );
                                     } else if (context.mounted) {
                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -495,7 +508,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                                     }
                                   },
                                   icon: const Icon(Icons.speed),
-                                  label: const Text('Set baseline'),
+                                  label: Text(l10n.get('set_baseline')),
                                   style: OutlinedButton.styleFrom(visualDensity: VisualDensity.compact),
                                 ),
                               ],
@@ -516,7 +529,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               );
                             },
                             icon: const Icon(Icons.edit, color: Colors.blue),
-                            tooltip: 'Edit Product',
+                            tooltip: l10n.get('edit_product'),
                           ),
                           IconButton(
                             onPressed: () => _deleteProduct(product),
@@ -524,7 +537,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                               Icons.delete,
                               color: Colors.red,
                             ),
-                            tooltip: 'Delete Product',
+                            tooltip: l10n.get('delete_product'),
                           ),
                         ],
                       ),
@@ -546,19 +559,20 @@ class _ProductListScreenState extends State<ProductListScreen> {
   }
 
   Future<void> _showAdjustDialog(BuildContext context, ProductModel product, double suggestedDelta) async {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController(text: suggestedDelta.toStringAsFixed(0));
     final result = await showDialog<double>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Adjust Stock (kg)'),
+          title: Text(l10n.get('adjust_stock_kg')),
           content: TextField(
             controller: controller,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(hintText: 'e.g., -5 or 10'),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.get('cancel'))),
             TextButton(onPressed: () {
               final d = double.tryParse(controller.text.trim());
               if (d == null) {
@@ -566,7 +580,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                 return;
               }
               Navigator.of(context).pop(d);
-            }, child: const Text('Apply')),
+            }, child: Text(l10n.get('apply'))),
           ],
         );
       },
@@ -577,7 +591,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
       final ok = await provider.adjustStock(product.id, result);
       if (ok && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Stock adjusted')),
+          SnackBar(content: Text(l10n.get('stock_adjusted'))),
         );
       } else if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -660,7 +674,19 @@ class _StatsHeader extends StatelessWidget {
   final int available;
   final int lowStock;
   final int outOfStock;
-  const _StatsHeader({required this.total, required this.available, required this.lowStock, required this.outOfStock});
+  final String inventoryOverviewLabel;
+  final String lowStockLabel;
+  final String outOfStockLabel;
+  
+  const _StatsHeader({
+    required this.total, 
+    required this.available, 
+    required this.lowStock, 
+    required this.outOfStock,
+    required this.inventoryOverviewLabel,
+    required this.lowStockLabel,
+    required this.outOfStockLabel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -699,7 +725,7 @@ class _StatsHeader extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Text(
-                  'Inventory Overview',
+                  inventoryOverviewLabel,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -720,9 +746,9 @@ class _StatsHeader extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              _metric('Low Stock', '$lowStock', Colors.amber.shade700, Icons.warning_amber),
+              _metric(lowStockLabel, '$lowStock', Colors.amber.shade700, Icons.warning_amber),
               const SizedBox(width: 10),
-              _metric('Out of Stock', '$outOfStock', Colors.red.shade600, Icons.remove_circle),
+              _metric(outOfStockLabel, '$outOfStock', Colors.red.shade600, Icons.remove_circle),
             ],
           ),
         ],
@@ -732,7 +758,15 @@ class _StatsHeader extends StatelessWidget {
 }
 
 Widget _buildStatsHeader(int total, int available, int lowStock, int outOfStock) {
-  return _StatsHeader(total: total, available: available, lowStock: lowStock, outOfStock: outOfStock);
+  return _StatsHeader(
+    total: total, 
+    available: available, 
+    lowStock: lowStock, 
+    outOfStock: outOfStock,
+    inventoryOverviewLabel: 'Inventory Overview',
+    lowStockLabel: 'Low Stock',
+    outOfStockLabel: 'Out of Stock',
+  );
 }
 
 class _StockBar extends StatelessWidget {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/app_localizations.dart';
 import 'distributor_orders_screen.dart';
 import 'distributor_consumer_orders_screen.dart';
 
@@ -27,6 +28,8 @@ class _DistributorOrdersTabbedScreenState extends State<DistributorOrdersTabbedS
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
@@ -80,8 +83,8 @@ class _DistributorOrdersTabbedScreenState extends State<DistributorOrdersTabbedS
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text(
-                          'My Orders',
+                        Text(
+                          l10n.get('my_orders'),
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 26,
@@ -99,9 +102,9 @@ class _DistributorOrdersTabbedScreenState extends State<DistributorOrdersTabbedS
                     unselectedLabelColor: Colors.white70,
                     labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                     unselectedLabelStyle: const TextStyle(fontSize: 15),
-                    tabs: const [
-                      Tab(text: 'Farmer Orders'),
-                      Tab(text: 'Consumer Orders'),
+                    tabs: [
+                      Tab(text: l10n.get('farmer_orders')),
+                      Tab(text: l10n.get('consumer_orders')),
                     ],
                   ),
                 ],

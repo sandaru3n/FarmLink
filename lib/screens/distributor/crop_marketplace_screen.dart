@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../models/crop_model.dart';
 import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/app_localizations.dart';
 import '../payment/payment_screen.dart';
 import '../../services/payment_service.dart'; // Added import for PaymentService
 
@@ -35,6 +36,8 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Scaffold(
       backgroundColor: Colors.grey[50],
       body: Column(
@@ -86,9 +89,9 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                       ),
                     ),
                     const SizedBox(width: 12),
-                    const Text(
-                      'Marketplace',
-                      style: TextStyle(
+                    Text(
+                      AppLocalizations.of(context).get('marketplace'),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 26,
                         fontWeight: FontWeight.bold,
@@ -171,12 +174,12 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                             ),
-                            child: const Row(
+                            child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.refresh, color: Colors.white),
-                                SizedBox(width: 8),
-                                Text('Retry', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                                const Icon(Icons.refresh, color: Colors.white),
+                                const SizedBox(width: 8),
+                                Text(l10n.get('retry'), style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
                               ],
                             ),
                           ),
@@ -212,7 +215,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                         ),
                         const SizedBox(height: 24),
                         Text(
-                          'No crops available',
+                          l10n.get('no_crops_available'),
                           style: TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
@@ -221,7 +224,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                         ),
                         const SizedBox(height: 12),
                         Text(
-                          'No active auctions or won crops to display',
+                          l10n.get('no_active_auctions'),
                           style: TextStyle(
                             fontSize: 15,
                             color: Colors.grey.shade600,
@@ -254,6 +257,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   }
 
   Widget _buildCropCard(CropModel crop) {
+    final l10n = AppLocalizations.of(context);
     final timeLeft = crop.timeLeft;
     final highestBid = crop.highestBid;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -332,7 +336,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Image not available',
+                        l10n.get('image_not_available'),
                         style: TextStyle(
                           color: Colors.grey.shade600,
                           fontSize: 12,
@@ -395,7 +399,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                     Expanded(
                       child: _buildInfoRow(
                         Icons.attach_money,
-                        'Min Bid',
+                        l10n.get('min_bid'),
                         'LKR ${crop.minBidPrice}',
                       ),
                     ),
@@ -406,7 +410,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                 // Location
                 _buildInfoRow(
                   Icons.location_on,
-                  'Pickup Location',
+                  l10n.get('pickup_location'),
                   crop.pickupLocation,
                 ),
                 const SizedBox(height: 8),
@@ -415,7 +419,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                 if (highestBid != null)
                   _buildInfoRow(
                     Icons.trending_up,
-                    'Current Highest',
+                    l10n.get('current_highest'),
                     'LKR ${highestBid.amount}',
                     valueColor: Colors.green,
                   ),
@@ -425,7 +429,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                 if (hasUserBid && userBid != null)
                   _buildInfoRow(
                     Icons.person,
-                    'Your Bid',
+                    l10n.get('your_bid'),
                     'LKR ${userBid.amount}',
                     valueColor: isUserHighestBidder ? Colors.green : Colors.blue,
                   ),
@@ -472,12 +476,15 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               child: Icon(icon, size: 16, color: Colors.white),
             ),
             const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: Colors.grey.shade600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -550,13 +557,14 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   }
 
   Widget _buildBiddingHistorySection(CropModel crop) {
+    final l10n = AppLocalizations.of(context);
     return ExpansionTile(
       title: Row(
         children: [
           const Icon(Icons.history, size: 20),
           const SizedBox(width: 8),
           Text(
-            'Bidding History (${crop.bids.length} bids)',
+            '${l10n.get('bidding_history_count')} (${crop.bids.length} ${l10n.get('bids')})',
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ],
@@ -606,6 +614,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   }
 
   Widget _buildActionButtons(CropModel crop, bool hasUserBid, bool isUserHighestBidder) {
+    final l10n = AppLocalizations.of(context);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUserId = authProvider.userProfile?.uid ?? '';
     final userBid = crop.getUserBid(currentUserId);
@@ -629,7 +638,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                   'You won this auction! Final price: LKR ${crop.order?.finalPrice ?? crop.highestBid?.amount ?? 0}',
+                   '${l10n.get('you_won_auction')}: LKR ${crop.order?.finalPrice ?? crop.highestBid?.amount ?? 0}',
                   style: const TextStyle(
                     color: Colors.purple,
                     fontWeight: FontWeight.bold,
@@ -653,7 +662,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               const Icon(Icons.info, color: Colors.grey, size: 20),
               const SizedBox(width: 8),
               Text(
-                'Sold to ${crop.order?.distributorName ?? 'Highest Bidder'}',
+                '${l10n.get('sold_to_bidder')} ${crop.order?.distributorName ?? l10n.get('highest_bidder')}',
                 style: const TextStyle(
                   color: Colors.grey,
                   fontWeight: FontWeight.bold,
@@ -679,9 +688,9 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
             children: [
               const Icon(Icons.cancel, color: Colors.red, size: 20),
               const SizedBox(width: 8),
-              const Text(
-                'No bids placed - Auction ended',
-                style: TextStyle(
+              Text(
+                l10n.get('no_bids_placed'),
+                style: const TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.bold,
                 ),
@@ -710,7 +719,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
           child: ElevatedButton.icon(
             onPressed: () => _placeOrder(crop),
             icon: const Icon(Icons.shopping_cart, size: 20),
-            label: const Text('Place Order', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            label: Text(l10n.get('place_order'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.transparent,
               foregroundColor: Colors.white,
@@ -737,7 +746,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Auction ended. ${crop.highestBid?.distributorName ?? 'Highest bidder'} won.',
+                  '${l10n.get('auction_ended')} ${crop.highestBid?.distributorName ?? l10n.get('highest_bidder')} ${l10n.get('won')}.',
                   style: const TextStyle(
                     color: Colors.orange,
                     fontWeight: FontWeight.bold,
@@ -772,7 +781,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
         child: ElevatedButton.icon(
           onPressed: () => _showUpdateBidDialog(crop, userBid!),
           icon: const Icon(Icons.edit, size: 18),
-          label: const Text('Update Bid', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          label: Text(l10n.get('update_bid'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
@@ -790,7 +799,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
         child: ElevatedButton.icon(
           onPressed: () => _showBidDialog(crop),
           icon: const Icon(Icons.gavel, size: 20),
-          label: const Text('Place Bid', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          label: Text(l10n.get('place_bid'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.transparent,
             foregroundColor: Colors.white,
@@ -850,6 +859,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   }
 
   void _showBidDialog(CropModel crop) {
+    final l10n = AppLocalizations.of(context);
     final bidController = TextEditingController();
     final highestBid = crop.highestBid;
     final minBid = highestBid != null 
@@ -901,7 +911,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Place Your Bid',
+                          l10n.get('place_your_bid'),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -938,7 +948,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   Expanded(
                     child: _buildInfoCard(
                       Icons.attach_money,
-                      'Min Bid',
+                      l10n.get('min_bid'),
                       'LKR ${crop.minBidPrice}',
                       Colors.green,
                     ),
@@ -960,7 +970,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
               
               // Bid Input
               Text(
-                'Your Bid Amount',
+                l10n.get('your_bid_amount'),
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -979,7 +989,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   keyboardType: TextInputType.number,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
-                    hintText: 'Enter amount in LKR',
+                    hintText: l10n.get('enter_amount_lkr'),
                     hintStyle: TextStyle(color: Colors.grey.shade400),
                     prefixIcon: Container(
                       margin: const EdgeInsets.all(8),
@@ -1053,7 +1063,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                           if (bidAmount == null || bidAmount < minBid) {
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
-                                content: Text('Bid must be at least LKR ${minBid}'),
+                                content: Text('${l10n.get('bid_must_be_at_least')} LKR ${minBid}'),
                                 backgroundColor: Colors.red.shade600,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1080,7 +1090,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                               Navigator.of(context).pop();
                               scaffoldMessenger.showSnackBar(
                                 SnackBar(
-                                  content: const Text('Bid placed successfully!'),
+                                  content: Text(l10n.get('bid_placed_success')),
                                   backgroundColor: Colors.green.shade600,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1091,7 +1101,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                             if (mounted) {
                               scaffoldMessenger.showSnackBar(
                                 SnackBar(
-                                  content: Text(cropProvider.error ?? 'Failed to place bid'),
+                                  content: Text(cropProvider.error ?? l10n.get('failed_place_bid')),
                                   backgroundColor: Colors.red.shade600,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1109,9 +1119,9 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Place Bid',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        child: Text(
+                          l10n.get('place_bid'),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -1126,6 +1136,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   }
 
   void _showUpdateBidDialog(CropModel crop, BidModel currentBid) {
+    final l10n = AppLocalizations.of(context);
     final bidController = TextEditingController();
     final highestBid = crop.highestBid;
     final minBid = highestBid != null && highestBid.distributorId != currentBid.distributorId
@@ -1177,7 +1188,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Update Your Bid',
+                          l10n.get('update_your_bid'),
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -1231,7 +1242,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Your Current Bid',
+                            l10n.get('your_current_bid'),
                             style: TextStyle(
                               color: Colors.grey.shade600,
                               fontSize: 14,
@@ -1287,7 +1298,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                   keyboardType: TextInputType.number,
                   style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                   decoration: InputDecoration(
-                    hintText: 'Enter new amount in LKR',
+                    hintText: l10n.get('enter_new_amount'),
                     hintStyle: TextStyle(color: Colors.grey.shade400),
                     prefixIcon: Container(
                       margin: const EdgeInsets.all(8),
@@ -1361,7 +1372,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                           if (bidAmount == null || bidAmount <= currentBid.amount) {
                             scaffoldMessenger.showSnackBar(
                               SnackBar(
-                                content: Text('New bid must be higher than LKR ${currentBid.amount}'),
+                                content: Text('${l10n.get('new_bid_must_be_higher')} LKR ${currentBid.amount}'),
                                 backgroundColor: Colors.red.shade600,
                                 behavior: SnackBarBehavior.floating,
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1384,7 +1395,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                               Navigator.of(context).pop();
                               scaffoldMessenger.showSnackBar(
                                 SnackBar(
-                                  content: const Text('Bid updated successfully!'),
+                                  content: Text(l10n.get('bid_updated_success')),
                                   backgroundColor: Colors.green.shade600,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1395,7 +1406,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                             if (mounted) {
                               scaffoldMessenger.showSnackBar(
                                 SnackBar(
-                                  content: Text(cropProvider.error ?? 'Failed to update bid'),
+                                  content: Text(cropProvider.error ?? l10n.get('failed_update_bid')),
                                   backgroundColor: Colors.red.shade600,
                                   behavior: SnackBarBehavior.floating,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -1413,9 +1424,9 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Update Bid',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        child: Text(
+                          l10n.get('update_bid'),
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -1430,10 +1441,11 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
   }
 
   void _showBiddingHistoryDialog(CropModel crop) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Bidding History - ${crop.cropName}'),
+        title: Text('${l10n.get('bidding_history_count')} - ${crop.cropName}'),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
@@ -1466,7 +1478,7 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Close'),
+            child: Text(l10n.get('close')),
           ),
         ],
       ),
