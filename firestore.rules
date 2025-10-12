@@ -28,9 +28,18 @@ service cloud.firestore {
     match /crops/{cropId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated();
-      allow update, delete: if isAuthenticated() && 
+      
+      // Allow farmers to update/delete their own crops
+      // Allow distributors to update crop for bidding (adding/updating bids)
+      allow update: if isAuthenticated() && 
         (request.auth.uid == resource.data.farmerId || 
-         request.auth.uid == request.resource.data.farmerId);
+         request.auth.uid == request.resource.data.farmerId ||
+         // Allow if only updating bids array (for bidding)
+         (resource.data.keys().hasAll(['bids']) && 
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bids'])));
+      
+      allow delete: if isAuthenticated() && 
+        request.auth.uid == resource.data.farmerId;
     }
     
     // ================================
@@ -38,10 +47,21 @@ service cloud.firestore {
     // ================================
     match /bids/{bidId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      
+      // Allow distributors to create bids
+      allow create: if isAuthenticated() &&
+        request.resource.data.distributorId == request.auth.uid &&
+        request.resource.data.bidAmount is number &&
+        request.resource.data.bidAmount > 0 &&
+        request.resource.data.cropId is string &&
+        request.resource.data.farmerId is string;
+      
+      // Allow distributors to update their own bids, or farmers to update bid status
       allow update: if isAuthenticated() && 
         (request.auth.uid == resource.data.distributorId ||
          request.auth.uid == resource.data.farmerId);
+      
+      // Allow distributors to delete their own bids
       allow delete: if isAuthenticated() && 
         request.auth.uid == resource.data.distributorId;
     }
