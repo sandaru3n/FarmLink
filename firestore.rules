@@ -216,6 +216,34 @@ service cloud.firestore {
     }
     
     // ================================
+    // CHARITIES COLLECTION (Donation System)
+    // ================================
+    match /charities/{charityId} {
+      // Anyone authenticated can read charities
+      allow read: if isAuthenticated();
+      
+      // Only admins can create/update/delete charities
+      // You can add admin check here if needed
+      allow create, update, delete: if false;
+    }
+    
+    // ================================
+    // DONATIONS COLLECTION
+    // ================================
+    match /donations/{donationId} {
+      // Users can read their own donations
+      allow read: if isAuthenticated() &&
+        (resource.data.donorId == request.auth.uid);
+      
+      // Users can create donations
+      allow create: if isAuthenticated() &&
+        request.resource.data.donorId == request.auth.uid;
+      
+      // No updates or deletes for donations
+      allow update, delete: if false;
+    }
+    
+    // ================================
     // DEFAULT DENY
     // ================================
     // Deny access to any other collections not explicitly defined

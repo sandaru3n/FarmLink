@@ -291,7 +291,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                             }),
                           if (_priceRange.start > 0 || _priceRange.end < 1000)
                             _buildFilterChip(
-                              '₹${_priceRange.start.round()} - ₹${_priceRange.end.round()}',
+                              'LKR ${_priceRange.start.round()} - LKR ${_priceRange.end.round()}',
                               () {
                                 setState(() {
                                   _priceRange = const RangeValues(0, 1000);
@@ -1251,7 +1251,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                     border: Border.all(color: Colors.blue.shade200),
                                   ),
                                   child: Text(
-                                    '₹${_priceRange.start.round()}',
+                                    'LKR ${_priceRange.start.round()}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue.shade700,
@@ -1268,7 +1268,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                     border: Border.all(color: Colors.blue.shade200),
                                   ),
                                   child: Text(
-                                    '₹${_priceRange.end.round()}',
+                                    'LKR ${_priceRange.end.round()}',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.blue.shade700,
@@ -1303,8 +1303,8 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                               max: 1000,
                               divisions: 20,
                               labels: RangeLabels(
-                                '₹${_priceRange.start.round()}',
-                                '₹${_priceRange.end.round()}',
+                                'LKR ${_priceRange.start.round()}',
+                                'LKR ${_priceRange.end.round()}',
                               ),
                               onChanged: (RangeValues values) {
                                 setState(() {
