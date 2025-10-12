@@ -5,6 +5,7 @@ import '../../providers/cart_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/consumer_order_service.dart';
 import '../../models/consumer_order_model.dart';
+import '../../utils/app_localizations.dart';
 import 'consumer_payment_screen.dart';
 import 'browse_products_screen.dart';
 
@@ -100,20 +101,20 @@ class _CartScreenState extends State<CartScreen> {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Column(
+                    Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Remove Item',
-                          style: TextStyle(
+                          AppLocalizations.of(context).get('remove_item'),
+                          style: const TextStyle(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
                         Text(
-                          'Confirm removal',
-                          style: TextStyle(
+                          AppLocalizations.of(context).get('confirm'),
+                          style: const TextStyle(
                             fontSize: 12,
                             color: Colors.white70,
                           ),
@@ -205,7 +206,7 @@ class _CartScreenState extends State<CartScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'This item will be removed from your cart',
+                          AppLocalizations.of(context).get('remove_item_confirm'),
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.red.shade700,
@@ -234,7 +235,7 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                         child: Text(
-                          'Cancel',
+                          AppLocalizations.of(context).get('cancel'),
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
@@ -255,14 +256,14 @@ class _CartScreenState extends State<CartScreen> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Row(
+                        child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.delete_outline, size: 18, color: Colors.white),
-                            SizedBox(width: 8),
+                            const Icon(Icons.delete_outline, size: 18, color: Colors.white),
+                            const SizedBox(width: 8),
                             Text(
-                              'Remove',
-                              style: TextStyle(
+                              AppLocalizations.of(context).get('delete'),
+                              style: const TextStyle(
                                 fontSize: 15,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -576,19 +577,21 @@ class _CartScreenState extends State<CartScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Shopping Cart',
-                            style: TextStyle(
-                              fontSize: 24,
+                          Text(
+                            AppLocalizations.of(context).get('shopping_cart'),
+                            style: const TextStyle(
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                               letterSpacing: 0.5,
                             ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                           Consumer<CartProvider>(
                             builder: (context, cartProvider, child) {
                               return Text(
-                                '${cartProvider.cartItems.length} items',
+                                '${cartProvider.cartItems.length} ${AppLocalizations.of(context).get('items')}',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.white70,
@@ -612,7 +615,7 @@ class _CartScreenState extends State<CartScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.delete_sweep, color: Colors.white),
                   onPressed: _clearCart,
-                  tooltip: 'Clear Cart',
+                  tooltip: AppLocalizations.of(context).get('clear_all'),
                             ),
                 );
               }
@@ -691,7 +694,7 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Your Cart is Empty',
+                    AppLocalizations.of(context).get('cart_empty'),
                     style: TextStyle(
                       fontSize: 24,
                       color: Colors.grey.shade800,
@@ -702,7 +705,7 @@ class _CartScreenState extends State<CartScreen> {
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
-                      'Start adding products to fill your cart with fresh items!',
+                      AppLocalizations.of(context).get('start_shopping'),
                     style: TextStyle(
                         color: Colors.grey.shade600,
                       fontSize: 16,
@@ -751,9 +754,9 @@ class _CartScreenState extends State<CartScreen> {
                                 size: 22,
                               ),
                               const SizedBox(width: 12),
-                              const Text(
-                                'Browse Products',
-                                style: TextStyle(
+                              Text(
+                                AppLocalizations.of(context).get('browse_products'),
+                                style: const TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
@@ -1025,7 +1028,7 @@ class _CartScreenState extends State<CartScreen> {
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          'Remove',
+                                          AppLocalizations.of(context).get('delete'),
                                           style: TextStyle(
                                             fontSize: 12,
                                             fontWeight: FontWeight.w600,
@@ -1093,7 +1096,7 @@ class _CartScreenState extends State<CartScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Total Amount',
+                                  AppLocalizations.of(context).get('total'),
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
@@ -1102,7 +1105,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  '${cartProvider.cartItems.length} items',
+                                  '${cartProvider.cartItems.length} ${AppLocalizations.of(context).get('items')}',
                                   style: TextStyle(
                                     fontSize: 12,
                                     color: Colors.grey.shade600,
@@ -1169,9 +1172,9 @@ class _CartScreenState extends State<CartScreen> {
                                     size: 22,
                                   ),
                                   const SizedBox(width: 12),
-                                  const Text(
-                          'Proceed to Checkout',
-                          style: TextStyle(
+                                  Text(
+                          AppLocalizations.of(context).get('proceed_to_checkout'),
+                          style: const TextStyle(
                                       fontSize: 17,
                             fontWeight: FontWeight.bold,
                                       color: Colors.white,

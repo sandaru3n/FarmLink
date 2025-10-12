@@ -5,6 +5,7 @@ import '../../models/consumer_order_model.dart';
 import '../../models/consumer_rating_model.dart';
 import '../../services/consumer_order_service.dart';
 import '../../services/consumer_rating_service.dart';
+import '../../utils/app_localizations.dart';
 import 'consumer_order_details_screen.dart';
 
 class ConsumerOrdersScreen extends StatefulWidget {
@@ -82,13 +83,17 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                           ),
                         ),
                         const SizedBox(width: 12),
-                        const Text(
-                          'My Orders',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
+                        Expanded(
+                          child: Text(
+                            AppLocalizations.of(context).get('my_orders'),
+                            style: const TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              letterSpacing: 0.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
                       ],
@@ -120,18 +125,18 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
                         fontWeight: FontWeight.w500,
                       ),
                       labelPadding: EdgeInsets.zero,
-                      tabs: const [
+                      tabs: [
                         Tab(
                           height: 40,
-                          child: Center(child: Text('Pending')),
+                          child: Center(child: Text(AppLocalizations.of(context).get('pending'))),
                         ),
                         Tab(
                           height: 40,
-                          child: Center(child: Text('Completed')),
+                          child: Center(child: Text(AppLocalizations.of(context).get('delivered'))),
                         ),
                         Tab(
                           height: 40,
-                          child: Center(child: Text('Reviewed')),
+                          child: Center(child: Text(AppLocalizations.of(context).get('history'))),
                         ),
                       ],
                     ),
@@ -147,8 +152,8 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
             child: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           if (authProvider.userProfile == null) {
-            return const Center(
-              child: Text('Please log in to view orders'),
+            return Center(
+              child: Text(AppLocalizations.of(context).get('please_log_in')),
             );
           }
 
@@ -305,6 +310,7 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
   }
 
   Widget _buildEmptyState(String status) {
+    final l10n = AppLocalizations.of(context);
     String message;
     String subtitle;
     IconData icon;
@@ -312,26 +318,26 @@ class _ConsumerOrdersScreenState extends State<ConsumerOrdersScreen>
     
     switch (status) {
       case 'pending':
-        message = 'No Pending Orders';
-        subtitle = 'Place an order to see it here';
+        message = l10n.get('no_pending_orders');
+        subtitle = l10n.get('place_order_to_see');
         icon = Icons.shopping_bag_outlined;
         iconColor = Colors.orange;
         break;
       case 'completed':
-        message = 'No Completed Orders';
-        subtitle = 'Completed orders will appear here';
+        message = l10n.get('no_completed_orders');
+        subtitle = l10n.get('completed_orders_appear_here');
         icon = Icons.check_circle_outline;
         iconColor = Colors.green;
         break;
       case 'reviewed':
-        message = 'No Reviewed Orders';
-        subtitle = 'Rate your completed orders';
+        message = l10n.get('no_reviewed_orders');
+        subtitle = l10n.get('rate_completed_orders');
         icon = Icons.star_outline;
         iconColor = Colors.amber;
         break;
       default:
-        message = 'No Orders Found';
-        subtitle = 'Your orders will appear here';
+        message = l10n.get('no_orders');
+        subtitle = l10n.get('check_back_later');
         icon = Icons.receipt_long_outlined;
         iconColor = Colors.blue;
     }

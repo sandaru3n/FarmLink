@@ -190,6 +190,32 @@ service cloud.firestore {
     }
     
     // ================================
+    // CARTS COLLECTION (Consumer Shopping Carts)
+    // ================================
+    match /carts/{userId} {
+      // Users can read and write their own cart
+      allow read, write: if isOwner(userId);
+      
+      // Cart items subcollection
+      match /items/{itemId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // ================================
+    // USER FAVORITES COLLECTION
+    // ================================
+    match /user_favorites/{userId} {
+      // Users can read and write their own favorites
+      allow read, write: if isOwner(userId);
+      
+      // Favorite products subcollection
+      match /products/{productId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+    
+    // ================================
     // DEFAULT DENY
     // ================================
     // Deny access to any other collections not explicitly defined

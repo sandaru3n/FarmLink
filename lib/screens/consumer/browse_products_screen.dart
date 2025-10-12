@@ -4,6 +4,7 @@ import '../../models/product_model.dart';
 import '../../providers/product_provider.dart';
 import '../../providers/favorites_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/app_localizations.dart';
 import 'product_detail_screen.dart';
 import 'saved_products_screen.dart';
 import 'donation_screen.dart';
@@ -19,15 +20,15 @@ class BrowseProductsScreen extends StatefulWidget {
 class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  String _selectedFilter = 'All';
+  String _selectedFilter = 'all';
   RangeValues _priceRange = const RangeValues(0, 1000);
   
-  final List<String> _filterOptions = [
-    'All',
-    'Price: Low to High',
-    'Price: High to Low',
-    'Quantity: High to Low',
-    'Quantity: Low to High',
+  List<String> get _filterOptions => [
+    'all',
+    'price_low_high',
+    'price_high_low',
+    'quantity_high_low',
+    'quantity_low_high',
   ];
 
   @override
@@ -87,44 +88,52 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Title with icon
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.shopping_bag_outlined,
-                                color: Colors.white,
-                                size: 24,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Browse Products',
-                                  style: TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                    letterSpacing: 0.5,
-                                  ),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                                Text(
-                                  'Fresh from local farms',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.w400,
-                                  ),
+                                child: const Icon(
+                                  Icons.shopping_bag_outlined,
+                                  color: Colors.white,
+                                  size: 24,
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      AppLocalizations.of(context).get('browse_products'),
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        letterSpacing: 0.5,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                    Text(
+                                      AppLocalizations.of(context).get('fresh_from_farm'),
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: Colors.white70,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         // Action buttons
                         Row(
@@ -147,7 +156,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                             ),
                                           );
                                         },
-                                        tooltip: 'Saved Products',
+                                        tooltip: AppLocalizations.of(context).get('favorites'),
                                       ),
                                     ),
                                     if (favoritesProvider.favoriteProducts.isNotEmpty)
@@ -190,7 +199,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                 onPressed: () {
                                   _showFilterDialog(context);
                                 },
-                                tooltip: 'Filters',
+                                tooltip: AppLocalizations.of(context).get('filter_sort'),
                               ),
                             ),
                           ],
@@ -214,7 +223,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                       child: TextField(
                         controller: _searchController,
                         decoration: InputDecoration(
-                          hintText: 'Search for fresh produce...',
+                          hintText: AppLocalizations.of(context).get('search_products_hint'),
                           hintStyle: TextStyle(
                             color: Colors.grey.shade400,
                             fontSize: 15,
@@ -264,7 +273,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
           ),
           
           // Filter Chips
-          if (_selectedFilter != 'All' || _priceRange.start > 0 || _priceRange.end < 1000)
+          if (_selectedFilter != 'all' || _priceRange.start > 0 || _priceRange.end < 1000)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -274,10 +283,10 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         children: [
-                          if (_selectedFilter != 'All')
-                            _buildFilterChip(_selectedFilter, () {
+                          if (_selectedFilter != 'all')
+                            _buildFilterChip(AppLocalizations.of(context).get(_selectedFilter), () {
                               setState(() {
-                                _selectedFilter = 'All';
+                                _selectedFilter = 'all';
                               });
                             }),
                           if (_priceRange.start > 0 || _priceRange.end < 1000)
@@ -296,11 +305,11 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        _selectedFilter = 'All';
+                        _selectedFilter = 'all';
                         _priceRange = const RangeValues(0, 1000);
                       });
                     },
-                    child: const Text('Clear All'),
+                    child: Text(AppLocalizations.of(context).get('clear_all')),
                   ),
                 ],
               ),
@@ -345,6 +354,8 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                   );
                 }
 
+                final l10n = AppLocalizations.of(context);
+                
                 if (productProvider.allAvailableProducts.isEmpty) {
                   return Center(
                     child: Column(
@@ -356,17 +367,17 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                           color: Colors.grey,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No products available',
-                          style: TextStyle(
+                        Text(
+                          l10n.get('no_products_available'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Check back later for fresh products',
-                          style: TextStyle(
+                        Text(
+                          l10n.get('check_back_later'),
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
                           ),
@@ -390,17 +401,17 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                           color: Colors.grey,
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          'No products found',
-                          style: TextStyle(
+                        Text(
+                          l10n.get('no_products_available'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Try adjusting your search or filters',
-                          style: TextStyle(
+                        Text(
+                          l10n.get('check_back_later'),
+                          style: const TextStyle(
                             fontSize: 16,
                             color: Colors.grey,
                           ),
@@ -782,7 +793,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                               ),
                             ),
                             Text(
-                              '/kg',
+                              AppLocalizations.of(context).get('per_kg'),
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 fontSize: 12,
@@ -1039,16 +1050,16 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
 
     // Sort filter
     switch (_selectedFilter) {
-      case 'Price: Low to High':
+      case 'price_low_high':
         filtered.sort((a, b) => a.pricePerKg.compareTo(b.pricePerKg));
         break;
-      case 'Price: High to Low':
+      case 'price_high_low':
         filtered.sort((a, b) => b.pricePerKg.compareTo(a.pricePerKg));
         break;
-      case 'Quantity: High to Low':
+      case 'quantity_high_low':
         filtered.sort((a, b) => b.quantity.compareTo(a.quantity));
         break;
-      case 'Quantity: Low to High':
+      case 'quantity_low_high':
         filtered.sort((a, b) => a.quantity.compareTo(b.quantity));
         break;
     }
@@ -1114,20 +1125,20 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Filter Products',
-                                style: TextStyle(
+                                AppLocalizations.of(context).get('filter_sort'),
+                                style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
                               Text(
-                                'Customize your search',
-                                style: TextStyle(
+                                AppLocalizations.of(context).get('search'),
+                                style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.white70,
                                 ),
@@ -1190,7 +1201,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                 return DropdownMenuItem<String>(
                                   value: option,
                                   child: Text(
-                                    option,
+                                    AppLocalizations.of(context).get(option),
                                     style: TextStyle(
                                       color: Colors.grey.shade800,
                                       fontSize: 14,
@@ -1324,7 +1335,7 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                 side: BorderSide(color: Colors.blue.shade600, width: 2),
                               ),
                               child: Text(
-                                'Cancel',
+                                AppLocalizations.of(context).get('cancel'),
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -1349,14 +1360,14 @@ class _BrowseProductsScreenState extends State<BrowseProductsScreen> {
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.check, size: 20),
-                                  SizedBox(width: 8),
+                                  const Icon(Icons.check, size: 20),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    'Apply Filters',
-                                    style: TextStyle(
+                                    AppLocalizations.of(context).get('apply'),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),

@@ -45,6 +45,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    
     return Consumer<AuthProvider>(
       builder: (context, authProvider, child) {
         if (authProvider.isLoading) {
@@ -56,9 +58,9 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
         }
 
         if (!authProvider.isLoggedIn) {
-          return const Scaffold(
+          return Scaffold(
             body: Center(
-              child: Text('Please log in'),
+              child: Text(l10n.get('please_log_in')),
             ),
           );
         }
@@ -86,22 +88,22 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                   });
                 },
                 padding: const EdgeInsets.all(16),
-                tabs: const [
+                tabs: [
                   GButton(
                     icon: LineAwesomeIcons.home,
-                    text: 'Home',
+                    text: l10n.get('home'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.shopping_cart,
-                    text: 'Cart',
+                    text: l10n.get('cart'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.receipt,
-                    text: 'Orders',
+                    text: l10n.get('orders'),
                   ),
                   GButton(
                     icon: LineAwesomeIcons.user,
-                    text: 'Profile',
+                    text: l10n.get('profile'),
                   ),
                 ],
               ),
@@ -331,15 +333,17 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Text(
-                      'My Profile',
-                      style: TextStyle(
-                        fontSize: 24,
+                      AppLocalizations.of(context).get('my_profile'),
+                      style: const TextStyle(
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                         letterSpacing: 0.5,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ],
@@ -416,7 +420,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                                 const SizedBox(width: 6),
                                 Expanded(
                                   child: Text(
-                                    'Welcome Back!',
+                                    AppLocalizations.of(context).get('welcome_back'),
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
@@ -451,7 +455,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                                   Icon(Icons.verified_user, size: 14, color: Colors.green.shade700),
                                   const SizedBox(width: 4),
                                   Text(
-                                    'Consumer',
+                                    AppLocalizations.of(context).get('consumer'),
                                     style: TextStyle(
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
@@ -478,7 +482,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                               ),
                             );
                           },
-                          tooltip: 'Settings',
+                          tooltip: AppLocalizations.of(context).get('settings'),
                         ),
                       ),
                     ],
@@ -490,16 +494,17 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                 Consumer<ConsumerOrderProvider>(
                   builder: (context, orderProvider, child) {
                     final stats = orderProvider.getOrderStatistics();
+                    final l10n = AppLocalizations.of(context);
                     return Column(
                       children: [
                         Row(
                           children: [
                             Expanded(
-                              child: _buildStatCard('Active Orders', '${stats['pending']}', Icons.shopping_bag, Colors.blue),
+                              child: _buildStatCard(l10n.get('active_orders'), '${stats['pending']}', Icons.shopping_bag, Colors.blue),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _buildStatCard('Completed', '${stats['completed']}', Icons.check_circle, Colors.green),
+                              child: _buildStatCard(l10n.get('completed'), '${stats['completed']}', Icons.check_circle, Colors.green),
                             ),
                           ],
                         ),
@@ -507,11 +512,11 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                         Row(
                           children: [
                             Expanded(
-                              child: _buildStatCard('Total Orders', '${stats['total']}', Icons.receipt_long, Colors.orange),
+                              child: _buildStatCard(l10n.get('total_orders'), '${stats['total']}', Icons.receipt_long, Colors.orange),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: _buildStatCard('Reviewed', '${stats['reviewed']}', Icons.star, Colors.purple),
+                              child: _buildStatCard(l10n.get('reviewed'), '${stats['reviewed']}', Icons.star, Colors.purple),
                             ),
                           ],
                         ),
@@ -540,7 +545,7 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                     ),
                     const SizedBox(width: 12),
                     Text(
-                      'Account Management',
+                      AppLocalizations.of(context).get('account_management'),
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -550,8 +555,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                 const SizedBox(height: 16),
                 
                 _buildProfileActionCard(
-                  'Order History',
-                  'View your past orders',
+                  AppLocalizations.of(context).get('order_history'),
+                  AppLocalizations.of(context).get('view_past_orders'),
                   Icons.history,
                   () {
                     setState(() {
@@ -561,8 +566,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                 ),
                 const SizedBox(height: 12),
                 _buildProfileActionCard(
-                  'Account Settings',
-                  'Manage your account details',
+                  AppLocalizations.of(context).get('account_settings'),
+                  AppLocalizations.of(context).get('manage_account_details'),
                   Icons.settings,
                   () {
                     Navigator.of(context).push(
@@ -574,8 +579,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                 ),
                 const SizedBox(height: 12),
                 _buildProfileActionCard(
-                  'Help & Support',
-                  'Get help and contact support',
+                  AppLocalizations.of(context).get('help_support'),
+                  AppLocalizations.of(context).get('get_help_contact'),
                   Icons.help_outline,
                   () {},
                 ),
