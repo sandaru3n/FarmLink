@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/crop_model.dart';
+import 'notification_service.dart';
 
 class CropStatusService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final NotificationService _notificationService = NotificationService();
   Timer? _statusUpdateTimer;
   
   // Collection references
@@ -36,6 +38,7 @@ class CropStatusService {
       
       final batch = _firestore.batch();
       int updatedCount = 0;
+      List<CropModel> activatedCrops = [];
       
       for (var doc in pendingCropsQuery.docs) {
         final crop = CropModel.fromFirestore(doc);
@@ -44,6 +47,16 @@ class CropStatusService {
             'status': 'active',
             'lastUpdated': Timestamp.fromDate(DateTime.now()),
           });
+          // Add a lightweight log to a collection for Cloud Function trigger (optional)
+          _firestore.collection('events').add({
+            'type': 'crop_activated',
+            'cropId': doc.id,
+            'cropName': crop.cropName,
+            'quantity': crop.quantity,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+          // Store crop with ID for notification
+          activatedCrops.add(crop.copyWith(id: doc.id));
           updatedCount++;
         }
       }
@@ -67,6 +80,16 @@ class CropStatusService {
       if (updatedCount > 0) {
         await batch.commit();
         print('Updated $updatedCount crop statuses');
+        
+        // Send notifications to distributors for newly activated crops
+        for (var crop in activatedCrops) {
+          await _notificationService.notifyDistributorsAboutNewCrop(
+            cropId: crop.id,
+            cropName: crop.cropName,
+            quantity: crop.quantity,
+            farmerId: crop.farmerId,
+          );
+        }
       }
     } catch (e) {
       print('Error during crop status update: $e');
@@ -89,6 +112,14 @@ class CropStatusService {
           'status': 'active',
           'lastUpdated': Timestamp.fromDate(DateTime.now()),
         });
+        
+        // Send notification to distributors
+        await _notificationService.notifyDistributorsAboutNewCrop(
+          cropId: cropId,
+          cropName: crop.cropName,
+          quantity: crop.quantity,
+          farmerId: crop.farmerId,
+        );
       }
       
       // Check if crop should be expired

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
@@ -30,6 +31,8 @@ class AuthProvider extends ChangeNotifier {
         await _loadUserRole();
         // Start listening to real-time profile updates
         startListeningToProfileUpdates();
+        // Initialize notifications and register token
+        await NotificationService().initialize(_currentUser!.uid);
       }
     } catch (e) {
       _setError(e.toString());
@@ -134,6 +137,10 @@ class AuthProvider extends ChangeNotifier {
       await _loadUserRole();
       // Start listening to real-time profile updates
       startListeningToProfileUpdates();
+      // Initialize notifications and register token
+      if (_currentUser != null) {
+        await NotificationService().initialize(_currentUser!.uid);
+      }
       return true;
     } catch (e) {
       _setError(e.toString());
@@ -164,6 +171,10 @@ class AuthProvider extends ChangeNotifier {
       
       // Start listening to real-time profile updates
       startListeningToProfileUpdates();
+      // Initialize notifications and register token
+      if (_currentUser != null) {
+        await NotificationService().initialize(_currentUser!.uid);
+      }
       return true;
     } catch (e) {
       _setError(e.toString());

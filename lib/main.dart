@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 // import 'package:flutter_stripe/flutter_stripe.dart';
@@ -12,16 +13,44 @@ import 'providers/delivery_order_provider.dart';
 import 'providers/transport_order_provider.dart';
 import 'providers/consumer_order_provider.dart';
 import 'providers/favorites_provider.dart';
+import 'providers/notification_provider.dart';
 import 'utils/app_localizations.dart';
 import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
 import 'utils/sample_charities.dart';
+
+// Handle background FCM messages
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  print('Handling background message: ${message.messageId}');
+  print('Message title: ${message.notification?.title}');
+  print('Message body: ${message.notification?.body}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase
   await Firebase.initializeApp();
+
+  // Register background message handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // Handle notification clicks when app is terminated
+  FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+    if (message != null) {
+      print('App opened from terminated state via notification');
+      print('Message data: ${message.data}');
+      // Add navigation logic here if needed
+    }
+  });
+  
+  // Handle notification clicks when app is in background
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print('App opened from background via notification');
+    print('Message data: ${message.data}');
+    // Add navigation logic here if needed
+  });
 
   // Activate Firebase App Check (use debug providers for local dev; switch to Play Integrity/DeviceCheck in prod)
   await FirebaseAppCheck.instance.activate(
@@ -57,6 +86,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => TransportOrderProvider()),
         ChangeNotifierProvider(create: (_) => ConsumerOrderProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MaterialApp(
         title: 'FarmLink',

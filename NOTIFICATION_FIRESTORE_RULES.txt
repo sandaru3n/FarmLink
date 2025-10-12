@@ -1,0 +1,88 @@
+// Firestore Security Rules for Notification System
+// Add these rules to your firestore.rules file in Firebase Console
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ================================
+    // NOTIFICATION RULES
+    // ================================
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if request.auth != null && 
+                    resource.data.userId == request.auth.uid;
+      
+      // Authenticated users can create notifications
+      // In production, you might want to restrict this to specific service accounts
+      allow create: if request.auth != null &&
+                      request.resource.data.userId is string &&
+                      request.resource.data.type is string &&
+                      request.resource.data.title is string &&
+                      request.resource.data.message is string &&
+                      request.resource.data.isRead is bool &&
+                      request.resource.data.createdAt is timestamp;
+      
+      // Users can update/delete their own notifications
+      allow update: if request.auth != null && 
+                      resource.data.userId == request.auth.uid;
+      
+      allow delete: if request.auth != null && 
+                      resource.data.userId == request.auth.uid;
+    }
+    
+    // ================================
+    // EVENTS COLLECTION (Optional)
+    // ================================
+    // This is used by CropStatusService to log crop activation events
+    match /events/{eventId} {
+      // Anyone authenticated can create events
+      allow create: if request.auth != null;
+      
+      // Only admins can read/update/delete events
+      // Adjust this based on your admin role implementation
+      allow read, update, delete: if false; // or add admin check
+    }
+    
+    // ... other rules for crops, users, orders, etc.
+  }
+}
+
+// ================================
+// COMPOSITE INDEX REQUIRED
+// ================================
+// Create the following composite index in Firestore Console:
+//
+// Collection: notifications
+// Fields indexed:
+//   - userId (Ascending)
+//   - createdAt (Descending)
+// Query scope: Collection
+//
+// To create this index:
+// 1. Go to Firebase Console > Firestore > Indexes
+// 2. Click "Create Index"
+// 3. Select collection: notifications
+// 4. Add field: userId (Ascending)
+// 5. Add field: createdAt (Descending)
+// 6. Click "Create"
+//
+// Alternatively, run the app and let Firestore suggest the index
+// automatically when the query is executed.
+
+// ================================
+// TESTING THE RULES
+// ================================
+// You can test these rules in the Firebase Console:
+// 1. Go to Firestore > Rules
+// 2. Click "Rules Playground"
+// 3. Test read/write operations
+//
+// Example test cases:
+// - User reading their own notification: ALLOW
+// - User reading another user's notification: DENY
+// - User creating a notification: ALLOW
+// - User updating their own notification: ALLOW
+// - User deleting their own notification: ALLOW
+// - User deleting another user's notification: DENY
+

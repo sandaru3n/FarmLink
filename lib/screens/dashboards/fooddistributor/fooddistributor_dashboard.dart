@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:line_awesome_flutter/line_awesome_flutter.dart';
 import '../../../providers/auth_provider.dart';
+import '../../../providers/notification_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../utils/app_localizations.dart';
 import '../../settings/fooddistributor_settings_screen.dart';
@@ -12,6 +13,7 @@ import '../../distributor/product_list_screen.dart';
 import '../../../services/crop_service.dart';
 import '../../../services/order_service.dart';
 import '../../../models/crop_model.dart';
+import '../../../widgets/notification_badge.dart';
 
 class FoodDistributorDashboard extends StatefulWidget {
   final int? initialTabIndex;
@@ -31,6 +33,14 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
     super.initState();
     // Preserve last selected tab across rebuilds or use explicitly provided initial index
     _currentIndex = widget.initialTabIndex ?? _lastIndex;
+    // Load notifications for distributor
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      if (authProvider.currentUser != null) {
+        final notificationProvider = Provider.of<NotificationProvider>(context, listen: false);
+        notificationProvider.loadUserNotifications(authProvider.currentUser!.uid);
+      }
+    });
   }
 
   String _getAppBarTitle() {
@@ -225,19 +235,27 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
                       ),
                     ],
                   ),
-                  IconButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => const FoodDistributorSettingsScreen(),
+                  Row(
+                    children: [
+                      const NotificationBadge(
+                        iconColor: Colors.white,
+                        iconSize: 26,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => const FoodDistributorSettingsScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.settings_outlined,
+                          color: Colors.white,
+                          size: 26,
                         ),
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.settings_outlined,
-                      color: Colors.white,
-                      size: 26,
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -42,6 +42,8 @@ dependencies:
   cloud_firestore: ^5.5.0
   firebase_storage: ^12.2.3
   firebase_app_check: 0.3.2+10
+  firebase_messaging: ^15.0.0
+  flutter_local_notifications: ^17.2.3
   
   # State management
   provider: ^6.1.2
@@ -62,6 +64,9 @@ dependencies:
   
   # URL launcher for contact functionality
   url_launcher: ^6.2.5
+  
+  # Timeago for relative time formatting
+  timeago: ^3.6.1
   
   # Google Sign-In
   google_sign_in: ^6.2.1
