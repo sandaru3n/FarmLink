@@ -90,8 +90,12 @@ class DeliveryOrderService {
             quantity: (orderData['quantity'] ?? 0).toDouble(),
             farmerName: orderData['farmerName'] ?? '',
             pickupLocation: orderData['pickupLocation'] ?? '',
+            pickupLatitude: (orderData['pickupLatitude'] as num?)?.toDouble(),
+            pickupLongitude: (orderData['pickupLongitude'] as num?)?.toDouble(),
             distributorName: orderData['distributorName'] ?? '',
             distributorLocation: orderData['distributorLocation'] ?? '',
+            distributorLatitude: (orderData['distributorLatitude'] as num?)?.toDouble(),
+            distributorLongitude: (orderData['distributorLongitude'] as num?)?.toDouble(),
             price: (orderData['finalPrice'] ?? 0).toDouble(),
             status: 'pending',
             createdAt: (orderData['completedAt'] as Timestamp?)?.toDate() ?? 
@@ -219,8 +223,12 @@ class DeliveryOrderService {
         'quantity': orderData['quantity'] ?? 0,
         'farmerName': orderData['farmerName'] ?? '',
         'pickupLocation': orderData['pickupLocation'] ?? '',
+        'pickupLatitude': orderData['pickupLatitude'],
+        'pickupLongitude': orderData['pickupLongitude'],
         'distributorName': orderData['distributorName'] ?? '',
         'distributorLocation': orderData['distributorLocation'] ?? '',
+        'distributorLatitude': orderData['distributorLatitude'],
+        'distributorLongitude': orderData['distributorLongitude'],
         'price': orderData['finalPrice'] ?? 0,
         'status': 'accepted',
         'transporterId': transporterId,
@@ -260,8 +268,12 @@ class DeliveryOrderService {
         'quantity': orderData['quantity'] ?? 0,
         'farmerName': orderData['farmerName'] ?? '',
         'pickupLocation': orderData['pickupLocation'] ?? '',
+        'pickupLatitude': orderData['pickupLatitude'],
+        'pickupLongitude': orderData['pickupLongitude'],
         'distributorName': orderData['distributorName'] ?? '',
         'distributorLocation': orderData['distributorLocation'] ?? '',
+        'distributorLatitude': orderData['distributorLatitude'],
+        'distributorLongitude': orderData['distributorLongitude'],
         'price': orderData['finalPrice'] ?? 0,
         'transporterId': transporterId,
         'transporterName': transporterName,
@@ -358,11 +370,26 @@ class DeliveryOrderService {
   }
 
   // Mark delivery as completed
-  Future<void> markDeliveryCompleted(String deliveryOrderId) async {
+  Future<void> markDeliveryCompleted(String deliveryOrderId, {double? deliveryFee}) async {
     try {
-      await _deliveryOrdersCollection.doc(deliveryOrderId).update({
+      final updateData = {
         'status': 'delivered',
         'deliveredAt': Timestamp.fromDate(DateTime.now()),
+      };
+      
+      // Add delivery fee if provided (calculated from real distance)
+      if (deliveryFee != null) {
+        updateData['deliveryFee'] = deliveryFee;
+      }
+      
+      await _deliveryOrdersCollection.doc(deliveryOrderId).update(updateData);
+      
+      // Also update the corresponding transport order
+      final transportOrderId = 'transport_$deliveryOrderId';
+      await _firestore.collection('transport_orders').doc(transportOrderId).update({
+        'status': 'delivered',
+        'deliveredAt': Timestamp.fromDate(DateTime.now()),
+        if (deliveryFee != null) 'deliveryFee': deliveryFee,
       });
     } catch (e) {
       throw Exception('Failed to mark delivery as completed: $e');

@@ -201,12 +201,12 @@ class DeliveryOrderProvider with ChangeNotifier {
   }
 
   // Mark delivery as completed
-  Future<bool> markDeliveryCompleted(String deliveryOrderId) async {
+  Future<bool> markDeliveryCompleted(String deliveryOrderId, {double? deliveryFee}) async {
     _setLoading(true);
     _clearError();
 
     try {
-      await _deliveryOrderService.markDeliveryCompleted(deliveryOrderId);
+      await _deliveryOrderService.markDeliveryCompleted(deliveryOrderId, deliveryFee: deliveryFee);
       
       // Refresh transporter delivery orders
       await loadTransporterDeliveryOrders();

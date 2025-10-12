@@ -392,6 +392,8 @@ class AppLocalizations {
       'planned': 'PLANNED',
       'specific_delivery_location': 'Specific Delivery Location:',
       'delivery_fee': 'delivery fee',
+      'open_in_maps': 'Open in Google Maps',
+      'get_directions': 'Get Directions',
       
       // History Tab
       'no_delivery_history': 'No delivery history',
@@ -807,6 +809,8 @@ class AppLocalizations {
       'planned': 'සැලසුම්ගත',
       'specific_delivery_location': 'විශේෂිත බෙදාහරින ස්ථානය:',
       'delivery_fee': 'බෙදාහැරීම් ගාස්තුව',
+      'open_in_maps': 'ගූගල් සිතියම් වල විවෘත කරන්න',
+      'get_directions': 'මඟ පෙන්වීම් ලබා ගන්න',
       
       // History Tab
       'no_delivery_history': 'බෙදාහැරීම් ඉතිහාසයක් නැත',
@@ -1222,6 +1226,8 @@ class AppLocalizations {
       'planned': 'திட்டமிடப்பட்டது',
       'specific_delivery_location': 'குறிப்பிட்ட விநியோக இடம்:',
       'delivery_fee': 'விநியோக கட்டணம்',
+      'open_in_maps': 'கூகுள் மேப்ஸில் திறக்கவும்',
+      'get_directions': 'திசைகளைப் பெறுங்கள்',
       
       // History Tab
       'no_delivery_history': 'விநியோக வரலாறு இல்லை',
