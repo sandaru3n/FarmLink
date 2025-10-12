@@ -976,37 +976,78 @@ class _TransportOrdersScreenState extends State<TransportOrdersScreen>
                 ),
               ] else if (transportOrder.canBeDelivered) ...[
                 const SizedBox(height: 12),
+                // Provide Feedback button - Full width
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _markDelivered(transportOrder),
-                    icon: const Icon(Icons.check_circle, size: 16),
-                    label: const Text('Mark as Delivered'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.purple[300],
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.deepPurple.shade500,
+                          Colors.deepPurple.shade700,
+                        ],
                       ),
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.deepPurple.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () => _showDistributorFeedback(transportOrder),
+                      icon: const Icon(Icons.rate_review, size: 18),
+                      label: Text(AppLocalizations.of(context).get('provide_feedback')),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                // Provide feedback about distributor
+                const SizedBox(height: 10),
+                // Mark as delivered button - Full width
                 SizedBox(
                   width: double.infinity,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _showDistributorFeedback(transportOrder),
-                    icon: const Icon(Icons.rate_review, size: 16),
-                    label: const Text('Provide Feedback about Distributor'),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.purple),
-                      foregroundColor: Colors.purple,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.pink.shade300,
+                          Colors.pink.shade400,
+                        ],
                       ),
-                      padding: EdgeInsets.symmetric(vertical: 8),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.pink.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ElevatedButton.icon(
+                      onPressed: () => _markDelivered(transportOrder),
+                      icon: const Icon(Icons.check_circle, size: 18),
+                      label: Text(AppLocalizations.of(context).get('mark_delivered')),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        shadowColor: Colors.transparent,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        minimumSize: const Size(double.infinity, 48),
+                      ),
                     ),
                   ),
                 ),

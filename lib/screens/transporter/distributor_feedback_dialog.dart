@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/rating_model.dart';
 import '../../services/rating_service.dart';
+import '../../utils/app_localizations.dart';
 
 class DistributorFeedbackDialog extends StatefulWidget {
   final String deliveryOrderId;
@@ -62,118 +63,237 @@ class _DistributorFeedbackDialogState extends State<DistributorFeedbackDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Row(
-        children: [
-          const Icon(Icons.store, color: Colors.purple),
-          const SizedBox(width: 8),
-          Text(widget.existingRating != null ? 'Update Feedback' : 'Rate Distributor'),
-        ],
-      ),
-      content: SingleChildScrollView(
+    final l10n = AppLocalizations.of(context);
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 500),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Modern Purple Header
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.purple.withOpacity(0.2)),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.deepPurple.shade600,
+                    Colors.deepPurple.shade700,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.badge, color: Colors.purple, size: 18),
-                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.store,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          widget.distributorName,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          widget.existingRating != null ? l10n.get('update_feedback') : l10n.get('rate_distributor'),
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
+                        const SizedBox(height: 4),
                         Text(
-                          'Delivery: ${widget.deliveryOrderId}',
-                          style: TextStyle(color: Colors.grey[600], fontSize: 11),
+                          widget.distributorName,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Content
+            Flexible(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildStarRating(),
+                    const SizedBox(height: 20),
+                    _buildCategorySelection(),
+                    const SizedBox(height: 20),
+                    _buildCommentField(),
+                    const SizedBox(height: 16),
+                    _buildFeedbackField(),
+                  ],
+                ),
+              ),
+            ),
+            
+            // Action Buttons
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        side: BorderSide(color: Colors.deepPurple.shade600, width: 2),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        l10n.get('cancel'),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.deepPurple.shade600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.deepPurple.shade600,
+                            Colors.deepPurple.shade700,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.deepPurple.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _submitRating,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Text(
+                                widget.existingRating != null ? l10n.get('edit') : l10n.get('save'),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(height: 12),
-
-            _buildStarRating(),
-
-            const SizedBox(height: 12),
-
-            _buildCategorySelection(),
-
-            const SizedBox(height: 12),
-
-            _buildCommentField(),
-
-            const SizedBox(height: 10),
-
-            _buildFeedbackField(),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: _isSubmitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: _isSubmitting ? null : _submitRating,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.purple,
-            foregroundColor: Colors.white,
-          ),
-          child: _isSubmitting
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : Text(widget.existingRating != null ? 'Update' : 'Submit'),
-        ),
-      ],
     );
   }
 
   Widget _buildStarRating() {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text(
-          'Overall Rating',
+        Text(
+          AppLocalizations.of(context).get('overall_rating'),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 16),
         Row(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(5, (index) {
             final starIndex = index + 1;
             return GestureDetector(
               onTap: () => setState(() => _rating = starIndex.toDouble()),
-              child: Icon(
-                starIndex <= _rating ? Icons.star : Icons.star_border,
-                color: Colors.amber,
-                size: 28,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Icon(
+                  starIndex <= _rating ? Icons.star_rounded : Icons.star_border_rounded,
+                  color: starIndex <= _rating ? Colors.amber.shade600 : Colors.grey.shade400,
+                  size: 40,
+                ),
               ),
             );
           }),
         ),
+        if (_rating > 0) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.deepPurple.shade100,
+                  Colors.deepPurple.shade50,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              '${_rating.toStringAsFixed(1)} / 5.0',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.deepPurple.shade700,
+              ),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -182,33 +302,66 @@ class _DistributorFeedbackDialogState extends State<DistributorFeedbackDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'What stood out? (Optional)',
+        Text(
+          AppLocalizations.of(context).get('what_stood_out'),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
         Wrap(
-          spacing: 6,
-          runSpacing: 6,
+          spacing: 8,
+          runSpacing: 8,
           children: _availableCategories.map((category) {
             final isSelected = _selectedCategories.contains(category);
-            return FilterChip(
-              label: Text(category),
-              selected: isSelected,
-              onSelected: (selected) {
+            return InkWell(
+              onTap: () {
                 setState(() {
-                  if (selected) {
-                    _selectedCategories.add(category);
-                  } else {
+                  if (isSelected) {
                     _selectedCategories.remove(category);
+                  } else {
+                    _selectedCategories.add(category);
                   }
                 });
               },
-              selectedColor: Colors.purple.withOpacity(0.2),
-              checkmarkColor: Colors.purple,
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? LinearGradient(
+                          colors: [
+                            Colors.deepPurple.shade500,
+                            Colors.deepPurple.shade600,
+                          ],
+                        )
+                      : null,
+                  color: isSelected ? null : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? Colors.deepPurple.shade600 : Colors.grey.shade300,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isSelected)
+                      const Icon(Icons.check_circle, color: Colors.white, size: 16),
+                    if (isSelected) const SizedBox(width: 6),
+                    Text(
+                      category,
+                      style: TextStyle(
+                        color: isSelected ? Colors.white : Colors.grey.shade700,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
           }).toList(),
         ),
@@ -220,21 +373,36 @@ class _DistributorFeedbackDialogState extends State<DistributorFeedbackDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Comments (Optional)',
+        Text(
+          AppLocalizations.of(context).get('comments_optional'),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
         TextField(
           controller: _commentController,
           maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Share any issues or highlights with the distributor...',
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.all(10),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context).get('share_issues_highlights'),
+            hintStyle: TextStyle(color: Colors.grey.shade400),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.deepPurple.shade600, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(14),
+            filled: true,
+            fillColor: Colors.grey.shade50,
           ),
         ),
       ],
@@ -245,21 +413,36 @@ class _DistributorFeedbackDialogState extends State<DistributorFeedbackDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Suggestions (Optional)',
+        Text(
+          AppLocalizations.of(context).get('suggestions_optional'),
           style: TextStyle(
-            fontSize: 14,
+            fontSize: 15,
             fontWeight: FontWeight.bold,
+            color: Colors.grey.shade900,
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 12),
         TextField(
           controller: _feedbackController,
           maxLines: 2,
-          decoration: const InputDecoration(
-            hintText: 'Suggest improvements for faster and smoother delivery...',
-            border: OutlineInputBorder(),
-            contentPadding: EdgeInsets.all(10),
+          decoration: InputDecoration(
+            hintText: AppLocalizations.of(context).get('suggest_improvements'),
+            hintStyle: TextStyle(color: Colors.grey.shade400),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.grey.shade300),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Colors.deepPurple.shade600, width: 2),
+            ),
+            contentPadding: const EdgeInsets.all(14),
+            filled: true,
+            fillColor: Colors.grey.shade50,
           ),
         ),
       ],
@@ -267,10 +450,11 @@ class _DistributorFeedbackDialogState extends State<DistributorFeedbackDialog> {
   }
 
   Future<void> _submitRating() async {
+    final l10n = AppLocalizations.of(context);
     if (_rating == 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please select a rating'),
+        SnackBar(
+          content: Text(l10n.get('please_select_rating')),
           backgroundColor: Colors.red,
         ),
       );
@@ -303,20 +487,22 @@ class _DistributorFeedbackDialogState extends State<DistributorFeedbackDialog> {
       }
 
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(widget.existingRating != null ? 'Feedback updated!' : 'Feedback submitted!'),
+            content: Text(widget.existingRating != null ? l10n.get('feedback_updated') : l10n.get('feedback_submitted')),
             backgroundColor: Colors.green,
           ),
         );
       }
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         setState(() => _isSubmitting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to submit: $e'),
+            content: Text('${l10n.get('failed_to_submit')}: $e'),
             backgroundColor: Colors.red,
           ),
         );
