@@ -5,7 +5,8 @@ import '../../providers/crop_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/app_localizations.dart';
 import '../payment/payment_screen.dart';
-import '../../services/payment_service.dart'; // Added import for PaymentService
+import '../../services/payment_service.dart';
+import '../../widgets/smart_bidding_assistant_widget.dart';
 
 class CropMarketplaceScreen extends StatefulWidget {
   const CropMarketplaceScreen({super.key});
@@ -523,6 +524,17 @@ class _CropMarketplaceScreenState extends State<CropMarketplaceScreen> {
                 if (crop.bids.isNotEmpty)
                   _buildBiddingHistorySection(crop),
                 const SizedBox(height: 16),
+
+                // Smart Bidding Assistant (only for active auctions)
+                if (!isExpired && crop.status == 'active')
+                  SmartBiddingAssistantWidget(
+                    crop: crop,
+                    onBidRecommended: () {
+                      // This will be handled by the widget itself
+                    },
+                  ),
+                if (!isExpired && crop.status == 'active')
+                  const SizedBox(height: 16),
 
                 // Action Buttons
                 Container(

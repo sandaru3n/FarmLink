@@ -9,10 +9,12 @@ import '../../../providers/delivery_order_provider.dart';
 import '../../../models/user_model.dart';
 import '../../../models/transport_order_model.dart';
 import '../../../utils/app_localizations.dart';
+import '../../../utils/number_formatter.dart';
 import '../../settings/transporter_settings_screen.dart';
 import '../../transporter/delivery_orders_screen.dart';
 import '../../transporter/transport_orders_screen.dart';
 import '../../transporter/earnings_details_screen.dart';
+import '../../transporter/ai_chat_assistant_screen.dart';
 
 class TransporterDashboard extends StatefulWidget {
   final int initialTabIndex;
@@ -188,6 +190,10 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                     text: l10n.get('history'),
                   ),
                   GButton(
+                    icon: LineAwesomeIcons.robot,
+                    text: l10n.get('ai_assistant'),
+                  ),
+                  GButton(
                     icon: Icons.analytics,
                     text: l10n.get('analytics'),
                   ),
@@ -212,6 +218,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
       case 3:
         return l10n.get('history');
       case 4:
+        return l10n.get('ai_assistant');
+      case 5:
         return l10n.get('analytics');
       default:
         return l10n.get('transporter_dashboard');
@@ -227,6 +235,8 @@ class _TransporterDashboardState extends State<TransporterDashboard>
       case 3:
         return _buildHistoryTab();
       case 4:
+        return const AIChatAssistantScreen();
+      case 5:
         return _buildAnalyticsTab();
       default:
         return _buildHomeTab(userProfile);
@@ -322,9 +332,9 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'LKR ${totalEarnings.toStringAsFixed(2)}',
+                    NumberFormatter.formatCurrencyCompact(totalEarnings),
                     style: const TextStyle(
-                      fontSize: 32,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
@@ -351,7 +361,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               Expanded(
                 child: _buildBalanceStat(
                   'Completed',
-                  completedToday.toString(),
+                  NumberFormatter.formatCount(completedToday),
                   Icons.check_circle,
                 ),
               ),
@@ -363,7 +373,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               Expanded(
                 child: _buildBalanceStat(
                   'Active',
-                  activeDeliveries.toString(),
+                  NumberFormatter.formatCount(activeDeliveries),
                   Icons.local_shipping,
                 ),
               ),
@@ -452,7 +462,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           Text(
             value,
             style: TextStyle(
-              fontSize: 30,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.grey.shade900,
               letterSpacing: -0.5,
@@ -510,7 +520,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
           Text(
             value,
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -647,11 +657,11 @@ class _TransporterDashboardState extends State<TransporterDashboard>
               // Quick glance chips
               Row(
                 children: [
-                  _buildInfoChip(Icons.inventory_2_outlined, '$availableDeliveries ${AppLocalizations.of(context).get('available_status')}', Colors.white),
+                  _buildInfoChip(Icons.inventory_2_outlined, '${NumberFormatter.formatCount(availableDeliveries)} ${AppLocalizations.of(context).get('available_status')}', Colors.white),
                   const SizedBox(width: 8),
-                  _buildInfoChip(Icons.directions_car_filled_outlined, '$activeDeliveries ${AppLocalizations.of(context).get('active')}', Colors.white),
+                  _buildInfoChip(Icons.directions_car_filled_outlined, '${NumberFormatter.formatCount(activeDeliveries)} ${AppLocalizations.of(context).get('active')}', Colors.white),
                   const SizedBox(width: 8),
-                  _buildInfoChip(Icons.trending_up, 'LKR ${totalEarnings.toStringAsFixed(0)}', Colors.white),
+                  _buildInfoChip(Icons.trending_up, NumberFormatter.formatCurrencyCompact(totalEarnings), Colors.white),
                 ],
               ),
               const SizedBox(height: 8),
@@ -2370,7 +2380,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       Expanded(
                         child: _buildScreenshotStyleCard(
                           AppLocalizations.of(context).get('total_orders'),
-                          allOrders.length.toString(),
+                          NumberFormatter.formatCount(allOrders.length),
                           Icons.local_shipping,
                           Colors.blue,
                         ),
@@ -2379,7 +2389,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       Expanded(
                         child: _buildScreenshotStyleCard(
                           AppLocalizations.of(context).get('completed_deliveries'),
-                          completedOrders.length.toString(),
+                          NumberFormatter.formatCount(completedOrders.length),
                           Icons.check_circle,
                           Colors.green,
                         ),
@@ -2393,7 +2403,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       Expanded(
                         child: _buildScreenshotStyleCard(
                           AppLocalizations.of(context).get('total_earnings'),
-                          'LKR ${totalEarnings.toStringAsFixed(0)}',
+                          NumberFormatter.formatCurrencyCompact(totalEarnings),
                           Icons.account_balance_wallet,
                           Colors.orange,
                         ),
@@ -2402,7 +2412,7 @@ class _TransporterDashboardState extends State<TransporterDashboard>
                       Expanded(
                         child: _buildScreenshotStyleCard(
                           AppLocalizations.of(context).get('avg_order_earnings'),
-                          'LKR ${averageEarnings.toStringAsFixed(0)}',
+                          NumberFormatter.formatCurrencyCompact(averageEarnings.toDouble()),
                           Icons.trending_up,
                           Colors.deepPurple,
                         ),

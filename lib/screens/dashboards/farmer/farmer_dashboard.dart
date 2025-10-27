@@ -14,6 +14,7 @@ import '../../farmer/add_crop_screen.dart';
 import '../../farmer/farmer_orders_screen.dart';
 import '../../farmer/farmer_analytics_screen.dart';
 import '../../farmer/crop_advisory_screen.dart';
+import '../../../widgets/market_insights_widget.dart';
 
 class FarmerDashboard extends StatefulWidget {
   const FarmerDashboard({super.key});
@@ -128,6 +129,10 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
                     text: l10n.get('delivery'),
                   ),
                   GButton(
+                    icon: Icons.trending_up,
+                    text: 'Market',
+                  ),
+                  GButton(
                     icon: Icons.analytics,
                     text: l10n.get('analytics'),
                   ),
@@ -154,6 +159,8 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
       case 2:
           return _buildDeliveryTab();
       case 3:
+        return _buildMarketInsightsTab();
+      case 4:
         return _buildAnalyticsTab();
       default:
         return _buildHomeTab(userProfile);
@@ -678,6 +685,170 @@ class _FarmerDashboardState extends State<FarmerDashboard> {
     return const FarmerOrdersScreen();
   }
 
+  Widget _buildMarketInsightsTab() {
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        title: const Text('Market Insights'),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        elevation: 0,
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Refresh market insights
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Market Overview Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.blue.shade500,
+                    Colors.blue.shade700,
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.blue.shade300,
+                    blurRadius: 12,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.trending_up,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Best Time to Buy',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Data-driven insights to help you make smarter purchasing decisions',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Market Insights Widget
+            const MarketInsightsWidget(showAllCrops: true),
+            
+            const SizedBox(height: 20),
+            
+            // Quick Tips Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.green.shade200),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.green.shade100,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.lightbulb_outline,
+                        color: Colors.green.shade600,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Quick Tips',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green.shade700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTipItem('📅', 'Prices usually drop on Fridays'),
+                  _buildTipItem('🌅', 'Early morning purchases often have better deals'),
+                  _buildTipItem('📊', 'Monitor prices for 2-3 days before buying'),
+                  _buildTipItem('💰', 'Consider bulk purchases during low-price periods'),
+                  _buildTipItem('🔔', 'Set price alerts for your target crops'),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTipItem(String emoji, String text) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildAnalyticsTab() {
     return const FarmerAnalyticsScreen();
   }
@@ -821,7 +992,7 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
   WeatherModel? _weatherData;
   bool _isLoading = true;
   String _errorMessage = '';
-  String _selectedCity = WeatherService.getDefaultCity();
+  String? _currentLocationAddress;
 
   @override
   void initState() {
@@ -836,7 +1007,15 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
     });
 
     try {
-      final weather = await _weatherService.getCurrentWeather(_selectedCity);
+      // Always get weather for user's real location
+      final weather = await _weatherService.getCurrentWeatherForUserLocation();
+      
+      // Get the address for display
+      final locationService = _weatherService.locationService;
+      if (locationService.currentAddress != null) {
+        _currentLocationAddress = locationService.currentAddress;
+      }
+      
       setState(() {
         _weatherData = weather;
         _isLoading = false;
@@ -849,48 +1028,11 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
     }
   }
 
-  void _showCitySelector() {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.6,
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).get('select_city'),
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: WeatherService.getPopularFarmingCities().length,
-                itemBuilder: (context, index) {
-                  final city = WeatherService.getPopularFarmingCities()[index];
-                  final isSelected = city == _selectedCity;
-                  
-                  return ListTile(
-                    title: Text(city),
-                    trailing: isSelected ? const Icon(Icons.check, color: Colors.green) : null,
-                    onTap: () {
-                      setState(() {
-                        _selectedCity = city;
-                      });
-                      Navigator.pop(context);
-                      _loadWeatherData();
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void _refreshLocation() async {
+    // Refresh location and weather
+    final locationService = _weatherService.locationService;
+    await locationService.refreshLocation();
+    _loadWeatherData();
   }
 
   @override
@@ -947,7 +1089,7 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
                         ),
                       ),
                       Text(
-                        AppLocalizations.of(context).get('real_time_weather'),
+                        _currentLocationAddress ?? AppLocalizations.of(context).get('your_location'),
                         style: TextStyle(
                           color: Colors.grey[600],
                           fontSize: 14,
@@ -956,9 +1098,22 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                // Location controls
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Refresh location
+                    IconButton(
+                      onPressed: _refreshLocation,
+                      icon: const Icon(Icons.refresh),
+                      tooltip: AppLocalizations.of(context).get('refresh_location'),
+                    ),
+                    // Close button
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1100,27 +1255,18 @@ class _WeatherForecastModalState extends State<WeatherForecastModal> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      AppLocalizations.of(context).get('current_location'),
+                      AppLocalizations.of(context).get('your_location'),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: _showCitySelector,
-                      icon: const Icon(
-                        Icons.edit_location,
-                        color: Colors.white,
-                        size: 20,
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '${_weatherData!.city}, ${_weatherData!.country}',
+                  _currentLocationAddress ?? '${_weatherData!.city}, ${_weatherData!.country}',
                   style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 14,

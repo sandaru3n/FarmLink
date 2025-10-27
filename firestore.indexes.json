@@ -141,6 +141,24 @@
                  "order": "DESCENDING"
                }
              ]
+           },
+           {
+             "collectionGroup": "chat_messages",
+             "queryScope": "COLLECTION",
+             "fields": [
+               {
+                 "fieldPath": "conversationId",
+                 "order": "ASCENDING"
+               },
+               {
+                 "fieldPath": "timestamp",
+                 "order": "DESCENDING"
+               },
+               {
+                 "fieldPath": "__name__",
+                 "order": "DESCENDING"
+               }
+             ]
            }
          ],
          "fieldOverrides": []

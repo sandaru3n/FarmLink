@@ -14,6 +14,7 @@ import '../../../services/crop_service.dart';
 import '../../../services/order_service.dart';
 import '../../../models/crop_model.dart';
 import '../../../widgets/notification_badge.dart';
+import '../../../widgets/smart_bidding_assistant_widget.dart';
 
 class FoodDistributorDashboard extends StatefulWidget {
   final int? initialTabIndex;
@@ -164,6 +165,8 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (userProfile != null) _buildBidAnalyticsSection(userProfile),
+                const SizedBox(height: 20),
+                _buildSmartBiddingSection(userProfile),
               ],
             ),
           ),
@@ -931,6 +934,132 @@ class _FoodDistributorDashboardState extends State<FoodDistributorDashboard> {
             color: _analyticsDays == 30 ? Colors.grey.shade900 : Colors.grey.shade700,
             fontWeight: _analyticsDays == 30 ? FontWeight.bold : FontWeight.normal,
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSmartBiddingSection(UserModel? userProfile) {
+    final l10n = AppLocalizations.of(context);
+    final cropService = CropService();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l10n.get('smart_bidding_assistant'),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
+        ),
+        const SizedBox(height: 12),
+        StreamBuilder<List<CropModel>>(
+          stream: cropService.getActiveCrops(),
+          builder: (context, activeSnap) {
+            final activeCrops = activeSnap.data ?? const <CropModel>[];
+            
+            if (activeCrops.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.psychology_outlined,
+                      size: 48,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.get('no_active_auctions'),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'AI recommendations will appear when auctions are available',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            // Show Smart Bidding Assistant for the first active crop (not expired)
+            final activeNonExpiredCrops = activeCrops.where((crop) => !crop.isExpired && crop.status == 'active').toList();
+            
+            if (activeNonExpiredCrops.isEmpty) {
+              return Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.psychology_outlined,
+                      size: 48,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      l10n.get('no_active_auctions'),
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'AI recommendations will appear when active auctions are available',
+                      style: TextStyle(
+                        color: Colors.grey.shade500,
+                        fontSize: 14,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              );
+            }
+
+            final firstActiveCrop = activeNonExpiredCrops.first;
+            return SmartBiddingAssistantWidget(
+              crop: firstActiveCrop,
+              onBidRecommended: () {
+                // Navigate to marketplace tab
+                setState(() {
+                  _currentIndex = 1; // Marketplace tab
+                });
+              },
+            );
+          },
         ),
       ],
     );

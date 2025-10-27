@@ -71,6 +71,26 @@ class AppLocalizations {
       'search': 'Search',
       'menu': 'Menu',
       
+      // AI Assistant
+      'ai_assistant': 'AI Assistant',
+      'ai_assistant_subtitle': 'Your 24/7 Virtual Helper',
+      'ai_assistant_welcome': 'Welcome to AI Assistant',
+      'ai_assistant_description': 'I\'m here to help you manage your deliveries, routes, and tasks efficiently. Ask me anything!',
+      'next_delivery': 'What\'s my next delivery?',
+      'show_route': 'Show Route',
+      'mark_delivery': 'Mark Delivery',
+      'emergency_help': 'Emergency Help',
+      'type_message': 'Type your message...',
+      'no_messages_yet': 'No messages yet',
+      'start_conversation': 'Start a conversation with your AI assistant',
+      'retry': 'Retry',
+      'action': 'Action',
+      'emergency_alert': 'Emergency Alert',
+      'show_history': 'Show History',
+      'show_earnings': 'Show Earnings',
+      'weather_update': 'Weather Update',
+      'traffic_update': 'Traffic Update',
+      
       // Validation
       'email_required': 'Email is required',
       'password_required': 'Password is required',
@@ -192,6 +212,16 @@ class AppLocalizations {
       'wind': 'Wind',
       'pressure': 'Pressure',
       
+      // Location-based Weather
+      'your_location': 'Your Location',
+      'switch_to_location': 'Use My Location',
+      'switch_to_city': 'Select City',
+      'refresh_location': 'Refresh Location',
+      'location_permission_denied': 'Location permission denied',
+      'location_services_disabled': 'Location services are disabled',
+      'getting_location': 'Getting your location...',
+      'location_error': 'Unable to get your location',
+      
       // Crop Listing Screen
       'my_crops': 'My Crops',
       'pending': 'Pending',
@@ -226,7 +256,6 @@ class AppLocalizations {
       'failed_to_delete': 'Failed to delete crop',
       'bidding_history': 'Bidding History',
       'bidding_summary': 'Bidding Summary',
-      'retry': 'Retry',
       
       // Delivery Tracking Screen
       'delivery_tracking': 'Delivery Tracking',
@@ -333,6 +362,38 @@ class AppLocalizations {
       'bid_updated_success': 'Bid updated successfully!',
       'failed_update_bid': 'Failed to update bid',
       'close': 'Close',
+      
+        // Smart Bidding Assistant
+        'smart_bidding_assistant': 'Smart Bidding Assistant',
+        'ai_powered_recommendations': 'AI-Powered Recommendations',
+        'recommended_bid': 'Recommended Bid',
+        'confidence': 'Confidence',
+        'confidence_analysis': 'Confidence Analysis',
+        'market_factors': 'Market Factors',
+        'market_average': 'Market Average',
+        'market_success_rate': 'Success Rate',
+        'farmer_reliability': 'Farmer Reliability',
+        'refresh_analysis': 'Refresh Analysis',
+        'use_recommendation': 'Use Recommendation',
+        'use_recommended_bid': 'Use Recommended Bid',
+        'analysis_failed': 'Analysis Failed',
+        'no_analysis_available': 'No Analysis Available',
+        'insufficient_data_for_analysis': 'Insufficient data for analysis',
+
+        // Consumer AI Market Insights
+        'ai_shopping_assistant': 'AI Shopping Assistant',
+        'personalized_shopping_recommendations': 'Personalized shopping recommendations based on your purchase history',
+        'analyzing_purchase_history': 'Analyzing Purchase History',
+        'personalized_recommendations': 'Personalized Recommendations',
+        'money_saving_tips': 'Money Saving Tips',
+        'product_suggestions': 'Product Suggestions',
+        'purchase_patterns': 'Purchase Patterns',
+        'budget_insights': 'Budget Insights',
+        'seasonal_advice': 'Seasonal Advice',
+        'based_on_purchase_history': 'Based on your purchase history',
+        'no_purchase_data': 'No Purchase Data Available',
+        'start_shopping_for_insights': 'Start shopping to get personalized AI insights and recommendations',
+        'ai_analysis_disclaimer': 'AI analysis is based on your purchase history and market trends. Always verify current prices and availability.',
       
       // My Orders Screen
       'farmer_orders': 'Farmer Orders',
@@ -570,6 +631,26 @@ class AppLocalizations {
       'search': 'සොයන්න',
       'menu': 'මෙනුව',
       
+      // AI Assistant
+      'ai_assistant': 'AI සහායක',
+      'ai_assistant_subtitle': 'ඔබේ 24/7 අතථ්‍ය සහායක',
+      'ai_assistant_welcome': 'AI සහායක වෙත සාදරයෙන් පිළිගනිමු',
+      'ai_assistant_description': 'මම ඔබේ බෙදාහැරීම්, මාර්ග සහ කාර්යයන් කාර්යක්ෂමව කළමනාකරණය කිරීමට උදව් කිරීමට මෙහි සිටිමි. ඕනෑම දෙයක් අසන්න!',
+      'next_delivery': 'මගේ ඊළඟ බෙදාහැරීම කුමක්ද?',
+      'show_route': 'මාර්ගය පෙන්වන්න',
+      'mark_delivery': 'බෙදාහැරීම සලකුණු කරන්න',
+      'emergency_help': 'හදිසි උදව්',
+      'type_message': 'ඔබේ පණිවිඩය ටයිප් කරන්න...',
+      'no_messages_yet': 'තවම පණිවිඩ නැත',
+      'start_conversation': 'ඔබේ AI සහායක සමඟ සංවාදයක් ආරම්භ කරන්න',
+      'retry': 'නැවත උත්සාහ කරන්න',
+      'action': 'ක්‍රියාව',
+      'emergency_alert': 'හදිසි ඇඟවීම',
+      'show_history': 'ඉතිහාසය පෙන්වන්න',
+      'show_earnings': 'ඉපැයීම් පෙන්වන්න',
+      'weather_update': 'කාලගුණ යාවත්කාලීනය',
+      'traffic_update': 'ගමනාගමන යාවත්කාලීනය',
+      
       // Validation
       'email_required': 'විද්‍යුත් තැපෑල අවශ්‍ය වේ',
       'password_required': 'මුරපදය අවශ්‍ය වේ',
@@ -691,6 +772,16 @@ class AppLocalizations {
       'wind': 'සුළඟ',
       'pressure': 'පීඩනය',
       
+      // Location-based Weather
+      'your_location': 'ඔබේ ස්ථානය',
+      'switch_to_location': 'මගේ ස්ථානය භාවිතා කරන්න',
+      'switch_to_city': 'නගරය තෝරන්න',
+      'refresh_location': 'ස්ථානය නැවුම් කරන්න',
+      'location_permission_denied': 'ස්ථාන අවසරය ප්‍රතික්ෂේප කරන ලදී',
+      'location_services_disabled': 'ස්ථාන සේවා අක්‍රිය කර ඇත',
+      'getting_location': 'ඔබේ ස්ථානය ලබා ගනිමින්...',
+      'location_error': 'ඔබේ ස්ථානය ලබා ගැනීමට නොහැකි විය',
+      
       // Crop Listing Screen
       'my_crops': 'මගේ බෝග',
       'pending': 'පොරොත්තු',
@@ -725,7 +816,6 @@ class AppLocalizations {
       'failed_to_delete': 'බෝගය මකා දැමීමට අසමත් විය',
       'bidding_history': 'ලංසු ඉතිහාසය',
       'bidding_summary': 'ලංසු සාරාංශය',
-      'retry': 'නැවත උත්සාහ කරන්න',
       
       // Delivery Tracking Screen
       'delivery_tracking': 'බෙදාහැරීම් ලුහුබැඳීම',
@@ -832,6 +922,38 @@ class AppLocalizations {
       'bid_updated_success': 'ලංසුව සාර්ථකව යාවත්කාලීන කරන ලදී!',
       'failed_update_bid': 'ලංසුව යාවත්කාලීන කිරීමට අසමත් විය',
       'close': 'වසන්න',
+      
+      // Smart Bidding Assistant
+      'smart_bidding_assistant': 'ස්මාර්ට් ලංසු සහායක',
+      'ai_powered_recommendations': 'AI-බලගැන්වූ නිර්දේශ',
+      'recommended_bid': 'නිර්දේශිත ලංසුව',
+      'confidence': 'විශ්වාසය',
+      'confidence_analysis': 'විශ්වාස විශ්ලේෂණය',
+      'market_factors': 'වෙළඳපොළ සාධක',
+      'market_average': 'වෙළඳපොළ සාමාන්‍ය',
+      'market_success_rate': 'සාර්ථකත්ව අනුපාතය',
+      'farmer_reliability': 'ගොවි විශ්වසනීයත්වය',
+      'refresh_analysis': 'විශ්ලේෂණය නැවුම් කරන්න',
+      'use_recommendation': 'නිර්දේශය භාවිතා කරන්න',
+      'use_recommended_bid': 'නිර්දේශිත ලංසුව භාවිතා කරන්න',
+      'analysis_failed': 'විශ්ලේෂණය අසමත් විය',
+      'no_analysis_available': 'විශ්ලේෂණය නොමැත',
+      'insufficient_data_for_analysis': 'විශ්ලේෂණය සඳහා ප්‍රමාණවත් දත්ත නොමැත',
+
+      // Consumer AI Market Insights
+      'ai_shopping_assistant': 'AI සාප්පු සහායක',
+      'personalized_shopping_recommendations': 'ඔබේ මිලදී ගැනීමේ ඉතිහාසය මත පදනම් වූ පුද්ගලික සාප්පු නිර්දේශ',
+      'analyzing_purchase_history': 'මිලදී ගැනීමේ ඉතිහාසය විශ්ලේෂණය කරමින්',
+      'personalized_recommendations': 'පුද්ගලික නිර්දේශ',
+      'money_saving_tips': 'මුදල් ඉතිරි කිරීමේ උපදෙස්',
+      'product_suggestions': 'නිෂ්පාදන යෝජනා',
+      'purchase_patterns': 'මිලදී ගැනීමේ රටා',
+      'budget_insights': 'අයවැය තීරණ',
+      'seasonal_advice': 'වාරීය උපදෙස්',
+      'based_on_purchase_history': 'ඔබේ මිලදී ගැනීමේ ඉතිහාසය මත පදනම් වී',
+      'no_purchase_data': 'මිලදී ගැනීමේ දත්ත නොමැත',
+      'start_shopping_for_insights': 'පුද්ගලික AI තීරණ සහ නිර්දේශ ලබා ගැනීමට සාප්පු වෙළඳාම ආරම්භ කරන්න',
+      'ai_analysis_disclaimer': 'AI විශ්ලේෂණය ඔබේ මිලදී ගැනීමේ ඉතිහාසය සහ වෙළඳපොළ ප්‍රවණතා මත පදනම් වේ. සැමවිටම වර්තමාන මිල සහ ලබා ගත හැකි බව සත්‍යාපනය කරන්න.',
       
       // My Orders Screen
       'farmer_orders': 'ගොවි ඇණවුම්',
@@ -1069,6 +1191,26 @@ class AppLocalizations {
       'search': 'தேடு',
       'menu': 'மெனு',
       
+      // AI Assistant
+      'ai_assistant': 'AI உதவியாளர்',
+      'ai_assistant_subtitle': 'உங்கள் 24/7 மெய்நிகர் உதவியாளர்',
+      'ai_assistant_welcome': 'AI உதவியாளருக்கு வரவேற்கிறோம்',
+      'ai_assistant_description': 'உங்கள் விநியோகங்கள், வழிகள் மற்றும் பணிகளை திறம்பட நிர்வகிக்க உதவ நான் இங்கே இருக்கிறேன். எதையும் கேளுங்கள்!',
+      'next_delivery': 'எனது அடுத்த விநியோகம் என்ன?',
+      'show_route': 'வழியைக் காட்டு',
+      'mark_delivery': 'விநியோகத்தைக் குறிக்கவும்',
+      'emergency_help': 'அவசர உதவி',
+      'type_message': 'உங்கள் செய்தியை தட்டச்சு செய்யவும்...',
+      'no_messages_yet': 'இன்னும் செய்திகள் இல்லை',
+      'start_conversation': 'உங்கள் AI உதவியாளருடன் உரையாடலைத் தொடங்குங்கள்',
+      'retry': 'மீண்டும் முயற்சிக்கவும்',
+      'action': 'செயல்',
+      'emergency_alert': 'அவசர எச்சரிக்கை',
+      'show_history': 'வரலாற்றைக் காட்டு',
+      'show_earnings': 'வருவாயைக் காட்டு',
+      'weather_update': 'வானிலை புதுப்பிப்பு',
+      'traffic_update': 'போக்குவரத்து புதுப்பிப்பு',
+      
       // Validation
       'email_required': 'மின்னஞ்சல் தேவை',
       'password_required': 'கடவுச்சொல் தேவை',
@@ -1190,6 +1332,16 @@ class AppLocalizations {
       'wind': 'காற்று',
       'pressure': 'அழுத்தம்',
       
+      // Location-based Weather
+      'your_location': 'உங்கள் இடம்',
+      'switch_to_location': 'எனது இடத்தைப் பயன்படுத்தவும்',
+      'switch_to_city': 'நகரத்தைத் தேர்ந்தெடுக்கவும்',
+      'refresh_location': 'இடத்தை புதுப்பிக்கவும்',
+      'location_permission_denied': 'இட அனுமதி மறுக்கப்பட்டது',
+      'location_services_disabled': 'இட சேவைகள் முடக்கப்பட்டுள்ளன',
+      'getting_location': 'உங்கள் இடத்தை பெறுகிறது...',
+      'location_error': 'உங்கள் இடத்தை பெற முடியவில்லை',
+      
       // Crop Listing Screen
       'my_crops': 'எனது பயிர்கள்',
       'pending': 'நிலுவையில்',
@@ -1224,7 +1376,6 @@ class AppLocalizations {
       'failed_to_delete': 'பயிரை அழிக்க தோல்வி',
       'bidding_history': 'ஏல வரலாறு',
       'bidding_summary': 'ஏல சுருக்கம்',
-      'retry': 'மீண்டும் முயற்சிக்கவும்',
       
       // Delivery Tracking Screen
       'delivery_tracking': 'விநியோக கண்காணிப்பு',
@@ -1331,6 +1482,38 @@ class AppLocalizations {
       'bid_updated_success': 'ஏலம் வெற்றிகரமாக புதுப்பிக்கப்பட்டது!',
       'failed_update_bid': 'ஏலத்தை புதுப்பிக்க தோல்வி',
       'close': 'மூடு',
+      
+      // Smart Bidding Assistant
+      'smart_bidding_assistant': 'ஸ்மார்ட் ஏல உதவியாளர்',
+      'ai_powered_recommendations': 'AI-இயக்கப்படும் பரிந்துரைகள்',
+      'recommended_bid': 'பரிந்துரைக்கப்பட்ட ஏலம்',
+      'confidence': 'நம்பிக்கை',
+      'confidence_analysis': 'நம்பிக்கை பகுப்பாய்வு',
+      'market_factors': 'சந்தை காரணிகள்',
+      'market_average': 'சந்தை சராசரி',
+      'market_success_rate': 'வெற்றி விகிதம்',
+      'farmer_reliability': 'விவசாயி நம்பகத்தன்மை',
+      'refresh_analysis': 'பகுப்பாய்வை புதுப்பிக்கவும்',
+      'use_recommendation': 'பரிந்துரையை பயன்படுத்தவும்',
+      'use_recommended_bid': 'பரிந்துரைக்கப்பட்ட ஏலத்தை பயன்படுத்தவும்',
+      'analysis_failed': 'பகுப்பாய்வு தோல்வி',
+      'no_analysis_available': 'பகுப்பாய்வு இல்லை',
+      'insufficient_data_for_analysis': 'பகுப்பாய்வுக்கு போதுமான தரவு இல்லை',
+
+      // Consumer AI Market Insights
+      'ai_shopping_assistant': 'AI ஷாப்பிங் உதவியாளர்',
+      'personalized_shopping_recommendations': 'உங்கள் வாங்கும் வரலாற்றின் அடிப்படையில் தனிப்பட்ட ஷாப்பிங் பரிந்துரைகள்',
+      'analyzing_purchase_history': 'வாங்கும் வரலாற்றை பகுப்பாய்வு செய்கிறது',
+      'personalized_recommendations': 'தனிப்பட்ட பரிந்துரைகள்',
+      'money_saving_tips': 'பணம் சேமிப்பு குறிப்புகள்',
+      'product_suggestions': 'தயாரிப்பு பரிந்துரைகள்',
+      'purchase_patterns': 'வாங்கும் வடிவங்கள்',
+      'budget_insights': 'பட்ஜெட் நுண்ணறிவு',
+      'seasonal_advice': 'பருவகால ஆலோசனை',
+      'based_on_purchase_history': 'உங்கள் வாங்கும் வரலாற்றின் அடிப்படையில்',
+      'no_purchase_data': 'வாங்கும் தரவு இல்லை',
+      'start_shopping_for_insights': 'தனிப்பட்ட AI நுண்ணறிவு மற்றும் பரிந்துரைகளைப் பெற ஷாப்பிங் தொடங்கவும்',
+      'ai_analysis_disclaimer': 'AI பகுப்பாய்வு உங்கள் வாங்கும் வரலாறு மற்றும் சந்தை போக்குகளின் அடிப்படையில் உள்ளது. தற்போதைய விலைகள் மற்றும் கிடைக்கும் தன்மையை எப்போதும் சரிபார்க்கவும்.',
       
       // My Orders Screen
       'farmer_orders': 'விவசாயி ஆர்டர்கள்',

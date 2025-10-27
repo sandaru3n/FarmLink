@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/crop_advisory_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../utils/app_localizations.dart';
 
 class CropAdvisoryScreen extends StatefulWidget {
   const CropAdvisoryScreen({super.key});
@@ -23,6 +26,7 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
   bool _isLoading = false;
   String _advisoryResult = '';
   String _errorMessage = '';
+  bool _useAutoDetection = true; // Auto-detect location and weather by default
 
   @override
   void dispose() {
@@ -35,7 +39,65 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
   }
 
   Future<void> _getAdvisory() async {
-    if (!_formKey.currentState!.validate()) {
+    // Only validate required fields based on auto-detection mode
+    if (_useAutoDetection) {
+      // Only validate crop and soil type when using auto-detection
+      if (_cropController.text.trim().isEmpty || _soilTypeController.text.trim().isEmpty) {
+        setState(() {
+          _errorMessage = 'Please enter crop type and soil type';
+        });
+        return;
+      }
+    } else {
+      // Validate all fields when using manual input
+      if (!_formKey.currentState!.validate()) {
+        return;
+      }
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = '';
+      _advisoryResult = '';
+    });
+
+    try {
+      // Get current user ID
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.userProfile?.uid;
+
+      final advisory = await _advisoryService.getCropAdvisory(
+        crop: _cropController.text.trim(),
+        soilType: _soilTypeController.text.trim(),
+        additionalInfo: _additionalInfoController.text.trim().isNotEmpty 
+            ? _additionalInfoController.text.trim() 
+            : null,
+        userId: userId, // Pass user ID for real data integration
+        manualLocation: _useAutoDetection ? null : _locationController.text.trim(),
+        manualWeather: _useAutoDetection ? null : _weatherController.text.trim(),
+      );
+
+      setState(() {
+        _advisoryResult = advisory;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  /// Get advisory for farmer's existing crops
+  Future<void> _getAdvisoryForExistingCrops() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.userProfile?.uid;
+
+    if (userId == null) {
+      setState(() {
+        _errorMessage = 'Please log in to get personalized advisory';
+      });
       return;
     }
 
@@ -46,15 +108,7 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
     });
 
     try {
-      final advisory = await _advisoryService.getCropAdvisory(
-        crop: _cropController.text.trim(),
-        location: _locationController.text.trim(),
-        soilType: _soilTypeController.text.trim(),
-        weather: _weatherController.text.trim(),
-        additionalInfo: _additionalInfoController.text.trim().isNotEmpty 
-            ? _additionalInfoController.text.trim() 
-            : null,
-      );
+      final advisory = await _advisoryService.getAdvisoryForFarmerCrops(userId);
 
       setState(() {
         _advisoryResult = advisory;
@@ -164,12 +218,22 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
                     
                     const SizedBox(height: 16),
                     
-                    _buildInputField(
-                      controller: _locationController,
-                      label: 'Location',
-                      hint: 'e.g., Delhi, Punjab, Maharashtra',
-                      icon: Icons.location_on,
-                    ),
+                    // Auto-Detection Toggle
+                    _buildAutoDetectionToggle(),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Location and Weather Fields (conditional)
+                    if (!_useAutoDetection) ...[
+                      _buildInputField(
+                        controller: _locationController,
+                        label: 'Location',
+                        hint: 'e.g., Delhi, Punjab, Maharashtra',
+                        icon: Icons.location_on,
+                      ),
+                      
+                      const SizedBox(height: 16),
+                    ],
                     
                     const SizedBox(height: 16),
                     
@@ -183,13 +247,18 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
                     
                     const SizedBox(height: 16),
                     
-                    _buildInputField(
-                      controller: _weatherController,
-                      label: 'Current Weather',
-                      hint: 'e.g., Sunny, Rainy, Cloudy',
-                      suggestions: CropAdvisoryService.getWeatherConditions(),
-                      icon: Icons.wb_sunny,
-                    ),
+                    // Weather Field (conditional)
+                    if (!_useAutoDetection) ...[
+                      _buildInputField(
+                        controller: _weatherController,
+                        label: 'Current Weather',
+                        hint: 'e.g., Sunny, Rainy, Cloudy',
+                        suggestions: CropAdvisoryService.getWeatherConditions(),
+                        icon: Icons.wb_sunny,
+                      ),
+                      
+                      const SizedBox(height: 16),
+                    ],
                     
                     const SizedBox(height: 16),
                     
@@ -249,6 +318,61 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
                                   SizedBox(width: 10),
                                   Text(
                                     'Get AI Advisory',
+                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    // Get Advisory for Existing Crops Button
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.blue.shade500,
+                            Colors.blue.shade700,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.shade300,
+                            blurRadius: 12,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _getAdvisoryForExistingCrops,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: _isLoading 
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: const [
+                                  Icon(Icons.agriculture, size: 24),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Get Advisory for My Crops',
                                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                   ),
                                 ],
@@ -432,16 +556,161 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
               color: Colors.green.shade50,
               borderRadius: BorderRadius.circular(12),
             ),
+            child: _buildFormattedAdvisoryText(result),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormattedAdvisoryText(String result) {
+    // Split the result into lines
+    final lines = result.split('\n');
+    List<Widget> widgets = [];
+    
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i].trim();
+      
+      if (line.isEmpty) {
+        widgets.add(const SizedBox(height: 8));
+        continue;
+      }
+      
+      // Check if it's a title (starts with ##)
+      if (line.startsWith('##')) {
+        widgets.add(_buildTitleWidget(line));
+        widgets.add(const SizedBox(height: 12));
+      }
+      // Check if it's a bullet point
+      else if (line.startsWith('•') || line.startsWith('-')) {
+        widgets.add(_buildBulletPointWidget(line));
+        widgets.add(const SizedBox(height: 6));
+      }
+      // Check if it's a numbered item
+      else if (RegExp(r'^\d+\.').hasMatch(line)) {
+        widgets.add(_buildNumberedItemWidget(line));
+        widgets.add(const SizedBox(height: 6));
+      }
+      // Regular paragraph
+      else {
+        widgets.add(_buildParagraphWidget(line));
+        widgets.add(const SizedBox(height: 8));
+      }
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: widgets,
+    );
+  }
+
+  Widget _buildTitleWidget(String line) {
+    // Clean up the title (remove ##)
+    String cleanTitle = line.replaceAll(RegExp(r'^#+\s*'), '');
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.green.shade100,
+            Colors.green.shade200,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.green.shade300, width: 1),
+      ),
+      child: Text(
+        cleanTitle,
+        style: TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: Colors.green.shade800,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBulletPointWidget(String line) {
+    // Clean up the bullet point (remove bullet and ** formatting)
+    String cleanLine = line.replaceFirst(RegExp(r'^[•\-]\s*'), '').replaceAll(RegExp(r'\*\*'), '');
+    
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 6),
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: Colors.green.shade600,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
             child: Text(
-              result,
+              cleanLine,
               style: TextStyle(
-                fontSize: 15,
-                height: 1.6,
-                color: Colors.grey.shade900,
+                fontSize: 14,
+                height: 1.5,
+                color: Colors.grey.shade800,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNumberedItemWidget(String line) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 2),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: Colors.green.shade600,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              line.split('.')[0],
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              line.replaceFirst(RegExp(r'^\d+\.\s*'), '').replaceAll(RegExp(r'\*\*'), ''),
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: Colors.grey.shade800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParagraphWidget(String line) {
+    return Text(
+      line.replaceAll(RegExp(r'\*\*'), ''),
+      style: TextStyle(
+        fontSize: 14,
+        height: 1.6,
+        color: Colors.grey.shade800,
       ),
     );
   }
@@ -507,6 +776,98 @@ class _CropAdvisoryScreenState extends State<CropAdvisoryScreen> {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAutoDetectionToggle() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.green.shade200, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.green.shade100,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.my_location,
+                color: Colors.green.shade600,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Auto-Detection',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade700,
+                ),
+              ),
+              const Spacer(),
+              Switch(
+                value: _useAutoDetection,
+                onChanged: (value) {
+                  setState(() {
+                    _useAutoDetection = value;
+                  });
+                },
+                activeColor: Colors.green.shade600,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _useAutoDetection 
+              ? '📍 Location and 🌤️ Weather will be automatically detected using GPS and weather services'
+              : '📍 Location and 🌤️ Weather will be entered manually',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey.shade700,
+              height: 1.4,
+            ),
+          ),
+          if (_useAutoDetection) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.green.shade600,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Make sure location permissions are enabled for accurate detection',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

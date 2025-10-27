@@ -15,6 +15,8 @@ import '../../consumer/consumer_orders_screen.dart';
 import '../../consumer/saved_products_screen.dart';
 import '../../consumer/donation_screen.dart';
 import '../../consumer/donation_history_screen.dart';
+import '../../../widgets/consumer_market_insights_widget.dart';
+import '../../../widgets/consumer_ai_market_insights_widget.dart';
 
 class ConsumerDashboard extends StatefulWidget {
   const ConsumerDashboard({super.key});
@@ -102,6 +104,10 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
                     text: l10n.get('orders'),
                   ),
                   GButton(
+                    icon: Icons.trending_up,
+                    text: 'Market',
+                  ),
+                  GButton(
                     icon: LineAwesomeIcons.user,
                     text: l10n.get('profile'),
                   ),
@@ -123,6 +129,8 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
       case 2:
         return const ConsumerOrdersScreen();
       case 3:
+        return _buildMarketTab();
+      case 4:
         return _buildProfileTab(userProfile);
       default:
         return _buildHomeTab(userProfile);
@@ -678,6 +686,85 @@ class _ConsumerDashboardState extends State<ConsumerDashboard> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildMarketTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Market Insights Header
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.blue[500]!,
+                  Colors.blue[700]!,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.blue[300]!,
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.trending_up,
+                        color: Colors.white,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Smart Shopping Guide',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Data-driven insights to help you save money and get the best deals on products',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Consumer Market Insights Widget
+          const ConsumerMarketInsightsWidget(),
+          
+          const SizedBox(height: 20),
+          
+          // AI-Powered Consumer Purchase Analysis
+          const ConsumerAIMarketInsightsWidget(),
+        ],
       ),
     );
   }

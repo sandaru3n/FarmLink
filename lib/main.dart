@@ -15,6 +15,7 @@ import 'providers/consumer_order_provider.dart';
 import 'providers/favorites_provider.dart';
 import 'providers/notification_provider.dart';
 import 'providers/language_provider.dart';
+import 'providers/chat_provider.dart';
 import 'utils/app_localizations.dart';
 import 'services/crop_status_service.dart';
 import 'splash_screen.dart';
@@ -89,6 +90,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ConsumerOrderProvider()),
         ChangeNotifierProvider(create: (_) => FavoritesProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: Consumer<LanguageProvider>(
         builder: (context, languageProvider, child) {

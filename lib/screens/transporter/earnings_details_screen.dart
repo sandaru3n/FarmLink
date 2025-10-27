@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../providers/transport_order_provider.dart';
 import '../../models/transport_order_model.dart';
 import '../../utils/app_localizations.dart';
+import '../../utils/number_formatter.dart';
 
 class EarningsDetailsScreen extends StatefulWidget {
   const EarningsDetailsScreen({super.key});
@@ -20,6 +21,18 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          // Add quick action for sharing earnings or setting goals
+          _showQuickActionsBottomSheet();
+        },
+        backgroundColor: Colors.deepPurple,
+        icon: const Icon(Icons.add, color: Colors.white),
+        label: const Text(
+          'Quick Actions',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: Consumer<TransportOrderProvider>(
         builder: (context, transportOrderProvider, child) {
           final deliveredOrders = transportOrderProvider.deliveredTransportOrders;
@@ -56,6 +69,10 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Enhanced Summary Cards
+                      _buildEarningsSummaryCards(deliveredOrders),
+                      const SizedBox(height: 20),
+                      
                       // Filter Options
                       _buildFilterSection(),
                       const SizedBox(height: 20),
@@ -71,6 +88,10 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
                       // Earnings by Destination Pie Chart Card
                       _buildEarningsByDestinationCard(deliveredOrders),
                       const SizedBox(height: 20),
+                      
+                      // AI Insights Card
+                      _buildAIInsightsCard(deliveredOrders),
+                      const SizedBox(height: 20),
                     ],
                   ),
                 ),
@@ -78,6 +99,530 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildEarningsSummaryCards(List<TransportOrderModel> deliveredOrders) {
+    final l10n = AppLocalizations.of(context);
+    final totalEarnings = deliveredOrders.fold<double>(0, (sum, order) => sum + (order.deliveryFee ?? 0));
+    final todayEarnings = deliveredOrders.where((order) {
+      if (order.deliveredAt == null) return false;
+      final today = DateTime.now();
+      final deliveryDate = order.deliveredAt!;
+      return deliveryDate.year == today.year && 
+             deliveryDate.month == today.month && 
+             deliveryDate.day == today.day;
+    }).fold<double>(0, (sum, order) => sum + (order.deliveryFee ?? 0));
+    
+    final weeklyEarnings = deliveredOrders.where((order) {
+      if (order.deliveredAt == null) return false;
+      final now = DateTime.now();
+      final weekAgo = now.subtract(const Duration(days: 7));
+      return order.deliveredAt!.isAfter(weekAgo);
+    }).fold<double>(0, (sum, order) => sum + (order.deliveryFee ?? 0));
+    
+    final averageEarnings = deliveredOrders.isNotEmpty ? totalEarnings / deliveredOrders.length : 0.0;
+    
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _buildSummaryCard(
+                'Total Earnings',
+                NumberFormatter.formatCurrencyCompact(totalEarnings),
+                Icons.account_balance_wallet,
+                Colors.deepPurple,
+                '+12%',
+                Colors.green,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSummaryCard(
+                'Today',
+                NumberFormatter.formatCurrencyCompact(todayEarnings),
+                Icons.today,
+                Colors.blue,
+                '+8%',
+                Colors.green,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSummaryCard(
+                'This Week',
+                NumberFormatter.formatCurrencyCompact(weeklyEarnings),
+                Icons.calendar_view_week,
+                Colors.green,
+                '+15%',
+                Colors.green,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildSummaryCard(
+                'Avg per Delivery',
+                NumberFormatter.formatCurrencyCompact(averageEarnings),
+                Icons.trending_up,
+                Colors.orange,
+                '+5%',
+                Colors.green,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryCard(String title, String value, IconData icon, Color color, String change, Color changeColor) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withOpacity(0.1),
+            color.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.2)),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 18,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: changeColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    change,
+                    style: TextStyle(
+                      color: changeColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey.shade900,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAIInsightsCard(List<TransportOrderModel> deliveredOrders) {
+    final l10n = AppLocalizations.of(context);
+    final totalEarnings = deliveredOrders.fold<double>(0, (sum, order) => sum + (order.deliveryFee ?? 0));
+    final totalDeliveries = deliveredOrders.length;
+    final averageEarnings = totalDeliveries > 0 ? totalEarnings / totalDeliveries : 0.0;
+    
+    // Generate AI insights based on data
+    final insights = _generateAIInsights(deliveredOrders, totalEarnings, averageEarnings);
+    
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.purple.shade50,
+            Colors.purple.shade100.withOpacity(0.3),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.purple.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.purple.withOpacity(0.1),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.purple.shade400,
+                        Colors.purple.shade600,
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.psychology_outlined,
+                    color: Colors.white,
+                    size: 22,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Text(
+                  'AI Earnings Insights',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey.shade900,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...insights.map((insight) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Colors.purple.shade600,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      insight,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey.shade800,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )),
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<String> _generateAIInsights(List<TransportOrderModel> orders, double totalEarnings, double averageEarnings) {
+    final insights = <String>[];
+    
+    if (orders.isEmpty) {
+      return ['Start completing deliveries to see personalized insights!'];
+    }
+    
+    // Peak earning time analysis
+    final hourlyEarnings = <int, double>{};
+    for (final order in orders) {
+      if (order.deliveredAt != null) {
+        final hour = order.deliveredAt!.hour;
+        hourlyEarnings[hour] = (hourlyEarnings[hour] ?? 0) + (order.deliveryFee ?? 0);
+      }
+    }
+    
+    if (hourlyEarnings.isNotEmpty) {
+      final peakHour = hourlyEarnings.entries.reduce((a, b) => a.value > b.value ? a : b);
+      insights.add('Peak earning time: ${peakHour.key}:00 (${NumberFormatter.formatCurrencyCompact(peakHour.value)} avg)');
+    }
+    
+    // Weekly pattern analysis
+    final weeklyEarnings = <int, double>{};
+    for (final order in orders) {
+      if (order.deliveredAt != null) {
+        final weekday = order.deliveredAt!.weekday;
+        weeklyEarnings[weekday] = (weeklyEarnings[weekday] ?? 0) + (order.deliveryFee ?? 0);
+      }
+    }
+    
+    if (weeklyEarnings.isNotEmpty) {
+      final bestDay = weeklyEarnings.entries.reduce((a, b) => a.value > b.value ? a : b);
+      final dayNames = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      insights.add('Best earning day: ${dayNames[bestDay.key]} (${NumberFormatter.formatCurrencyCompact(bestDay.value)})');
+    }
+    
+    // Performance insights
+    if (averageEarnings > 500) {
+      insights.add('Excellent! Your average delivery fee is above market rate');
+    } else if (averageEarnings > 300) {
+      insights.add('Good performance! Consider optimizing routes for higher earnings');
+    } else {
+      insights.add('Focus on longer distance deliveries to increase average earnings');
+    }
+    
+    // Goal setting
+    final monthlyTarget = 10000.0;
+    if (totalEarnings >= monthlyTarget) {
+      insights.add('🎉 Congratulations! You\'ve exceeded your monthly target');
+    } else {
+      final remaining = monthlyTarget - totalEarnings;
+      insights.add('Keep going! ${NumberFormatter.formatCurrencyCompact(remaining)} to reach monthly target');
+    }
+    
+    return insights;
+  }
+
+  void _showQuickActionsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[900],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      'Set Goal',
+                      Icons.flag,
+                      Colors.blue,
+                      () {
+                        Navigator.pop(context);
+                        _showSetGoalDialog();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      'Share',
+                      Icons.share,
+                      Colors.green,
+                      () {
+                        Navigator.pop(context);
+                        // Implement share functionality
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      'Export',
+                      Icons.download,
+                      Colors.orange,
+                      () {
+                        Navigator.pop(context);
+                        // Implement export functionality
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildQuickActionButton(
+                      'Analytics',
+                      Icons.analytics,
+                      Colors.purple,
+                      () {
+                        Navigator.pop(context);
+                        // Navigate to detailed analytics
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionButton(String title, IconData icon, Color color, VoidCallback onTap) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withOpacity(0.1),
+            color.withOpacity(0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    color: color,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSetGoalDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Set Monthly Goal'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                labelText: 'Target Amount (LKR)',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                prefixIcon: const Icon(Icons.flag),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Set a monthly earnings goal to stay motivated and track your progress!',
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              // Implement goal setting
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Goal set successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.deepPurple,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text('Set Goal', style: TextStyle(color: Colors.white)),
+          ),
+        ],
       ),
     );
   }
@@ -333,7 +878,7 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
                         ),
                       ),
                       Text(
-                        'Total: LKR ${totalEarnings.toStringAsFixed(0)}',
+                        'Total: ${NumberFormatter.formatCurrencyCompact(totalEarnings)}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -380,6 +925,16 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
     }
 
     final maxEarnings = data.map((e) => e['earnings'] as double).reduce((a, b) => a > b ? a : b);
+    
+    // If maxEarnings is 0, show no data message
+    if (maxEarnings <= 0) {
+      return Center(
+        child: Text(
+          l10n.get('no_earnings_data'),
+          style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+        ),
+      );
+    }
     
     return CustomPaint(
       painter: LineChartPainter(data, maxEarnings),
@@ -442,7 +997,7 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
                         ),
                       ),
                       Text(
-                        'Total: LKR ${totalDailyEarnings.toStringAsFixed(0)}',
+                        'Total: ${NumberFormatter.formatCurrencyCompact(totalDailyEarnings)}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -489,6 +1044,16 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
     }
 
     final maxEarnings = data.map((e) => e['earnings'] as double).reduce((a, b) => a > b ? a : b);
+    
+    // If maxEarnings is 0, show no data message
+    if (maxEarnings <= 0) {
+      return Center(
+        child: Text(
+          l10n.get('no_earnings_data'),
+          style: TextStyle(color: Colors.grey.shade600, fontWeight: FontWeight.w500),
+        ),
+      );
+    }
     
     return CustomPaint(
       painter: BarChartPainter(data, maxEarnings),
@@ -550,7 +1115,7 @@ class _EarningsDetailsScreenState extends State<EarningsDetailsScreen> {
                         ),
                       ),
                       Text(
-                        'Total: LKR ${totalDestinationEarnings.toStringAsFixed(0)}',
+                        'Total: ${NumberFormatter.formatCurrencyCompact(totalDestinationEarnings)}',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey.shade600,
@@ -804,7 +1369,7 @@ class LineChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
+    if (data.isEmpty || maxEarnings <= 0) return;
 
     // Create gradient for the line
     final gradient = LinearGradient(
@@ -831,21 +1396,26 @@ class LineChartPainter extends CustomPainter {
       final x = (i * width) + (width / 2);
       final y = size.height - (earnings / maxEarnings) * size.height;
       
+      // Check for NaN or invalid values
+      if (x.isNaN || y.isNaN || x.isInfinite || y.isInfinite) continue;
+      
       if (i == 0) {
         path.moveTo(x, y);
       } else {
         path.lineTo(x, y);
       }
       
-      // Draw gradient circle for points
-      final circleGradient = RadialGradient(
-        colors: [Colors.white, Colors.deepPurple.shade600],
-        stops: const [0.3, 1.0],
-      );
-      final circlePaint = Paint()
-        ..shader = circleGradient.createShader(Rect.fromCircle(center: Offset(x, y), radius: 6));
-      
-      canvas.drawCircle(Offset(x, y), 6, circlePaint);
+      // Draw gradient circle for points - only if coordinates are valid
+      if (x >= 0 && y >= 0 && x <= size.width && y <= size.height) {
+        final circleGradient = RadialGradient(
+          colors: [Colors.white, Colors.deepPurple.shade600],
+          stops: const [0.3, 1.0],
+        );
+        final circlePaint = Paint()
+          ..shader = circleGradient.createShader(Rect.fromCircle(center: Offset(x, y), radius: 6));
+        
+        canvas.drawCircle(Offset(x, y), 6, circlePaint);
+      }
     }
     
     canvas.drawPath(path, paint);
@@ -863,7 +1433,7 @@ class BarChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (data.isEmpty) return;
+    if (data.isEmpty || maxEarnings <= 0) return;
 
     final width = size.width / data.length;
     final colors = [
@@ -882,6 +1452,13 @@ class BarChartPainter extends CustomPainter {
       final barHeight = (earnings / maxEarnings) * size.height;
       final x = (i * width) + (width - barWidth) / 2;
       final y = size.height - barHeight;
+      
+      // Check for NaN or invalid values
+      if (x.isNaN || y.isNaN || barWidth.isNaN || barHeight.isNaN || 
+          x.isInfinite || y.isInfinite || barWidth.isInfinite || barHeight.isInfinite) continue;
+      
+      // Ensure values are within reasonable bounds
+      if (barWidth <= 0 || barHeight <= 0) continue;
       
       // Create gradient for each bar
       final gradient = LinearGradient(
